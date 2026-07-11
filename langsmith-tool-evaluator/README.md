@@ -6,6 +6,20 @@ Supports **past traces** (all existing runs in a project) and **future traces** 
 
 Uses an **LLM Judge** (via [OpenCode](https://opencode.ai)) to score each tool selection on a 0.00–1.00 scale, then uploads results as LangSmith feedback and/or experiments.
 
+**Live Dashboard**: https://navneetlearns.github.io/langsmith-tool-evaluator/
+
+## Two Evaluation Modes
+
+### Mode 1: LangSmith Traces (Legacy)
+Pulls runs from a LangSmith project, parses tool calls from trace data, and scores each tool selection via the LLM judge. Requires a LangSmith API key with traced runs.
+
+### Mode 2: Direct Copilot API Pipeline (Current)
+Calls the ZoTok Copilot API directly — sends 50 user queries from the Surana Polycot test suite, captures SSE responses, and records tool calls + timing. Follows HEART.md principles (no retry, patient SSE timeout, response time tracking, versioned reruns).
+
+**Run v1** (July 11, 2026): 50 queries | 49 success | 1 failed | avg 25.1s | 0 phantom tools
+
+Results: `runs/query_results_v1.jsonl` | Manifest: `runs/manifest.json`
+
 ## Architecture
 
 ```
@@ -29,8 +43,13 @@ The judge performs **structured reasoning** — it reads the registry, identifie
 ## Project Structure
 
 ```
-langsmith-tool-evaluator/
-├── evaluate_project.py          # CLI entry point
+langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-tool-evaluator
+├── docs/
+│   └── index.html              # Interactive eval dashboard (GitHub Pages)
+├── runs/
+│   ├── query_results_v1.jsonl  # Run v1 raw results (50 records)
+│   └── manifest.json           # Versioned run manifest
+├── evaluate_project.py          # CLI entry point (LangSmith mode)
 ├── evaluators/
 │   ├── tool_selection.py        # Per-run feedback evaluator
 │   ├── experiment.py            # LangSmith experiment runner
@@ -45,6 +64,12 @@ langsmith-tool-evaluator/
 │   └── tool_registry.md         # Tool definitions (edit to change toolset)
 ├── requirements.txt
 └── .env.example
+
+# Parent directory (not in repo):
+../copilot_query_pipeline.py     # Direct Copilot API pipeline (auto-OTP, SSE parser)
+../HEART.md                      # Eval testing principles (6 rules)
+../eval_plan.md                  # Full knowledge doc + implementation plan
+../runs/                         # Working directory for pipeline outputs
 ```
 
 ## Installation

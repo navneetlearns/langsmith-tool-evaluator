@@ -1,6 +1,30 @@
 # Problems & Solutions (Analysis)
 
-*Generated: 2026-07-09*
+*Generated: 2026-07-09. Updated: 2026-07-11 with Run v1 findings.*
+
+This document captures architectural gaps in the current tool-selection evaluator and potential approaches to fix them.
+
+---
+
+## Run v1 Findings (July 11, 2026)
+
+### Confirmed Issues from Live API Testing
+
+1. **No phantom tools detected** — all 6 tools called in v1 are in the registry. The `get_invoice_data` phantom tool from the HAR capture was NOT called in this run. The 3 conversation_read tools (search_messages, get_thread_messages, get_channel_data) were never called.
+
+2. **10/50 queries called NO tool** — the copilot answered 20% of queries without any data lookup. These queries are in categories: Reports & Analytics (1), Outstanding & Payments (1), Ledger (1), Orders & Invoices (4), Products & Items (3). This may indicate the copilot is falling back to generic responses for queries it should be querying data for.
+
+3. **Ledger category is 6-8x slower** — avg 84.9s vs 7-12s for all other categories. Query #24 timed out at 306.6s. This is a backend performance issue, not a tool-selection issue.
+
+4. **Query #28 returned empty response** — 0 chars, no error, 58s elapsed. The copilot silently returned nothing. A real user would see a blank response with no explanation.
+
+5. **get_product_analytics responses suspiciously short** (67-88 chars) — likely returning error messages like "No data found" instead of actual analytics. Worth investigating the tool output (not visible in SSE).
+
+6. **3 tools never used** — search_messages, get_thread_messages, get_channel_data were not called by any query. Either the test suite doesn't cover conversation-search use cases, or the copilot's routing doesn't consider these tools.
+
+---
+
+
 
 This document captures architectural gaps in the current tool-selection evaluator and potential approaches to fix them. Nothing here is implemented yet — this is a thinking document.
 
