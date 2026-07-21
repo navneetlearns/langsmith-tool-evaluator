@@ -48,7 +48,8 @@ The judge performs **structured reasoning** — it reads the registry, identifie
 ```
 langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-tool-evaluator
 ├── docs/
-│   └── index.html              # Interactive eval dashboard (GitHub Pages)
+│   ├── index.html              # Interactive eval dashboard (GitHub Pages)
+│   └── DASHBOARD_CREATION.md   # Mandatory guide for rebuilding the dashboard
 ├── runs/
 │   ├── query_results_v1.jsonl  # Run v1 raw results (50 records)
 │   ├── query_results_v2.jsonl  # Run v2 raw results (80 records)
