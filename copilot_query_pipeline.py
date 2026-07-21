@@ -29,6 +29,17 @@ import base64
 from pathlib import Path
 from datetime import datetime
 
+# Force unbuffered output
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
+
+# Log file for progress tracking
+LOG_FILE = Path(__file__).parent / "pipeline_run.log"
+def log_msg(msg: str):
+    with open(LOG_FILE, "a") as f:
+        f.write(f"{datetime.now().isoformat()} | {msg}\n")
+    print(msg, flush=True)
+
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -458,53 +469,48 @@ def parse_chat_queries(excel_path: str) -> list[dict]:
 # ============================================================
 
 def main():
-    print("=" * 70)
-    print("  COPILOT QUERY PIPELINE — Eval Testing")
-    print("  Principles: No retry | Patient SSE | Response timing | Versioned")
-    print("=" * 70)
-    print()
+    log_msg("=" * 70)
+    log_msg("  COPILOT QUERY PIPELINE — Eval Testing")
+    log_msg("  Principles: No retry | Patient SSE | Response timing | Versioned")
+    log_msg("=" * 70)
 
     # Determine version
     version = get_next_version()
     output_file = RUNS_DIR / f"query_results_v{version}.jsonl"
     RUNS_DIR.mkdir(exist_ok=True)
-    print(f"  Run version: v{version}")
-    print(f"  Output: {output_file}")
-    print()
+    log_msg(f"  Run version: v{version}")
+    log_msg(f"  Output: {output_file}")
 
     # Step 1: Parse Excel queries
-    print("Reading test queries from Excel...")
+    log_msg("Reading test queries from Excel...")
     if not EXCEL_FILE.exists():
-        print(f"  Excel not found: {EXCEL_FILE}")
+        log_msg(f"  Excel not found: {EXCEL_FILE}")
         sys.exit(1)
 
     queries = parse_chat_queries(str(EXCEL_FILE))
-    print(f"  Found {len(queries)} queries across categories")
+    log_msg(f"  Found {len(queries)} queries across categories")
     categories = {}
     for q in queries:
         categories[q["category"]] = categories.get(q["category"], 0) + 1
     for cat, count in sorted(categories.items()):
-        print(f"    {cat}: {count} queries")
-    print()
+        log_msg(f"    {cat}: {count} queries")
 
     # Step 2: Authenticate
-    print("Authenticating to Copilot API...")
+    log_msg("Authenticating to Copilot API...")
     auth = CopilotAuth(PHONE)
     try:
         token = auth.login()
         if not token:
-            print("  Authentication failed!")
+            log_msg("  Authentication failed!")
             sys.exit(1)
     except Exception as e:
-        print(f"  Auth error: {e}")
+        log_msg(f"  Auth error: {e}")
         sys.exit(1)
 
     client = CopilotClient(auth)
-    print()
 
     # Step 3: Process each query
-    print("Processing queries (no retry, patient SSE, timing each response)...")
-    print()
+    log_msg("Processing queries (no retry, patient SSE, timing each response)...")
 
     results = []
     total = len(queries)
@@ -519,13 +525,13 @@ def main():
         elapsed = time.time() - start_time
         eta = (elapsed / max(1, idx - 1)) * (total - idx + 1) if idx > 1 else 0
 
-        print(f"  [{idx}/{total}] ({category[:22]:22s}) {query_text[:55]:.55s}")
+        log_msg(f"  [{idx}/{total}] ({category[:22]:22s}) {query_text[:55]:.55s}")
 
         # 3a. Ensure auth token (silent refresh)
         try:
             auth.ensure_token()
         except Exception as e:
-            print(f"         [FAIL] Auth refresh failed: {e}")
+            log_msg(f"         [FAIL] Auth refresh failed: {e}")
             results.append({
                 "query_index": idx, **q,
                 "thread_id": None, "tool_calls": [], "response": "",
@@ -577,45 +583,42 @@ def main():
         error = record.get("error")
         resp_time = record.get("response_time_seconds", 0)
         if error:
-            print(f"         [FAIL] {error}  (time: {resp_time}s)")
+            log_msg(f"         [FAIL] {error}  (time: {resp_time}s)")
             fail_count += 1
         else:
             tools = record.get("tool_calls", [])
             resp_len = len(record.get("response", ""))
             tool_names = [t.get("tool", "?") for t in tools]
-            print(f"         [OK]   tools={tool_names} resp_len={resp_len}  (time: {resp_time}s)")
+            log_msg(f"         [OK]   tools={tool_names} resp_len={resp_len}  (time: {resp_time}s)")
             success_count += 1
 
         # Small delay between queries
         time.sleep(1)
 
     # Step 4: Write results (versioned)
-    print()
-    print(f"Writing results to {output_file}...")
+    log_msg(f"Writing results to {output_file}...")
     with open(output_file, "w", encoding="utf-8") as f:
         for record in results:
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
-    print(f"  Written {len(results)} records to {output_file}")
+    log_msg(f"  Written {len(results)} records to {output_file}")
 
     # Step 5: Update manifest
     avg_time = sum(r.get("response_time_seconds", 0) for r in results) / max(1, len(results))
     total_elapsed = time.time() - start_time
     update_manifest(version, output_file, total, success_count, fail_count, avg_time)
-    print(f"  Manifest updated: {MANIFEST_FILE}")
+    log_msg(f"  Manifest updated: {MANIFEST_FILE}")
 
     # Summary
-    print()
-    print("=" * 70)
-    print("  PIPELINE COMPLETE")
-    print("=" * 70)
-    print(f"  Version:        v{version}")
-    print(f"  Total queries:  {total}")
-    print(f"  Success:        {success_count}")
-    print(f"  Failed:         {fail_count}")
-    print(f"  Avg response:   {avg_time:.1f}s")
-    print(f"  Total elapsed:  {total_elapsed:.0f}s ({total_elapsed / 60:.1f} min)")
-    print(f"  Output:         {output_file}")
-    print()
+    log_msg("=" * 70)
+    log_msg("  PIPELINE COMPLETE")
+    log_msg("=" * 70)
+    log_msg(f"  Version:        v{version}")
+    log_msg(f"  Total queries:  {total}")
+    log_msg(f"  Success:        {success_count}")
+    log_msg(f"  Failed:         {fail_count}")
+    log_msg(f"  Avg response:   {avg_time:.1f}s")
+    log_msg(f"  Total elapsed:  {total_elapsed:.0f}s ({total_elapsed / 60:.1f} min)")
+    log_msg(f"  Output:         {output_file}")
 
     # Tool usage stats
     tools_used = {}
@@ -625,9 +628,9 @@ def main():
             tools_used[tn] = tools_used.get(tn, 0) + 1
 
     if tools_used:
-        print("  Tool usage:")
+        log_msg("  Tool usage:")
         for tn, count in sorted(tools_used.items(), key=lambda x: -x[1]):
-            print(f"    {tn}: {count}x")
+            log_msg(f"    {tn}: {count}x")
 
     # Response time by category
     cat_times = {}
@@ -637,15 +640,12 @@ def main():
         cat_times.setdefault(cat, []).append(t)
 
     if cat_times:
-        print()
-        print("  Response time by category:")
+        log_msg("  Response time by category:")
         for cat, times in sorted(cat_times.items()):
             avg = sum(times) / len(times)
             mn = min(times)
             mx = max(times)
-            print(f"    {cat}: avg={avg:.1f}s  min={mn:.1f}s  max={mx:.1f}s  (n={len(times)})")
-
-    print()
+            log_msg(f"    {cat}: avg={avg:.1f}s  min={mn:.1f}s  max={mx:.1f}s  (n={len(times)})")
 
 
 if __name__ == "__main__":
