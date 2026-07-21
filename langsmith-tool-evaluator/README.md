@@ -14,11 +14,14 @@ Uses an **LLM Judge** (via [OpenCode](https://opencode.ai)) to score each tool s
 Pulls runs from a LangSmith project, parses tool calls from trace data, and scores each tool selection via the LLM judge. Requires a LangSmith API key with traced runs.
 
 ### Mode 2: Direct Copilot API Pipeline (Current)
-Calls the ZoTok Copilot API directly — sends 50 user queries from the Surana Polycot test suite, captures SSE responses, and records tool calls + timing. Follows HEART.md principles (no retry, patient SSE timeout, response time tracking, versioned reruns).
+Calls the ZoTok Copilot API directly — sends 80 user queries from the Surana Polycot test suite (50 original + 28 new Dashboard/Sales/Payments/Items queries), captures SSE responses, and records tool calls + timing. Follows HEART.md principles (no retry, patient SSE timeout, response time tracking, versioned reruns).
 
-**Run v1** (July 11, 2026): 50 queries | 49 success | 1 failed | avg 25.1s | 0 phantom tools
+| Run | Date | Queries | Success | Failed | Avg Time | Details |
+|-----|------|---------|---------|--------|----------|---------|
+| v1 | July 11, 2026 | 50 | 49 | 1 | 25.1s | Baseline |
+| **v2** | **July 21, 2026** | **80** | **79** | **1** | **13.7s** | **+28 queries; 45% faster** |
 
-Results: `runs/query_results_v1.jsonl` | Manifest: `runs/manifest.json`
+Results: `runs/query_results_v2.jsonl` (v2) | `runs/query_results_v1.jsonl` (v1) | Manifest: `runs/manifest.json`
 
 ## Architecture
 
@@ -48,6 +51,7 @@ langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-
 │   └── index.html              # Interactive eval dashboard (GitHub Pages)
 ├── runs/
 │   ├── query_results_v1.jsonl  # Run v1 raw results (50 records)
+│   ├── query_results_v2.jsonl  # Run v2 raw results (80 records)
 │   └── manifest.json           # Versioned run manifest
 ├── evaluate_project.py          # CLI entry point (LangSmith mode)
 ├── evaluators/
