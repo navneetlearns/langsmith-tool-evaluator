@@ -193,9 +193,15 @@ record_parts.append(
 
 All fields that the expand row references MUST be included:
 - `query_index`, `query`, `copilot_response`, `remarks`, `category`
-- `thread_id`, `tool_calls`, `info_leak`, `leak_indicators`
+- `thread_id`, `tool_calls`, `response`, `info_leak`, `leak_indicators`
 - `response_quality`, `response_time_seconds`, `error`
 - `status_sequence`, `suggestions`, `timestamp`
+
+**CRITICAL:** The `response` field (actual copilot response text) MUST be
+included. Without it, the per-query table response column shows empty and
+the expand-row response section displays `[empty]`. This field is required
+by both `respPreview` in the table row and the `Response (N chars)` section
+in the expand row.
 
 ### Step 4: Replace the records array in the HTML
 
@@ -406,6 +412,12 @@ The comparison snapshot is a **2-column grid** with a full-width banner:
              Categories, Total Time -->
       </div>
     </div>
+    <div class="snapshot-card v2">    <!-- Blue top border -->
+      <h3>Run v2 &mdash; {date}</h3>
+      <div class="snapshot-metrics">
+        <!-- 6 metrics -->
+      </div>
+    </div>
     <div class="snapshot-card v{N}">  <!-- Green top border -->
       <h3>Run v{N} &mdash; {date}</h3>
       <div class="snapshot-metrics">
@@ -449,7 +461,7 @@ The comparison snapshot is a **2-column grid** with a full-width banner:
 
 ### Mandatory Data Points
 
-The comparison must show these metrics for BOTH runs:
+The comparison must show these metrics for ALL runs (v1, v2, v{N}):
 - Queries (total count)
 - API Success (count)
 - Failed (count)
@@ -523,6 +535,20 @@ because Python buffers stdout.
 **Solution:** Use `python3 -u` flag and include `log_msg()` function that
 writes to `pipeline_run.log`.
 
+### Pitfall 8: Missing `response` Field in Records
+
+**Problem:** The records JS array omits the `response` field (actual copilot
+response text). The per-query table response column renders empty, and the
+expand-row "Response (N chars)" section shows `[empty]` or `0 chars`.
+
+**Root cause:** The field list (Step 3) and the checklist previously
+omitted `response` from the required fields, even though the JS rendering
+code uses `r.response` for `respPreview` (table column) and the expand-row
+response section.
+
+**Solution:** Always include `"response":%s` in the record format string,
+populated from `r.get("response", "")`.
+
 ---
 
 ## 9. Checklist
@@ -534,8 +560,9 @@ Before committing, verify ALL of these:
 - [ ] Records array has exactly N entries (match pipeline count)
 - [ ] All records have `query_index` from 1 to N sequentially
 - [ ] Each record has ALL required fields (query_index, query, copilot_response,
-      category, tool_calls, info_leak, leak_indicators, response_quality,
-      response_time_seconds, error, status_sequence, suggestions, timestamp)
+      response, remarks, category, thread_id, tool_calls, info_leak,
+      leak_indicators, response_quality, response_time_seconds, error,
+      status_sequence, suggestions, timestamp)
 - [ ] `stats` values match computed counts
 - [ ] `leakTypes` values match computed leak analysis
 - [ ] `catQuality` has all categories with correct counts
@@ -598,6 +625,7 @@ Before committing, verify ALL of these:
 |---------|------|-------------|-------|
 | v1 | 2026-07-11 | Initial dashboard. 50 queries, 5 categories. Stats, quality buckets, info leak, quality by category, response time, tool usage, per-query table, raw data, HEART principles. | Manual |
 | v2 | 2026-07-21 | Added 28 queries (Sales, Payments, Items, Dashboard). 80 queries, 9 categories. Added comparison snapshot section. Rebuilt all data sections. Pipeline: 79 success, 1 fail, avg 13.7s (45% faster than v1). | Hermes Agent |
+| v3 | 2026-07-22 | 80 queries, 80 success, 0 failures (first zero-failure run). 9 categories. Comparison expanded to 3-column (v1/v2/v3). New tool `spawn_filter_agent` surfaced. 21/80 queries changed tool selection vs v2. Quality: 56 success, 24 marginal, 0 fail. Leaks: 28/80 (down from 33). Added `build_dashboard.py` for reproducible rebuilds. Fixed missing `response` field bug (Pitfall 8). | Hermes Agent |
 
 ### Future Version Template
 
@@ -610,4 +638,4 @@ When creating v3+, copy this section and fill in:
 ---
 
 *This document is part of the langsmith-tool-evaluator repository.
-Last updated: 2026-07-21.*
+Last updated: 2026-07-22.*

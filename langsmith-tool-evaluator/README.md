@@ -19,9 +19,10 @@ Calls the ZoTok Copilot API directly — sends 80 user queries from the Surana P
 | Run | Date | Queries | Success | Failed | Avg Time | Details |
 |-----|------|---------|---------|--------|----------|---------|
 | v1 | July 11, 2026 | 50 | 49 | 1 | 25.1s | Baseline |
-| **v2** | **July 21, 2026** | **80** | **79** | **1** | **13.7s** | **+28 queries; 45% faster** |
+| v2 | July 21, 2026 | 80 | 79 | 1 | 13.7s | +28 queries; 45% faster |
+| **v3** | **July 22, 2026** | **80** | **80** | **0** | **14.3s** | **Zero failures; new tool `spawn_filter_agent`; 21/80 tool selection changed** |
 
-Results: `runs/query_results_v2.jsonl` (v2) | `runs/query_results_v1.jsonl` (v1) | Manifest: `runs/manifest.json`
+Results: `runs/query_results_v3.jsonl` (v3) | `runs/query_results_v2.jsonl` (v2) | `runs/query_results_v1.jsonl` (v1) | Manifest: `runs/manifest.json`
 
 ## Architecture
 
@@ -53,6 +54,7 @@ langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-
 ├── runs/
 │   ├── query_results_v1.jsonl  # Run v1 raw results (50 records)
 │   ├── query_results_v2.jsonl  # Run v2 raw results (80 records)
+│   ├── query_results_v3.jsonl  # Run v3 raw results (80 records)
 │   └── manifest.json           # Versioned run manifest
 ├── evaluate_project.py          # CLI entry point (LangSmith mode)
 ├── evaluators/
@@ -72,6 +74,7 @@ langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-
 
 # Parent directory (not in repo):
 ../copilot_query_pipeline.py     # Direct Copilot API pipeline (auto-OTP, SSE parser)
+../build_dashboard.py             # Reproducible dashboard builder (run after each pipeline run)
 ../HEART.md                      # Eval testing principles (6 rules)
 ../eval_plan.md                  # Full knowledge doc + implementation plan
 ../runs/                         # Working directory for pipeline outputs

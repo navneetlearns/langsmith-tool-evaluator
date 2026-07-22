@@ -431,3 +431,7 @@ Tools NEVER used: search_messages, get_thread_messages, get_channel_data.
 7. ⬜ Build offline LLM judge adapter → `eval_results_v{N}.jsonl`
 8. ⬜ Build summary dashboard with score distribution + cross-version comparison
 9. ⬜ Commit eval results and push to repo
+10. ✅ v3 pipeline run (July 22, 2026): 80/80 success, 0 failures, avg 14.3s
+11. ✅ Dashboard rebuilt with v3 data + 3-column comparison (v1/v2/v3)
+12. ✅ Added `build_dashboard.py` for reproducible dashboard rebuilds
+13. ✅ Fixed missing `response` field bug in records array (Pitfall 8)
