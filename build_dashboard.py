@@ -179,6 +179,7 @@ for r in v3_records:
         '"category":%s,'
         '"thread_id":%s,'
         '"tool_calls":%s,'
+        '"response":%s,'
         '"info_leak":%s,'
         '"leak_indicators":%s,'
         '"response_quality":%s,'
@@ -195,6 +196,7 @@ for r in v3_records:
         esc(r["category"]),
         json.dumps(r.get("thread_id"), ensure_ascii=False),
         json.dumps(r.get("tool_calls", []) or [], ensure_ascii=False),
+        esc(r.get("response", "")),
         "true" if r["info_leak"] else "false",
         json.dumps(r.get("leak_indicators", []), ensure_ascii=False),
         esc(r["response_quality"]),
