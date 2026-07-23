@@ -420,12 +420,59 @@ Tools NEVER used: search_messages, get_thread_messages, get_channel_data.
 
 ---
 
-## Part 7: Immediate Next Steps
+## Part 7: Run v4 Results — July 23, 2026
+
+### Pipeline Execution
+
+- Script: `copilot_query_pipeline.py` (651 lines, auto-OTP auth, SSE parser, versioned output)
+- Queries: 80 (50 original + 28 Dashboard/Sales/Payments/Items)
+- Total runtime: ~22 minutes
+- Output: `runs/query_results_v4.jsonl` (80 records)
+- Dashboard: https://navneetlearns.github.io/langsmith-tool-evaluator/ (4-column comparison)
+
+### Summary Statistics
+
+| Metric | Value |
+|--------|-------|
+| Total queries | 80 |
+| Succeeded | 79 |
+| Failed | 1 (Q78: IncompleteRead, Dashboard category) |
+| Avg response time | 16.9s (+18% vs v3, within noise) |
+| Queries with no tool called | 0 |
+| Distinct tools used | 7 |
+
+### Key Findings
+
+1. **New tool `get_sales` appeared** — adopted 23 times in v4. Biggest tool selection shift ever: 32/80 queries changed tool selection vs v3.
+2. **`spawn_filter_agent` still present** — used 1x (same as v3).
+3. **1 failure**: Q78 (Dashboard category) — IncompleteRead error from backend.
+4. **Quality**: 56 success, 22 marginal, 2 fail (vs v3: 56/24/0). 2 new marginal due to backend errors.
+5. **Leaks**: 27/80 (down from 28 in v3). Leak types: ui_component=14, internal_data_model=10, workspace_ref=4, tool_capability=1.
+6. **Tool usage shift**: `get_sales` (23x) now 2nd most called tool after `getCustomerAnalytics` (27x). `search_customers_master` dropped from frequent use to only 4 calls.
+7. **Avg response 16.9s** — +18% vs v3's 14.3s. Likely due to new `get_sales` tool calls adding overhead.
+
+### Tool Usage (v4)
+
+| Tool | Times Called |
+|------|-------------|
+| getCustomerAnalytics | 27 |
+| get_sales | 23 |
+| getCustomerAccountData | 14 |
+| get_product_analytics | 12 |
+| search_customers_master | 4 |
+| search_threads | 1 |
+| spawn_filter_agent | 1 |
+
+Tools NEVER used across all 4 runs: search_messages, get_thread_messages, get_channel_data, search_product_master.
+
+---
+
+## Part 8: Immediate Next Steps
 
 1. ✅ Understand the HAR files (done)
 2. ✅ Understand the API format (done)
 3. ✅ Understand auth mechanism (done — auto-OTP via sendOtp/verifyOtp)
-4. ✅ Build `copilot_query_pipeline.py` (652 lines, HEART.md principles)
+4. ✅ Build `copilot_query_pipeline.py` (651 lines, HEART.md principles)
 5. ✅ Run pipeline against 50 queries → `runs/query_results_v1.jsonl`
 6. ✅ Deploy interactive dashboard to GitHub Pages
 7. ⬜ Build offline LLM judge adapter → `eval_results_v{N}.jsonl`
@@ -435,3 +482,8 @@ Tools NEVER used: search_messages, get_thread_messages, get_channel_data.
 11. ✅ Dashboard rebuilt with v3 data + 3-column comparison (v1/v2/v3)
 12. ✅ Added `build_dashboard.py` for reproducible dashboard rebuilds
 13. ✅ Fixed missing `response` field bug in records array (Pitfall 8)
+14. ✅ v4 pipeline run (July 23, 2026): 79/80 success, 1 failure (IncompleteRead), avg 16.9s
+15. ✅ Dashboard rebuilt with v4 data + 4-column comparison (v1/v2/v3/v4)
+16. ✅ `build_dashboard.py` rewritten to be version-agnostic (auto-detects from manifest)
+17. ✅ New tool `get_sales` surfaced and adopted 23x — biggest tool selection shift
+18. ✅ Updated README, eval_plan, tool_registry, HEART for v4 state

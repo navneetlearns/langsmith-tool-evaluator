@@ -67,3 +67,4 @@ Each record in query_results:
   - error             : error message if any (user-visible reality)
   - thread_id         : UUID of the thread
   - timestamp         : ISO datetime of this run
+  - run_version       : version number (1, 2, 3, 4, ...)

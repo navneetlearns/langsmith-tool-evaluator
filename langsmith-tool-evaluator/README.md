@@ -21,8 +21,9 @@ Calls the ZoTok Copilot API directly — sends 80 user queries from the Surana P
 | v1 | July 11, 2026 | 50 | 49 | 1 | 25.1s | Baseline |
 | v2 | July 21, 2026 | 80 | 79 | 1 | 13.7s | +28 queries; 45% faster |
 | **v3** | **July 22, 2026** | **80** | **80** | **0** | **14.3s** | **Zero failures; new tool `spawn_filter_agent`; 21/80 tool selection changed** |
+| v4 | July 23, 2026 | 80 | 79 | 1 | 16.9s | New tool `get_sales` adopted 23x; 32/80 tool selection changed; 1 IncompleteRead failure (Dashboard) |
 
-Results: `runs/query_results_v3.jsonl` (v3) | `runs/query_results_v2.jsonl` (v2) | `runs/query_results_v1.jsonl` (v1) | Manifest: `runs/manifest.json`
+Results: `runs/query_results_v4.jsonl` (v4) | `runs/query_results_v3.jsonl` (v3) | `runs/query_results_v2.jsonl` (v2) | `runs/query_results_v1.jsonl` (v1) | Manifest: `runs/manifest.json`
 
 ## Architecture
 
@@ -40,8 +41,8 @@ The judge performs **structured reasoning** — it reads the registry, identifie
 
 ## Requirements
 
-- Python 3.11+
-- A LangSmith project with traced runs
+- Python 3.12+
+- A LangSmith project with traced runs (legacy Mode 1)
 - An OpenCode API key (or any OpenAI-compatible LLM endpoint)
 
 ## Project Structure
@@ -55,6 +56,7 @@ langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-
 │   ├── query_results_v1.jsonl  # Run v1 raw results (50 records)
 │   ├── query_results_v2.jsonl  # Run v2 raw results (80 records)
 │   ├── query_results_v3.jsonl  # Run v3 raw results (80 records)
+│   ├── query_results_v4.jsonl  # Run v4 raw results (80 records)
 │   └── manifest.json           # Versioned run manifest
 ├── evaluate_project.py          # CLI entry point (LangSmith mode)
 ├── evaluators/

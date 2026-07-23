@@ -338,7 +338,7 @@ const catColors = {
   "Dashboard": "green", "Items": "purple", "Ledger": "red",
   "Orders & Invoices": "green", "Outstanding & Payments": "amber",
   "Payments": "blue", "Products & Items": "purple",
-  "Reports & Analytics": "blue", "Sales": "green"
+  "Reports & Analytics": "red", "Sales": "amber"
 };
 ```
 
@@ -400,7 +400,7 @@ to LEAK_PATTERNS and update `leakTypeLabels` in the HTML.
 
 ### HTML Structure
 
-The comparison snapshot is a **2-column grid** with a full-width banner:
+The comparison snapshot is an **N-column grid** (one card per run version) with a full-width banner:
 
 ```html
 <div class="comparison-snapshot">
@@ -412,21 +412,21 @@ The comparison snapshot is a **2-column grid** with a full-width banner:
              Categories, Total Time -->
       </div>
     </div>
-    <div class="snapshot-card v2">    <!-- Blue top border -->
+    <div class="snapshot-card v2">    <!-- Blue (primary) top border -->
       <h3>Run v2 &mdash; {date}</h3>
       <div class="snapshot-metrics">
         <!-- 6 metrics -->
       </div>
     </div>
-    <div class="snapshot-card v{N}">  <!-- Green top border -->
+    <!-- ... one card per previous version ... -->
+    <div class="snapshot-card v{N}">  <!-- Green top border (latest) -->
       <h3>Run v{N} &mdash; {date}</h3>
       <div class="snapshot-metrics">
         <!-- 6 metrics -->
       </div>
     </div>
     <div class="snapshot-improvement"> <!-- Full-width green banner -->
-      <strong>🚀 Avg response improved from Xs to Ys (Z% faster)</strong>
-      &mdash; Test suite expanded from A to B queries (+C new categories)
+      <strong>{improvement summary comparing latest vs previous}</strong>
     </div>
   </div>
 </div>
@@ -436,13 +436,16 @@ The comparison snapshot is a **2-column grid** with a full-width banner:
 
 ```css
 .comparison-snapshot { margin: 0 0 40px; }
-.snapshot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+/* N columns — one per version. Update count as versions grow. */
+.snapshot-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
 .snapshot-card { background: var(--card); border-radius: var(--radius);
   padding: 20px 24px; box-shadow: var(--shadow); }
 .snapshot-card.v1 { border-top: 4px solid var(--amber); }
+.snapshot-card.v2 { border-top: 4px solid var(--primary); }
 .snapshot-card.v{N} { border-top: 4px solid var(--green); }
 .snapshot-card h3 { font-size: 15px; margin-bottom: 12px; }
 .snapshot-card.v1 h3 { color: var(--amber); }
+.snapshot-card.v2 h3 { color: var(--primary); }
 .snapshot-card.v{N} h3 { color: var(--green); }
 .snapshot-metrics { display: grid; grid-template-columns: 1fr 1fr;
   gap: 8px 16px; }
@@ -451,6 +454,7 @@ The comparison snapshot is a **2-column grid** with a full-width banner:
 .snapshot-metric .label { color: var(--text-muted); }
 .snapshot-metric .value { font-weight: 700; }
 .snapshot-card.v1 .snapshot-metric .value { color: var(--amber); }
+.snapshot-card.v2 .snapshot-metric .value { color: var(--primary); }
 .snapshot-card.v{N} .snapshot-metric .value { color: var(--green); }
 .snapshot-improvement { grid-column: 1 / -1;
   background: var(--green-light); border: 1px solid #86efac;
@@ -626,10 +630,11 @@ Before committing, verify ALL of these:
 | v1 | 2026-07-11 | Initial dashboard. 50 queries, 5 categories. Stats, quality buckets, info leak, quality by category, response time, tool usage, per-query table, raw data, HEART principles. | Manual |
 | v2 | 2026-07-21 | Added 28 queries (Sales, Payments, Items, Dashboard). 80 queries, 9 categories. Added comparison snapshot section. Rebuilt all data sections. Pipeline: 79 success, 1 fail, avg 13.7s (45% faster than v1). | Hermes Agent |
 | v3 | 2026-07-22 | 80 queries, 80 success, 0 failures (first zero-failure run). 9 categories. Comparison expanded to 3-column (v1/v2/v3). New tool `spawn_filter_agent` surfaced. 21/80 queries changed tool selection vs v2. Quality: 56 success, 24 marginal, 0 fail. Leaks: 28/80 (down from 33). Added `build_dashboard.py` for reproducible rebuilds. Fixed missing `response` field bug (Pitfall 8). | Hermes Agent |
+| v4 | 2026-07-23 | 80 queries, 79 success, 1 failure (Q78 IncompleteRead, Dashboard). 9 categories. Comparison expanded to 4-column (v1/v2/v3/v4). New tool `get_sales` appeared and was adopted 23x — biggest tool selection shift ever (32/80 queries changed). `build_dashboard.py` rewritten to be version-agnostic (auto-detects latest version from manifest, regex-based replacements, N-column comparison). Quality: 56 success, 22 marginal, 2 fail. Leaks: 27/80. Avg response 16.9s (+18% vs v3, within noise). | Hermes Agent |
 
 ### Future Version Template
 
-When creating v3+, copy this section and fill in:
+When creating v{N+1}, copy this section and fill in:
 
 ```markdown
 | v{N} | {date} | {key changes}. {N} queries, {M} categories. ... | {agent} |
@@ -638,4 +643,4 @@ When creating v3+, copy this section and fill in:
 ---
 
 *This document is part of the langsmith-tool-evaluator repository.
-Last updated: 2026-07-22.*
+Last updated: 2026-07-23.*
