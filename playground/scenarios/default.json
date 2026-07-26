@@ -1,0 +1,110 @@
+{
+  "bot_name": "Kalavathi Traders",
+  "workspace_id": "aba9c750-ea37-4a1f-8d25-014b2209b505",
+  "customer_id": "2d5cc3aa-5ab0-4738-afc5-cbd8d7063bcc",
+  "test_cases": [
+    {
+      "id": "welcome",
+      "query": "hi",
+      "category": "Welcome",
+      "expected": {
+        "response_type": "interactive",
+        "contains": ["connected"]
+      }
+    },
+    {
+      "id": "catalogue",
+      "query": "View catalogue",
+      "category": "Catalogue",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "latest_campaign",
+      "query": "What is the latest campaign?",
+      "category": "Campaign",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "repeat_last_order",
+      "query": "Repeat my last order",
+      "category": "Orders",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "ledger_balance",
+      "query": "What is my ledger balance?",
+      "category": "Finance",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "outstanding",
+      "query": "outstanding",
+      "category": "Finance",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "latest_invoice",
+      "query": "latest invoice",
+      "category": "Finance",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "place_order",
+      "query": "I want to place an order for 10 bags of cement",
+      "category": "Orders",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "dealer_info",
+      "query": "Who is my dealer?",
+      "category": "Info",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "payment_status",
+      "query": "payment status",
+      "category": "Finance",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    },
+    {
+      "id": "gibberish",
+      "query": "asdfghjkl",
+      "category": "Edge Case",
+      "expected": {}
+    },
+    {
+      "id": "human_handover",
+      "query": "talk to a human",
+      "category": "Support",
+      "expected": {
+        "tool": "handover_to_human"
+      }
+    },
+    {
+      "id": "payment_agent",
+      "query": "I need to make a payment",
+      "category": "Finance",
+      "expected": {
+        "not_contains": ["sorry", "couldn't", "went wrong"]
+      }
+    }
+  ]
+}

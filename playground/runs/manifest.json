@@ -1,0 +1,34 @@
+{
+  "runs": [
+    {
+      "run_id": "run_v1",
+      "results_file": "results_v1.jsonl",
+      "timestamp": "2026-07-25T07:13:07.246813",
+      "total_cases": 13,
+      "passed": 10,
+      "failed": 3,
+      "avg_response_time_seconds": 7.66,
+      "bots_tested": 1
+    },
+    {
+      "run_id": "run_v2",
+      "results_file": "results_v2.jsonl",
+      "timestamp": "2026-07-25T07:15:32.060186",
+      "total_cases": 13,
+      "passed": 8,
+      "failed": 5,
+      "avg_response_time_seconds": 7.04,
+      "bots_tested": 1
+    },
+    {
+      "run_id": "run_v3",
+      "results_file": "results_v3.jsonl",
+      "timestamp": "2026-07-25T07:18:53.649601",
+      "total_cases": 13,
+      "passed": 10,
+      "failed": 3,
+      "avg_response_time_seconds": 7.63,
+      "bots_tested": 1
+    }
+  ]
+}
