@@ -511,6 +511,84 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
     print("  All hardcoded values updated")
 
     # ============================================================
+    # STEP 3.5: Rebuild comparison snapshot (account-specific)
+    # ============================================================
+
+    print(f"Updating comparison snapshot ({len(all_versions)} versions)...")
+
+    # Compute total time for each version
+    for v in all_versions:
+        n = v["total_queries"]
+        avg = v["avg_response_time_seconds"]
+        v["_total_time"] = round(n * avg / 60 + n / 60, 1)
+
+    # Improvement text (latest vs previous)
+    if len(all_versions) >= 2:
+        prev = all_versions[-2]
+        curr = all_versions[-1]
+        avg_diff = ((curr["avg_response_time_seconds"] - prev["avg_response_time_seconds"]) /
+                     prev["avg_response_time_seconds"]) * 100
+
+        parts = []
+        if curr["failed"] == 0 and prev["failed"] > 0:
+            parts.append(f"&#128640; 100% API success &mdash; zero failures (v{prev['version']} had {prev['failed']})")
+        elif curr["failed"] < prev["failed"]:
+            parts.append(f"&#128640; Failures reduced from {prev['failed']} to {curr['failed']}")
+        elif curr["failed"] > prev["failed"]:
+            parts.append(f"&#9888;&#65039; {curr['failed']} failure(s) this run (v{prev['version']} had {prev['failed']})")
+
+        if avg_diff < 0:
+            parts.append(f"Avg response improved from {prev['avg_response_time_seconds']:.1f}s to {curr['avg_response_time_seconds']:.1f}s ({abs(avg_diff):.0f}% faster)")
+        elif avg_diff > 5:
+            parts.append(f"Avg response {curr['avg_response_time_seconds']:.1f}s vs {prev['avg_response_time_seconds']:.1f}s in v{prev['version']} ({avg_diff:.0f}% slower)")
+        else:
+            parts.append(f"Avg response {curr['avg_response_time_seconds']:.1f}s vs {prev['avg_response_time_seconds']:.1f}s in v{prev['version']} (within noise)")
+
+        improvement_text = " &mdash; ".join(parts)
+    else:
+        improvement_text = f"&#128640; First run v{VERSION} complete"
+
+    # Build comparison cards
+    color_cycle = ["amber", "primary", "green", "purple"]
+    cards_html = ""
+    for i, v in enumerate(all_versions):
+        vn = v["version"]
+        color = "green" if vn == VERSION else color_cycle[i % len(color_cycle)]
+        vdate = datetime.fromisoformat(v["timestamp"]).strftime("%B %d, %Y")
+
+        cards_html += f"""      <div class="snapshot-card v{vn}">
+        <h3>Run v{vn} &mdash; {vdate}</h3>
+        <div class="snapshot-metrics">
+          <div class="snapshot-metric"><span class="label">Queries</span><span class="value">{v['total_queries']}</span></div>
+          <div class="snapshot-metric"><span class="label">API Success</span><span class="value">{v['success']}</span></div>
+          <div class="snapshot-metric"><span class="label">Failed</span><span class="value">{v['failed']}</span></div>
+          <div class="snapshot-metric"><span class="label">Avg Response</span><span class="value">{v['avg_response_time_seconds']:.1f}s</span></div>
+          <div class="snapshot-metric"><span class="label">Total Time</span><span class="value">{v['_total_time']:.1f} min</span></div>
+        </div>
+      </div>
+"""
+
+    new_comparison = f"""<!-- COMPARISON SNAPSHOT: v1..v{VERSION} -->
+  <div class="comparison-snapshot">
+    <div class="snapshot-grid">
+{cards_html}      <div class="snapshot-improvement">
+        <strong>{improvement_text}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP STATS -->"""
+
+    # Replace old comparison snapshot
+    old_comp_start = html.find("<!-- COMPARISON SNAPSHOT")
+    old_comp_end = html.find("<!-- TOP STATS -->")
+    if old_comp_start >= 0 and old_comp_end > old_comp_start:
+        html = html[:old_comp_start] + new_comparison + html[old_comp_end:]
+        print(f"  Comparison snapshot rebuilt: {len(all_versions)} cards")
+    else:
+        print("  WARNING: Comparison snapshot markers not found in template")
+
+    # ============================================================
     # STEP 4: Add NEW SECTIONS (tool accuracy + step count)
     # ============================================================
 
