@@ -1,0 +1,15 @@
+# Unifoods — Copilot Eval Account Config
+# TODO: Fill in Unifoods credentials
+account_name: "Unifoods"
+phone: "8828323736"                           # TODO: 10-digit phone
+workspace_id: "30c6c127-05d9-4875-a067-80fd9ca48fd9"                    # TODO: workspace UUID
+seller_details:
+  firstName: "UniFoods"
+  lastName: ""
+  email: ""
+  mobile: "918828323736"              # TODO: with country code, e.g. "91XXXXXXXXXX"
+wa_config_id: "30c6c127-05d9-4875-a067-80fd9ca48fd9_918828323736"    # TODO: {workspace_id}_{whatsapp_number}
+llm_provider: "gpt-5.4-mini"       # may differ from Surana
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120

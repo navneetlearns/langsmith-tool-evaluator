@@ -1,0 +1,22 @@
+{
+  "runs": [
+    {
+      "version": 1,
+      "file": "query_results_v1.jsonl",
+      "timestamp": "2026-07-29T13:35:15.746785",
+      "total_queries": 60,
+      "success": 60,
+      "failed": 0,
+      "avg_response_time_seconds": 19.53
+    },
+    {
+      "version": 2,
+      "file": "query_results_v2.jsonl",
+      "timestamp": "2026-07-29T13:55:50.920026",
+      "total_queries": 60,
+      "success": 59,
+      "failed": 1,
+      "avg_response_time_seconds": 17.44
+    }
+  ]
+}

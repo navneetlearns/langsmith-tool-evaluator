@@ -1,0 +1,14 @@
+# Surana Polycot — Copilot Eval Account Config
+account_name: "Surana Polycot"
+phone: "9595259595"
+workspace_id: "6c4ad886-8bf6-4202-8dfb-10ae6905dd3f"
+seller_details:
+  firstName: "Sarthak Rajendra Surana"
+  lastName: ""
+  email: "sarthak@suranagroup.co.in"
+  mobile: "919595259595"
+wa_config_id: "6c4ad886-8bf6-4202-8dfb-10ae6905dd3f_917262960095"
+llm_provider: "gpt-5.4-mini"
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120

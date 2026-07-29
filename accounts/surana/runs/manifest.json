@@ -1,0 +1,40 @@
+{
+  "runs": [
+    {
+      "version": 1,
+      "file": "query_results_v1.jsonl",
+      "timestamp": "2026-07-11T10:27:44",
+      "total_queries": 50,
+      "success": 49,
+      "failed": 1,
+      "avg_response_time_seconds": 25.11
+    },
+    {
+      "version": 2,
+      "file": "query_results_v2.jsonl",
+      "timestamp": "2026-07-21T00:00:00",
+      "total_queries": 80,
+      "success": 79,
+      "failed": 1,
+      "avg_response_time_seconds": 13.7
+    },
+    {
+      "version": 3,
+      "file": "query_results_v3.jsonl",
+      "timestamp": "2026-07-22T00:00:00",
+      "total_queries": 80,
+      "success": 80,
+      "failed": 0,
+      "avg_response_time_seconds": 14.3
+    },
+    {
+      "version": 4,
+      "file": "query_results_v4.jsonl",
+      "timestamp": "2026-07-23T00:00:00",
+      "total_queries": 80,
+      "success": 79,
+      "failed": 1,
+      "avg_response_time_seconds": 16.9
+    }
+  ]
+}
