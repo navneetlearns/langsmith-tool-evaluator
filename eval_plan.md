@@ -487,3 +487,147 @@ Tools NEVER used across all 4 runs: search_messages, get_thread_messages, get_ch
 16. ✅ `build_dashboard.py` rewritten to be version-agnostic (auto-detects from manifest)
 17. ✅ New tool `get_sales` surfaced and adopted 23x — biggest tool selection shift
 18. ✅ Updated README, eval_plan, tool_registry, HEART for v4 state
+
+---
+
+## Part 9: Multi-Account Refactor — July 29, 2026
+
+### Motivation
+
+The pipeline was hardcoded for Surana Polycot. To support Unifoods (WhatsApp-group queries) and future accounts, the pipeline and dashboard builder were refactored for `--account` flag support.
+
+### Changes
+
+1. **Config files**: Each account gets `accounts/<name>/config.yaml` (phone, workspace_id, seller_details, wa_config_id, llm_provider)
+2. **Pipeline**: `--account surana|unifoods` flag. Reads config, Excel, writes to `accounts/<name>/runs/`
+3. **Dashboard builder**: `--account` flag. Reads from `accounts/<name>/runs/`, writes to `langsmith-tool-evaluator/docs/<name>/index.html`
+4. **Dual Excel format**: Format A (Surana: bold headers, Col A=Query) and Format B (Unifoods: Col B=Category, Col C=Query, Col D=Expected Tool)
+5. **Token SSE event**: Added `token` event accumulation for Unifoods copilot (streaming response text)
+6. **Multi-tool sequences**: Expected tools can use `→` notation (e.g. `get_channel_data → search_threads`). Dashboard checks ALL tools in sequence were called.
+
+### New Metrics
+
+| Metric | Description | Dashboard Section |
+|--------|-------------|-------------------|
+| Tool Selection Accuracy | % of queries where actual tool matches `expected_tool` from Excel | Stat card + per-category table |
+| Step Count per Completion | avg/min/max SSE status transitions per query | Stat card + per-category table |
+
+### File Structure (Post-Refactor)
+
+```
+eval-dashboard/                           (git root)
+├── accounts/
+│   ├── surana/
+│   │   ├── config.yaml
+│   │   ├── queries.xlsx                  (Format A: 80 queries)
+│   │   └── runs/                         (v1-v4 JSONL + manifest)
+│   └── unifoods/
+│       ├── config.yaml
+│       ├── queries.xlsx                  (Format B: 60 queries)
+│       └── runs/                         (v1-v2 JSONL + manifest)
+├── copilot_query_pipeline.py             (--account flag)
+├── build_dashboard.py                    (--account flag, 2 new metrics)
+└── langsmith-tool-evaluator/docs/
+    ├── index.html                        (landing page)
+    ├── template.html                     (HTML base template)
+    ├── surana/index.html
+    └── unifoods/index.html
+```
+
+---
+
+## Part 10: Unifoods v1 Results — July 29, 2026
+
+### Pipeline Execution
+
+- Script: `copilot_query_pipeline.py --account unifoods` (refactored, token accumulation not yet added)
+- Queries: 60 (from Excel "Sheet1", 10 categories)
+- Total runtime: ~21 minutes
+- Output: `accounts/unifoods/runs/query_results_v1.jsonl` (60 records)
+
+### Summary
+
+| Metric | Value |
+|--------|-------|
+| Total queries | 60 |
+| Succeeded | 60 |
+| Failed | 0 |
+| Avg response time | 19.5s |
+| Tool calls captured | 0 (token events not yet accumulated) |
+| Response text captured | 0 (parser didn't handle `token` SSE events) |
+
+### SSE Dialect Discovery
+
+Unifoods copilot uses different SSE event types than Surana:
+- `connected`, `status`, `todo`, `token`, `ui`, `suggestions`, `done`
+- No `tool_start`/`tool_done` events — tool execution is server-side
+- Response text comes via `token` events (80-320 per query), not `message` events
+
+---
+
+## Part 11: Unifoods v2 Results — July 29, 2026
+
+### Pipeline Execution
+
+- Script: `copilot_query_pipeline.py --account unifoods` (with token + ui event accumulation)
+- Queries: 60
+- Total runtime: ~19 minutes
+- Output: `accounts/unifoods/runs/query_results_v2.jsonl` (60 records)
+- Dashboard: https://navneetlearns.github.io/langsmith-tool-evaluator/unifoods/
+
+### Summary
+
+| Metric | Value |
+|--------|-------|
+| Total queries | 60 |
+| Succeeded | 59 |
+| Failed | 1 (Q55: IncompleteRead, Complaint category) |
+| Avg response time | 17.4s |
+| Avg steps per query | 156 (min 4, max 320) |
+| Response quality | 14 success, 44 marginal, 2 fail |
+| Info leaks | 10 |
+| Tool accuracy | 0% (0/60) — tools not exposed via SSE |
+
+### Response Quality
+
+The copilot IS answering with real data:
+- "Found **12 purchase-order conversations** for 23rd Jul to 29th Jul..."
+- "Here's an executive summary... Multiple new order threads came in from **UNI Impressario Ordering Group**..."
+- "No purchase order threads were found in **Unifoods and Tastecraft ordering**..."
+
+But responses are classified as "marginal" because they're conversational (WhatsApp-style) rather than data-dense (Tally-style).
+
+### Category Breakdown
+
+| Category | Queries | Tool Expected |
+|----------|---------|---------------|
+| Purchase Order | 10 | get_channel_data → search_threads |
+| Order Request | 10 | get_channel_data → search_threads |
+| Payment | 10 | get_channel_data → search_threads |
+| Outstanding | 10 | get_channel_data → search_threads |
+| Dispatch | 10 | get_channel_data → search_threads |
+| Delivery | 4 | get_channel_data → search_threads |
+| Complaint | 2 | search_threads |
+| Response Performance | 2 | search_threads |
+| Product Enquiry | 1 | search_threads |
+| Executive Summary | 1 | search_threads |
+
+All 60 queries have expected_tool specified. Expected tools: `get_channel_data → search_threads`, `get_channel_data → search_messages`, `search_threads`.
+
+### Key Findings
+
+1. **Tool calls not visible in SSE** — copilot executes tools server-side. `todo` events appear in 9/60 queries but don't expose tool names. Tool accuracy shows 0% truthfully.
+2. **Response quality is conversational** — WhatsApp-group queries produce narrative responses, not structured data tables. Quality classifier (designed for Tally/ERP) rates most as "marginal".
+3. **1 failure**: Q55 (Complaint) — IncompleteRead, backend connection dropped.
+4. **Step counts are high** (avg 156) — WhatsApp-style streaming generates many small `token` events vs Surana's fewer `message` events.
+
+### Immediate Next Steps
+
+1. ✅ Multi-account refactor (pipeline + dashboard)
+2. ✅ Unifoods v1 pipeline run (token issue discovered)
+3. ✅ Token accumulation fix in SSE parser
+4. ✅ Unifoods v2 pipeline run (responses captured)
+5. ✅ Unifoods dashboard built and deployed
+6. ⬜ Investigate `todo` event payload for tool name extraction
+7. ⬜ Tune quality classifier for conversational (WhatsApp-style) responses
+8. ⬜ Run Unifoods v3 once backend exposes tool events in SSE

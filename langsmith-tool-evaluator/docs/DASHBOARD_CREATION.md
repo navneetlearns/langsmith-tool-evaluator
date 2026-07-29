@@ -25,28 +25,54 @@
 
 ## 1. Overview
 
-The dashboard is a **self-contained HTML file** (`docs/index.html`) deployed via
+The dashboard is a **self-contained HTML file** deployed via
 GitHub Pages at https://navneetlearns.github.io/langsmith-tool-evaluator/.
 
-It embeds all 80+ query records as a JavaScript array and renders them with
+Each account gets its own dashboard at `docs/<account>/index.html`.
+The root `docs/index.html` is a landing page linking all accounts.
+
+It embeds all query records as a JavaScript array and renders them with
 zero external dependencies. Every data section (stats, quality, leaks, tool
 usage, per-query table) is computed from the embedded records array.
 
 ### File Structure
 
 ```
-langsmith-tool-evaluator/
-├── copilot_query_pipeline.py    # Pipeline: runs queries, produces JSONL
-├── runs/
-│   ├── query_results_v1.jsonl   # Previous run data (DO NOT MODIFY)
-│   ├── query_results_v2.jsonl   # Current run data
-│   └── manifest.json            # Run version tracker
-├── langsmith-tool-evaluator/
-│   └── docs/
-│       └── index.html           # Dashboard (must rebuild for each run)
-└── docs/
-    └── DASHBOARD_CREATION.md    # This file
+eval-dashboard/                           (git root)
+├── accounts/
+│   ├── surana/
+│   │   ├── config.yaml
+│   │   ├── queries.xlsx                  (Format A: bold headers)
+│   │   └── runs/                         (v1..vN JSONL + manifest.json)
+│   └── unifoods/
+│       ├── config.yaml
+│       ├── queries.xlsx                  (Format B: column-based)
+│       └── runs/
+├── copilot_query_pipeline.py             (--account flag)
+├── build_dashboard.py                    (--account flag)
+└── langsmith-tool-evaluator/docs/
+    ├── index.html                        (landing page)
+    ├── template.html                     (HTML base template)
+    ├── surana/index.html                 (Surana dashboard)
+    └── unifoods/index.html               (Unifoods dashboard)
 ```
+
+### Dashboard Sections (12 total)
+
+| # | Section | Description |
+|---|---------|-------------|
+| 1 | Comparison snapshot | All versions side-by-side |
+| 2 | Stats grid | 8 cards: Total, Success, Failed, Avg Response, No Tool, Tools Used, **Tool Accuracy**, **Avg Steps** |
+| 3 | Response quality buckets | Success / Marginal / Fail counts |
+| 4 | Info leak detection | Banner + leak type table |
+| 5 | Quality by category | S/M/F distribution bars |
+| 6 | **Tool accuracy by category** | % correct tool per category (NEW) |
+| 7 | Response time by category | Visual bars |
+| 8 | **Step count by category** | Avg/min/max steps per category (NEW) |
+| 9 | Tool usage frequency | Card grid |
+| 10 | Per-query results | Search, filter, sort, expand |
+| 11 | Raw data links | JSONL + manifest on GitHub |
+| 12 | HEART principles | 6 eval principles |
 
 ---
 
@@ -54,30 +80,31 @@ langsmith-tool-evaluator/
 
 Before creating a dashboard, the pipeline must have been run successfully.
 
-### Pipeline Config
-
-| Setting | Value |
-|---------|-------|
-| Phone | `9595259595` (Surana's number) |
-| Workspace ID | `6c4ad886-8bf6-4202-8dfb-10ae6905dd3f` |
-| API Base | `https://api.zotok.ai` |
-| SSE Timeout | 300s per query |
-| Read Timeout | 120s |
-
 ### Running the Pipeline
 
 ```bash
-cd /mnt/d/AgentWork/langsmith-tool-evaluator
-python3 -u copilot_query_pipeline.py
+cd ~/AgentWork/eval-dashboard
+
+# Surana (80 Tally/ERP queries)
+python3 -u copilot_query_pipeline.py --account surana
+
+# Unifoods (60 WhatsApp-group queries)
+python3 -u copilot_query_pipeline.py --account unifoods
 ```
 
-**Expected output:** `runs/query_results_v{N}.jsonl` (one JSON line per query)
-and `runs/manifest.json` updated with the new version.
+**Expected output:** `accounts/<name>/runs/query_results_v{N}.jsonl` (one JSON line per query)
+and `accounts/<name>/runs/manifest.json` updated with the new version.
 
-**Runtime:** ~20 minutes for 80 queries (avg ~13s/query).
+**Runtime:** ~20 minutes for 60-80 queries (avg ~15-20s/query).
 
-**IMPORTANT:** Always use `-u` (unbuffered) flag. The pipeline has `log_msg()`
-writes to `pipeline_run.log` for progress tracking in the repo root.
+### Building the Dashboard
+
+```bash
+python3 build_dashboard.py --account surana
+python3 build_dashboard.py --account unifoods
+```
+
+Output: `langsmith-tool-evaluator/docs/<account>/index.html`
 
 ### Output Record Schema
 
@@ -630,7 +657,8 @@ Before committing, verify ALL of these:
 | v1 | 2026-07-11 | Initial dashboard. 50 queries, 5 categories. Stats, quality buckets, info leak, quality by category, response time, tool usage, per-query table, raw data, HEART principles. | Manual |
 | v2 | 2026-07-21 | Added 28 queries (Sales, Payments, Items, Dashboard). 80 queries, 9 categories. Added comparison snapshot section. Rebuilt all data sections. Pipeline: 79 success, 1 fail, avg 13.7s (45% faster than v1). | Hermes Agent |
 | v3 | 2026-07-22 | 80 queries, 80 success, 0 failures (first zero-failure run). 9 categories. Comparison expanded to 3-column (v1/v2/v3). New tool `spawn_filter_agent` surfaced. 21/80 queries changed tool selection vs v2. Quality: 56 success, 24 marginal, 0 fail. Leaks: 28/80 (down from 33). Added `build_dashboard.py` for reproducible rebuilds. Fixed missing `response` field bug (Pitfall 8). | Hermes Agent |
-| v4 | 2026-07-23 | 80 queries, 79 success, 1 failure (Q78 IncompleteRead, Dashboard). 9 categories. Comparison expanded to 4-column (v1/v2/v3/v4). New tool `get_sales` appeared and was adopted 23x — biggest tool selection shift ever (32/80 queries changed). `build_dashboard.py` rewritten to be version-agnostic (auto-detects latest version from manifest, regex-based replacements, N-column comparison). Quality: 56 success, 22 marginal, 2 fail. Leaks: 27/80. Avg response 16.9s (+18% vs v3, within noise). | Hermes Agent |
+| v4 | 2026-07-23 | 80 queries, 79 success, 1 failure (Q78 IncompleteRead, Dashboard). 9 categories. Comparison expanded to 4-column (v1/v2/v3/v4). New tool `get_sales` appeared and was adopted 23x — biggest tool selection shift ever (32/80 queries changed). `build_dashboard.py` rewritten to be version-agnostic (auto-detects latest version from manifest, regex-based replacements, N-column comparison). Quality: 56 success, 22 marginal, 2 fail. Leaks: 27/80. Avg response 16.9s (+18% vs v3). | Hermes Agent |
+| v5 | 2026-07-29 | **Multi-account refactor.** Pipeline and dashboard now accept `--account` flag. Added `accounts/` directory with per-account configs, queries, and versioned runs. Added 2 new metrics: Tool Selection Accuracy and Step Count per Completion. Added 2 new dashboard sections. Dashboard split into per-account subdirectories with landing page at root. **Unifoods v2**: 60 WhatsApp-group queries, 10 categories, 59/60 success. SSE dialect discovery (different event types from Surana). | Hermes Agent |
 
 ### Future Version Template
 
