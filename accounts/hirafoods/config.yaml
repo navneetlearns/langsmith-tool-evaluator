@@ -1,0 +1,12 @@
+# HiraFoods — Copilot Eval Account Config
+account_name: "HiraFoods"
+phone: "4040505050"
+workspace_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c"
+seller_details:
+  firstName: "HiraFoods"
+  mobile: "914040505050"
+wa_config_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c_914040505050"
+llm_provider: "gpt-5.4-mini"
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
