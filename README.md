@@ -59,6 +59,22 @@ Evaluates tool-selection accuracy in traced LangSmith runs using an external LLM
 - `langsmith-tool-evaluator/evaluate_project.py` — CLI entry point
 - `langsmith-tool-evaluator/docs/` — published dashboard
 
+**LangSmith account wiring** (`.env`, gitignored — never commit):
+
+| Var | Value |
+|---|---|
+| `LANGSMITH_API_KEY` | `lsv2_pt_…` — new ZoTok/ZoChief account (re-attached Aug 7 2026, see eval_plan.md Part 13) |
+| `LANGSMITH_ENDPOINT` | `https://api.smith.langchain.com` |
+| `LANGSMITH_PROJECT_NAME` | `seller-copilot-agent` |
+
+Copies exist at `langsmith-tool-evaluator/.env` (runnable) and `eval-dashboard/langsmith-tool-evaluator/.env` (mirror). Old key backed up to `.env.bak-20260807`. Verify connectivity:
+
+```bash
+cd langsmith-tool-evaluator && python3 evaluate_project.py --limit 5
+```
+
+Note: traced runs currently show `get_sales`, `think`, `write_todos` (plus `*_node` chain/LLM runs). `tool_registry.md` must include every traced tool the judge should recognize, or runs score 0.00 for "tool not in registry".
+
 ### 3. Playground Eval (Direct API — REST)
 
 Tests WhatsApp bot preview API (`POST /hub/bot/api/v1/chat/preview`) — welcome bots, intent bots, custom trigger action bots. No auth, single-shot JSON responses.

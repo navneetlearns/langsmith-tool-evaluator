@@ -677,3 +677,47 @@ The pipeline's hand-rolled YAML parser treats `key: ""` inside a nested section 
 - Headless Playwright render check: 3 cards on landing; dashboard stats correct (80/80/0/11.5s); zero JS console errors
 - Commit `6b7fbe0`, pushed; live verified — landing 200, `hirafoods/` 200 with correct title
 
+## Part 13: LangSmith Account Re-Attach — August 7, 2026
+
+### Motivation
+
+New LangSmith account provisioned for ZoTok/ZoChief. Re-pointed the tool-selection evaluator to it.
+
+### Action
+
+- `~/.env` (at `langsmith-tool-evaluator/.env`, the runnable copy) updated:
+  - `LANGSMITH_API_KEY` replaced (old `lsv2_pt_d26f…` → new `lsv2_pt_1ec974…`)
+  - `LANGSMITH_ENDPOINT` unchanged: `https://api.smith.langchain.com`
+  - `LANGSMITH_PROJECT_NAME` unchanged: `seller-copilot-agent`
+- Old .env backed up to `langsmith-tool-evaluator/.env.bak-20260807` before overwrite
+- Mirrored the same .env into `eval-dashboard/langsmith-tool-evaluator/.env` so the canonical workspace is runnable too (.env is gitignored — never committed)
+
+### Verification (with new key)
+
+- `Client.list_projects()` → `seller-copilot-agent` visible
+- `list_runs(project_name='seller-copilot-agent', limit=5)` → 5 fresh runs, Aug 7 16:14 UTC
+- `list_runs(..., run_type='tool', limit=10)` → live tool runs: `get_sales`, `write_todos`, `think` (16:11–16:14 UTC)
+
+### Registry mismatch — ACTION NEEDED before running the judge
+
+Traced runs contain tools/nodes NOT in `tool_registry.md`:
+
+| Traced (observed) | In registry? |
+|---|---|
+| `get_sales` | ✅ (sales_analytics) |
+| `write_todos` | ❌ — meta-tool |
+| `think` | ❌ — meta-tool |
+| `column_selector` | ❌ — LLM node |
+| `format_node` | ❌ — chain node |
+| `search_tools_condition` | ❌ — chain node |
+| `compress_node` | ❌ — chain node |
+
+`write_todos` and `think` are the same meta-tools the skill docs already warn about (system prompt is the real registry; `invocation_params.tools` only carries meta-tools). The `*_node` names are chain/LLM node names, not agent tool calls — the trace parser already handles this by looking at run_type='tool', but the evaluator prompt/registry needs `think`/`write_todos` awareness or they get scored as "tool not in registry". Per the skill's diagnosis rules: **clustered-zero scores would be a data problem (registry gap), not a model problem** — sync `registry/tool_registry.md` before the next `evaluate_project.py --experiment` run.
+
+### Run command
+
+```bash
+cd ~/AgentWork/langsmith-tool-evaluator   # or eval-dashboard/langsmith-tool-evaluator
+python3 evaluate_project.py --limit 100
+```
+
