@@ -32,4 +32,16 @@ One-line description of each tool available in the ZoTok Copilot.
 | get_channel_data | 0 | 0 | 0 | 0 | 0 | **Never used** across all runs |
 | search_product_master | 0 | 0 | 0 | 0 | 0 | **Never used** across all runs |
 
-**Last updated:** July 23, 2026 (post v4 run)
+**Last updated:** August 7, 2026 (post HiraFoods v1 run)
+
+## Per-Account Tool Capture
+
+The usage table above is from Surana runs (agentic SSE protocol). Tool capture depends on the account's stream protocol:
+
+| Account | Protocol | Tool events in SSE | Tool calls captured |
+|---|---|---|---|
+| Surana Polycot | agentic (`tool_start`/`tool_done`) | ✅ | 82 in v4 (get_sales=23, getCustomerAnalytics=27, get_product_analytics=12, getCustomerAccountData=14, search_customers_master=4, search_threads=1, spawn_filter_agent=1) |
+| Unifoods | chat-style (`todo`/`token`/`ui`) | ❌ — server-side execution | 0 (truthful: tools never surfaced) |
+| HiraFoods | chat-style (`todo`/`token`/`ui`) | ❌ — server-side execution | 0 in v1 (80 queries) — `todo` events are plan-step intents, not tool calls |
+
+**Implication**: for chat-style accounts, tool accuracy metric is N/A (shows 0%) until the backend exposes tool events in the SSE stream.

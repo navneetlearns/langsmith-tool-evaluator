@@ -11,8 +11,10 @@ Tests the ZoTok Seller Copilot via the SSE streaming API. Auto-OTP auth, JWT ref
 ```
 python3 copilot_query_pipeline.py --account surana     # 80 Tally/ERP queries
 python3 copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
+python3 copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
 python3 build_dashboard.py --account surana            # Rebuild dashboard
 python3 build_dashboard.py --account unifoods
+python3 build_dashboard.py --account hirafoods
 ```
 
 **Accounts:**
@@ -21,6 +23,7 @@ python3 build_dashboard.py --account unifoods
 |---------|---------|------------|-------|-------------|
 | Surana Polycot | 80 | 9 | Tally, ERP, ledger, sales | v4 (79/80, 16.9s) |
 | Unifoods | 60 | 10 | WhatsApp groups, orders, dispatch | v2 (59/60, 17.4s) |
+| HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v1 (80/80, 11.5s) |
 
 **New metrics (v2):**
 - **Tool Selection Accuracy** — % of queries where actual tool matches expected_tool from Excel
@@ -37,11 +40,16 @@ accounts/
 │   ├── config.yaml
 │   ├── queries.xlsx         # Test queries (Format B: column-based)
 │   └── runs/
+├── hirafoods/
+│   ├── config.yaml
+│   ├── queries.xlsx         # Test queries (Format A: bold headers)
+│   └── runs/
 langsmith-tool-evaluator/docs/
-├── index.html               # Landing page (links to both dashboards)
+├── index.html               # Landing page (links to all dashboards)
 ├── template.html            # HTML template
 ├── surana/index.html        # Surana dashboard
-└── unifoods/index.html      # Unifoods dashboard
+├── unifoods/index.html      # Unifoods dashboard
+└── hirafoods/index.html     # HiraFoods dashboard
 ```
 
 ### 2. LangSmith Tool Evaluation
@@ -61,25 +69,26 @@ Tests WhatsApp bot preview API (`POST /hub/bot/api/v1/chat/preview`) — welcome
 
 ## SSE Dialect Differences
 
-Surana and Unifoods copilots use different SSE event types:
+Copilot accounts stream one of two SSE protocols — the stream is determined by the workspace/copilot configuration, not by query type:
 
-| Event | Surana | Unifoods |
-|-------|--------|----------|
-| Connection | — | `connected` |
-| Status/thinking | `thinking`, `analyzing` | `status` |
-| Tool planning | `tool_start`, `tool_done` | `todo` (server-side, not exposed) |
-| Response text | `message`, `formulating` | `token` (streaming) |
-| UI rendering | — | `ui` |
-| Suggestions | `suggestions` | `suggestions` |
-| Done | `done` | `done` |
+| Event | Surana (agentic) | Unifoods (chat-style) | HiraFoods (chat-style) |
+|-------|--------|----------|---------|
+| Connection | — | `connected` | `connected` |
+| Status/thinking | `thinking`, `analyzing` | `status` | `status` |
+| Tool planning | `tool_start`, `tool_done` | `todo` (plan steps only) | `todo` (plan steps only) |
+| Response text | `message`, `formulating` | `token` (streaming) | `token` (streaming) |
+| UI rendering | — | `ui` | `ui` |
+| Suggestions | `suggestions` | `suggestions` | `suggestions` |
+| Done | `done` | `done` | `done` |
 
-**Key finding**: Unifoods copilot executes tools server-side and doesn't expose tool names via SSE events. Tool accuracy will show 0% for Unifoods until tool events are surfaced by the backend.
+**Key finding (confirmed on 3 accounts)**: Surana streams an agentic protocol where tool executions are exposed (`tool_start`/`tool_done` → captured as tool calls). Unifoods and HiraFoods stream a chat-style protocol — the copilot executes tools server-side and only emits `todo` (plan-step intents, e.g. "Fetch sales grouped by district…", NOT tool calls), `token`, and `ui` events. Tool accuracy truthfully shows 0% for chat-style accounts until the backend surfaces tool events in SSE.
 
 ## Live Dashboards
 
 - Landing: https://navneetlearns.github.io/langsmith-tool-evaluator/
 - Surana: https://navneetlearns.github.io/langsmith-tool-evaluator/surana/
 - Unifoods: https://navneetlearns.github.io/langsmith-tool-evaluator/unifoods/
+- HiraFoods: https://navneetlearns.github.io/langsmith-tool-evaluator/hirafoods/
 
 ## Principles
 

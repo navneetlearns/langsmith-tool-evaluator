@@ -628,6 +628,52 @@ All 60 queries have expected_tool specified. Expected tools: `get_channel_data �
 3. ✅ Token accumulation fix in SSE parser
 4. ✅ Unifoods v2 pipeline run (responses captured)
 5. ✅ Unifoods dashboard built and deployed
-6. ⬜ Investigate `todo` event payload for tool name extraction
+6. ✅ Investigate `todo` event payload — **RESOLVED Aug 7**: `todo` events are plan-step intents `{"todos":[{"step_id","content","status"}]}` (e.g. "Fetch sales grouped by district…"), NOT tool calls. Tool names are NOT extractable from chat-style streams — see Part 12.
 7. ⬜ Tune quality classifier for conversational (WhatsApp-style) responses
-8. ⬜ Run Unifoods v3 once backend exposes tool events in SSE
+8. ⬜ Run Unifoods v3 / HiraFoods v2 once backend exposes tool events in SSE
+
+## Part 12: HiraFoods v1 Results — August 7, 2026
+
+### Motivation
+
+First new-account onboarding using Surana's query set: baseline a fresh workspace against the Surana reference. Account: HiraFoods — phone 4040505050, workspace c331ac11-c3e8-4d42-a8d6-b8b04127354c, prod (api.zotok.ai).
+
+### Pipeline Execution
+
+- Query set: Surana `queries.xlsx` copied verbatim (Format A) — 80 queries / 9 categories
+- Config: `accounts/hirafoods/config.yaml` — `wa_config_id` derived `{workspace}_914040505050`
+- Pre-flight: `sendOtp` → 201, OTP echoed (SIGNIN flow) → number registered
+- Run: 80/80 API success, 0 failed, 16.9 min wall, backgrounded with `notify_on_complete`
+
+### Summary
+
+| Metric | HiraFoods v1 | Surana v4 (reference) |
+|---|---|---|
+| Queries | 80 | 80 |
+| API success | 80 / 80 (100%) | 79 / 80 |
+| Failed | 0 | 1 |
+| Avg response time | 11.5s | 16.9s |
+| Avg steps | 146.5 | ~7.0 (different protocol) |
+| Tool calls captured | 0 | 82 |
+
+### SSE Protocol Discovery (definitive)
+
+HiraFoods streams the SAME chat-style protocol as Unifoods — `connected`/`status`/`token`/`ui`/`suggestions`/`done`/`todo`. No `thinking`/`analyzing`/`tool_start`/`tool_done`. Raw single-query captures (one plain sales-report query + one district query) confirmed:
+
+- `todo` events = plan-step intents: `{"todos": [{"step_id": "1", "content": "Fetch sales grouped by district…", "status": "in_progress"}]}` — NOT tool calls, no tool names
+- `ui` event carries the final answer card (`payload.ui_actions[].data.summary`)
+- The copilot DOES execute work server-side — responses reference real fetches (29 days of sales, ₹38.37L top day, 12,459 invoice records) — but tool executions are never surfaced in the stream
+
+Conclusion: the protocol difference is per-workspace/copilot-config, not per-query or per-account-type. 3 accounts → 2 protocols (Surana agentic; Unifoods + HiraFoods chat-style). `tools=[]` is FAITHFUL capture, not a parser gap.
+
+### Config Hygiene Fix
+
+The pipeline's hand-rolled YAML parser treats `key: ""` inside a nested section as a NESTED DICT. Writing `lastName: ""` + `email: ""` made `seller_details` parse as `{'firstName': …, 'lastName': {'email': {'mobile': …}}}`. Fixed by omitting empty fields entirely — now parses flat: `{'firstName': 'HiraFoods', 'mobile': '914040505050'}`. The API tolerated the malformed shape in Surana/Unifoods runs, but clean config = clean traces.
+
+### Dashboard & Deploy
+
+- `build_dashboard.py --account hirafoods` → `docs/hirafoods/index.html` (229 KB), all internal checks passed
+- Landing card added manually to `docs/index.html` (cards are hardcoded)
+- Headless Playwright render check: 3 cards on landing; dashboard stats correct (80/80/0/11.5s); zero JS console errors
+- Commit `6b7fbe0`, pushed; live verified — landing 200, `hirafoods/` 200 with correct title
+
