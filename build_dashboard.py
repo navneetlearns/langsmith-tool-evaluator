@@ -2,16 +2,13 @@
 """
 Multi-account dashboard builder for Copilot Eval.
 
-Auto-detects the latest run version from accounts/<name>/runs/manifest.json,
+Loads a run version from accounts/<name>/runs/manifest.json (default: latest),
 loads the corresponding JSONL, and rebuilds the dashboard HTML.
 
-New metrics (v2):
-  - Tool Selection Accuracy: % of queries where actual tool matches expected_tool
-  - Step Count per Completion: avg/min/max steps per query
-
 Usage:
-    python3 build_dashboard.py --account surana
-    python3 build_dashboard.py --account unifoods
+    python3 build_dashboard.py --account surana              # latest version
+    python3 build_dashboard.py --account hirafoods --version 1  # specific version
+    python3 build_dashboard.py --account hirafoods --version=2
 """
 
 import json
@@ -183,14 +180,19 @@ def assign_category_colors(categories: list[str]) -> dict:
 # ============================================================
 
 def main():
-    # Parse --account flag
+    # Parse --account and --version flags
     account = "surana"
+    version_arg = None
     args = sys.argv[1:]
     for i, arg in enumerate(args):
         if arg == "--account" and i + 1 < len(args):
             account = args[i + 1]
         elif arg.startswith("--account="):
             account = arg.split("=", 1)[1]
+        elif arg == "--version" and i + 1 < len(args):
+            version_arg = int(args[i + 1])
+        elif arg.startswith("--version="):
+            version_arg = int(arg.split("=", 1)[1])
 
     cfg = load_account_config(account)
     account_name = cfg["account_name"]
@@ -203,17 +205,31 @@ def main():
     MANIFEST_FILE = cfg["manifest_file"]
 
     # ============================================================
-    # LOAD MANIFEST + LATEST DATA
+    # LOAD MANIFEST + VERSION DATA
     # ============================================================
 
     manifest = json.load(open(MANIFEST_FILE))
     all_versions = sorted(manifest["runs"], key=lambda r: r["version"])
-    latest = all_versions[-1]
-    VERSION = latest["version"]
-    LATEST_FILE = RUNS_DIR / latest["file"]
-
-    print(f"Account: {account} ({account_name})")
-    print(f"Latest version: v{VERSION}")
+    
+    # Use specified version or latest
+    if version_arg is not None:
+        version_entry = next((v for v in all_versions if v["version"] == version_arg), None)
+        if version_entry is None:
+            print(f"ERROR: Version {version_arg} not found for account {account}")
+            print(f"Available versions: {[v['version'] for v in all_versions]}")
+            sys.exit(1)
+        latest = version_entry  # Use 'latest' variable name for consistency with later code
+        VERSION = version_entry["version"]
+        LATEST_FILE = RUNS_DIR / version_entry["file"]
+        print(f"Account: {account} ({account_name})")
+        print(f"Building version: v{VERSION}")
+    else:
+        latest = all_versions[-1]
+        VERSION = latest["version"]
+        LATEST_FILE = RUNS_DIR / latest["file"]
+        print(f"Account: {account} ({account_name})")
+        print(f"Latest version: v{VERSION}")
+    
     print(f"Loading {LATEST_FILE.name}...")
 
     records = [json.loads(l) for l in open(LATEST_FILE)]

@@ -8,10 +8,13 @@ HEART.md principles:
 3. Tracks response_time_seconds per query
 4. Versioned output: query_results_v{N}.jsonl (never overwrites past runs)
 5. Supports tool selection accuracy + step count metrics
+6. Incremental writes — each query appended immediately (inspectable mid-run)
+7. Resume capability — skip already-completed queries
 
 Usage:
-    python3 copilot_query_pipeline.py --account surana
-    python3 copilot_query_pipeline.py --account unifoods
+    python3 copilot_query_pipeline.py --account surana              # new run (auto-version)
+    python3 copilot_query_pipeline.py --account hirafoods --run 3   # explicit version
+    python3 copilot_query_pipeline.py --account hirafoods --resume 2  # resume from v2
 """
 
 import json
@@ -538,14 +541,41 @@ def _parse_format_b(wb) -> list[dict]:
 # ============================================================
 
 def main():
-    # Parse --account flag
+    # Parse CLI flags
     account = "surana"  # default
+    run_version = None  # None = auto-increment
+    resume = False
+    single_query = None
+    
     args = sys.argv[1:]
-    for i, arg in enumerate(args):
-        if arg == "--account" and i + 1 < len(args):
+    i = 0
+    while i < len(args):
+        if args[i] == "--account" and i + 1 < len(args):
             account = args[i + 1]
-        elif arg.startswith("--account="):
-            account = arg.split("=", 1)[1]
+            i += 2
+        elif args[i].startswith("--account="):
+            account = args[i].split("=", 1)[1]
+            i += 1
+        elif args[i] == "--run" and i + 1 < len(args):
+            run_version = int(args[i + 1])
+            i += 2
+        elif args[i].startswith("--run="):
+            run_version = int(args[i].split("=", 1)[1])
+            i += 1
+        elif args[i] == "--resume" and i + 1 < len(args):
+            resume = int(args[i + 1])
+            i += 2
+        elif args[i].startswith("--resume="):
+            resume = int(args[i].split("=", 1)[1])
+            i += 1
+        elif args[i] == "--query" and i + 1 < len(args):
+            single_query = args[i + 1]
+            i += 2
+        elif args[i].startswith("--query="):
+            single_query = args[i].split("=", 1)[1]
+            i += 1
+        else:
+            i += 1
 
     # Load config
     cfg = load_account_config(account)
@@ -554,13 +584,23 @@ def main():
     log_msg("  Principles: No retry | Patient SSE | Response timing | Versioned")
     log_msg("=" * 70)
 
-    # Determine version
-    version = get_next_version(cfg["runs_dir"])
-    output_file = cfg["runs_dir"] / f"query_results_v{version}.jsonl"
-    cfg["runs_dir"].mkdir(parents=True, exist_ok=True)
-    log_msg(f"  Account: {account}")
-    log_msg(f"  Run version: v{version}")
-    log_msg(f"  Output: {output_file}")
+    # Determine version and output file
+    if resume:
+        version = resume
+        output_file = cfg["runs_dir"] / f"query_results_v{version}.jsonl"
+        if not output_file.exists():
+            log_msg(f"  ERROR: Cannot resume v{version}, file not found: {output_file}")
+            sys.exit(1)
+        log_msg(f"  Account: {account}")
+        log_msg(f"  Resuming version: v{version}")
+        log_msg(f"  Output: {output_file}")
+    else:
+        version = run_version if run_version else get_next_version(cfg["runs_dir"])
+        output_file = cfg["runs_dir"] / f"query_results_v{version}.jsonl"
+        cfg["runs_dir"].mkdir(parents=True, exist_ok=True)
+        log_msg(f"  Account: {account}")
+        log_msg(f"  Run version: v{version}")
+        log_msg(f"  Output: {output_file}")
 
     # Step 1: Parse Excel queries
     excel_path = cfg["excel_file"]
@@ -597,12 +637,25 @@ def main():
     client = CopilotClient(auth, cfg)
 
     # Step 3: Process each query
+    # If resuming, load existing results and skip completed queries
+    completed_indices = set()
+    results = []
+    
+    if resume:
+        log_msg(f"  Loading existing results from v{resume}...")
+        with open(output_file) as f:
+            for line in f:
+                if line.strip():
+                    rec = json.loads(line)
+                    results.append(rec)
+                    completed_indices.add(rec.get("query_index"))
+        log_msg(f"  Found {len(results)} existing results ({len(completed_indices)} queries completed)")
+    
     log_msg("Processing queries (no retry, patient SSE, timing each response)...")
 
-    results = []
     total = len(queries)
-    success_count = 0
-    fail_count = 0
+    success_count = sum(1 for r in results if not r.get("error"))
+    fail_count = sum(1 for r in results if r.get("error"))
 
     start_time = time.time()
 
@@ -611,6 +664,11 @@ def main():
         category = q["category"]
         elapsed = time.time() - start_time
         eta = (elapsed / max(1, idx - 1)) * (total - idx + 1) if idx > 1 else 0
+
+        # Skip if already completed (resume mode)
+        if idx in completed_indices:
+            log_msg(f"  [{idx}/{total}] ({category[:22]:22s}) {query_text[:55]:.55s} — SKIPPED (already completed)")
+            continue
 
         log_msg(f"  [{idx}/{total}] ({category[:22]:22s}) {query_text[:55]:.55s}")
 
@@ -654,9 +712,16 @@ def main():
         # Log result
         error = record.get("error")
         resp_time = record.get("response_time_seconds", 0)
+        # Write this query result immediately (incremental)
+        with open(output_file, "a") as f:
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
+        
+        error = record.get("error")
+        resp_time = record.get("response_time_seconds", 0)
+        
         if error:
-            log_msg(f"         [FAIL] {error}  (time: {resp_time}s)")
             fail_count += 1
+            log_msg(f"         [FAIL] {error}  (time: {resp_time}s)")
         else:
             tools = record.get("tool_calls", [])
             resp_len = len(record.get("response", ""))
@@ -667,29 +732,26 @@ def main():
 
         time.sleep(1)
 
-    # Step 4: Write results
-    log_msg(f"Writing results to {output_file}...")
-    with open(output_file, "w") as f:
-        for r in results:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-
-    # Step 5: Compute avg time and update manifest
+    # Step 4: Update manifest (JSONL already written incrementally)
+    log_msg(f"Updating manifest for v{version}...")
     successful_results = [r for r in results if not r.get("error")]
     avg_time = (sum(r["response_time_seconds"] for r in successful_results) / len(successful_results)
                 if successful_results else 0.0)
 
     update_manifest(cfg["manifest_file"], version, output_file,
-                    total=total, success=success_count, fail=fail_count,
+                    total=len(queries), success=success_count, fail=fail_count,
                     avg_time=avg_time)
 
-    # Step 6: Summary
+    # Step 5: Summary
     elapsed_total = time.time() - start_time
     log_msg("=" * 70)
     log_msg(f"  PIPELINE COMPLETE — v{version}")
     log_msg(f"  Account: {account} ({cfg['account_name']})")
-    log_msg(f"  Queries: {total} | Success: {success_count} | Failed: {fail_count}")
+    log_msg(f"  Queries: {len(queries)} | Success: {success_count} | Failed: {fail_count}")
     log_msg(f"  Avg response time: {avg_time:.1f}s")
     log_msg(f"  Total wall time: {elapsed_total/60:.1f} min")
+    if resume:
+        log_msg(f"  Resumed from v{resume}, completed {len(queries) - len(completed_indices)} new queries")
     log_msg(f"  Output: {output_file}")
     log_msg("=" * 70)
 

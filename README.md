@@ -56,6 +56,38 @@ langsmith-tool-evaluator/docs/
 └── hirafoods/index.html     # HiraFoods dashboard
 ```
 
+**Pipeline Modes:**
+
+The pipeline supports incremental writes and resume capability:
+
+```bash
+# Standard run (auto-increment version)
+python3 copilot_query_pipeline.py --account hirafoods
+
+# Explicit version number
+python3 copilot_query_pipeline.py --account hirafoods --run 5
+
+# Resume partial run (e.g., after timeout at query 8)
+python3 copilot_query_pipeline.py --account hirafoods --resume 4
+```
+
+- **Incremental writes**: Each query result is written to JSONL immediately (not buffered until end)
+- **Resume capability**: If a run fails or times out, `--resume` picks up from where it left off
+- **Version selection**: Use `--run` to specify exact version number
+
+**Dashboard Versioning:**
+
+Build dashboards for any historical version:
+
+```bash
+# Build latest version (default)
+python3 build_dashboard.py --account hirafoods
+
+# Build specific version
+python3 build_dashboard.py --account hirafoods --version 1
+python3 build_dashboard.py --account hirafoods --version 2
+```
+
 ### 2. LangSmith Tool Evaluation
 
 Evaluates tool-selection accuracy in traced LangSmith runs using an external LLM judge (OpenCode/DeepSeek).
