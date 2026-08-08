@@ -25,6 +25,10 @@ python3 build_dashboard.py --account hirafoods
 | Unifoods | 60 | 10 | WhatsApp groups, orders, dispatch | v2 (59/60, 17.4s) |
 | HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v1 (80/80, 11.5s) |
 
+**HiraFoods v2 (items-only subset, 2026-08-08):** 17 queries (Products & Items + Items categories only). 16/17 API success, 1 fail (SSE IncompleteRead). Response quality breakdown: 1 success, 3 marginal, **12 no-data**, 1 fail. Finding: the HiraFoods workspace appears to have no product-level data — most queries returned "no products found" responses.
+
+**Response quality metric (v3, added 2026-08-08):** the dashboard now classifies responses into 4 buckets instead of 3. The new `no_data` bucket captures responses where the API succeeded technically but returned zero useful data to the user (no products found, couldn't complete request, try again, no matching rows, etc.). This distinguishes "graceful empty responses" from real technical failures. Detection uses pattern matching on response text against ~18 no-data indicators.
+
 **New metrics (v2):**
 - **Tool Selection Accuracy** — % of queries where actual tool matches expected_tool from Excel
 - **Step Count per Completion** — avg/min/max SSE status transitions per query

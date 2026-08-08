@@ -88,24 +88,70 @@ LEAK_PATTERNS = {
     "workspace_ref": r'\b(workspace)\b',
     "auth_session": r'\b(log out|log back in|session expired|reauthenticate)\b',
     "internal_data_model": r'\b(lifecycle group|debtor group|customer group|aging bucket)\b',
-    "analytics_categorization": r"(i'll treat this as|i'll categorize|i'll group this under)",
+    "analytics_categorization": "(i'll treat this as|i'll categorize|i'll group this under)",
 }
+
+# Patterns that indicate the response contains NO useful data for the user.
+# These are responses where the API succeeded technically but returned empty results.
+NO_DATA_PATTERNS = [
+    r"no\s+(products|items|data|sales|rows|results|customers|feedback|inventory|records|transactions|matching)\s+(were\s+found|found|returned|available|recorded|matched|populated|were\s+available)",
+    r"no\s+matching\s+(threads|records|conversations|products|results|sales|items|rows)",
+    r"(data\s+isn't|isn't\s+available|not\s+available)\s+right\s+now",
+    r"couldn't\s+(complete\s+that\s+request|find\s+any|calculate|rank|identify\s+declining|build\s+a\s+top|group\s+inventory)",
+    r"there\s+isn'?t\s+(any|a\s+co-purchase|product-level|sales\s+rows)",
+    r"(0\s+products|zero\s+products|₹0\.00)\s+for",
+    r"\*\*0\*\*\s+records",
+    r"category\s+name\s+wasn'?t\s+populated",
+    r"i\s+can'?t\s+(reliably\s+find|verify\s+purchase\s+frequency|identify\s+declining)",
+    r"no\s+low-stock\s+items\s+were\s+found",
+    r"no\s+slow-moving\s+items\s+were\s+found",
+    r"there\s+aren'?t\s+any\s+(products|matching|sales)",
+    r"couldn't\s+find\s+any\s+sales\s+rows",
+    r"i\s+couldn't\s+find\s+any\s+paracetamol",
+    r"no\s+product\s+sales\s+were\s+found",
+    r"that\s+breakdown\s+isn'?t\s+available",
+    r"i\s+couldn't\s+complete\s+that\s+request\s+right\s+now",
+    r"please\s+try\s+again\s+(in\s+a\s+moment|shortly)",
+]
 
 
 def classify_quality(record):
+    """Classify response quality into 4 buckets:
+    - success: response contains actual data/tables/numbers valuable to user
+    - no_data: API responded but returned zero useful data (no products found, try again, etc.)
+    - marginal: partial response, some attempt but unreliable/incomplete
+    - fail: technical failure (error, timeout, empty response)
+    """
     response = record.get("response", "") or ""
     error = record.get("error")
     if error or not response.strip():
         return "fail"
     resp_lower = response.lower()
+
+    # Check no_data patterns FIRST — these are the most specific
+    for pattern in NO_DATA_PATTERNS:
+        if re.search(pattern, resp_lower):
+            return "no_data"
+
+    # Has actual data? (currency, percentages, ranked lists, concrete numbers)
+    if re.search(r'(\u20b9|%)', response) or re.search(r'(sorted by|ranked|showing \d|found \d)', resp_lower):
+        return "success"
+
+    # Has tabular data with actual values?
+    if re.search(r'\|.*\|.*\|', response) and re.search(r'[\d,.]+', response):
+        return "success"
+
+    # Marginal: attempted but couldn't fully deliver
     if re.search(r"(couldn't|cannot|unable to|was rejected|didn't find|i couldn't)", resp_lower):
         return "marginal"
-    if re.search(r'(₹|%)', response) or re.search(r'(sorted by|ranked|showing \d|found \d)', resp_lower):
-        return "success"
     if re.search(r"(try again|i don't want to guess|i'd recommend|if you want|you can try)", resp_lower):
         return "marginal"
-    if len(response) > 60:
+
+    # Long responses with substance
+    if len(response) > 120:
         return "success"
+    if len(response) > 60:
+        return "marginal"
     return "marginal"
 
 
@@ -208,6 +254,7 @@ def main():
     stats = {
         "success": q_counts.get("success", 0),
         "marginal": q_counts.get("marginal", 0),
+        "no_data": q_counts.get("no_data", 0),
         "fail": q_counts.get("fail", 0),
         "leak": leak_count,
     }
@@ -219,7 +266,7 @@ def main():
     for r in records:
         cat = r["category"]
         if cat not in cat_quality:
-            cat_quality[cat] = {"success": 0, "marginal": 0, "fail": 0, "_times": []}
+            cat_quality[cat] = {"success": 0, "marginal": 0, "no_data": 0, "fail": 0, "_times": []}
         cat_quality[cat][r["response_quality"]] += 1
         cat_quality[cat]["_times"].append(r["response_time_seconds"])
     for cat in cat_quality:
@@ -471,17 +518,33 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
     # Quality buckets
     pct_success = round(stats["success"] / total_queries * 100)
     pct_marginal = round(stats["marginal"] / total_queries * 100)
+    pct_no_data = round(stats["no_data"] / total_queries * 100)
     pct_fail = round(stats["fail"] / total_queries * 100)
 
     for label_pct, new_count, new_pct in [
         ("success", stats["success"], pct_success),
         ("marginal", stats["marginal"], pct_marginal),
+        ("no-data", stats["no_data"], pct_no_data),
         ("fail", stats["fail"], pct_fail),
     ]:
         old_count_pattern = rf'(<div class="quality-card {label_pct}">.*?<div class="count">)[^<]+(</div>)'
         html = re.sub(old_count_pattern, lambda m: m.group(1) + str(new_count) + m.group(2), html, flags=re.DOTALL)
         old_pct_pattern = rf'(<div class="quality-card {label_pct}">.*?<div class="pct">)[^<]+(</div>)'
         html = re.sub(old_pct_pattern, lambda m: m.group(1) + str(new_pct) + "% of queries" + m.group(2), html, flags=re.DOTALL)
+
+    # Inject no-data quality card into template if not present
+    if 'quality-card no-data' not in html:
+        # Find the marginal card and insert no-data card after it
+        marginal_card_end = html.find('</div></div>', html.find('class="quality-card marginal"'))
+        if marginal_card_end >= 0:
+            marginal_card_end += len('</div></div>')
+            no_data_card = f"""
+          <div class="quality-card no-data">
+            <div class="count">{stats['no_data']}</div>
+            <div class="pct">{pct_no_data}% of queries</div>
+            <div class="desc">No useful data returned</div>
+          </div>"""
+            html = html[:marginal_card_end] + no_data_card + html[marginal_card_end:]
 
     # Leak banner
     html = re.sub(
@@ -749,6 +812,16 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
 
 /* NEW: Section spacing */
 #tool-accuracy-section, #step-count-section { margin-top: 32px; }
+
+/* No Data quality card */
+.quality-card.no-data { background: var(--surface); border-left: 4px solid var(--amber); border-radius: 8px; padding: 16px; }
+.quality-card.no-data .count { font-size: 28px; font-weight: 700; color: var(--amber); }
+.quality-card.no-data .pct { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
+.quality-card.no-data .desc { font-size: 12px; color: var(--text-tertiary); }
+
+/* Per-query table: color no_data responses */
+tr.row-no-data { background: rgba(245, 158, 11, 0.04); }
+tr.row-no-data .response-text { color: var(--amber); font-style: italic; }
 """
     style_end = html.find('</style>')
     if style_end >= 0:
