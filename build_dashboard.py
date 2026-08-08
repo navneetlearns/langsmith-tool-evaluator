@@ -514,13 +514,13 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
     html = replace_stat_card(html, "Avg Response", f"{latest['avg_response_time_seconds']:.1f}s")
     html = replace_stat_card(html, "No Tool Called", no_tool)
     html = replace_stat_card(html, "Tools Used", len(tools_used_set))
-
-    # Quality buckets
+    # Update quality bucket percentages and counts
     pct_success = round(stats["success"] / total_queries * 100)
     pct_marginal = round(stats["marginal"] / total_queries * 100)
     pct_no_data = round(stats["no_data"] / total_queries * 100)
     pct_fail = round(stats["fail"] / total_queries * 100)
 
+    # Update the 4 quality cards (success, marginal, no-data, fail)
     for label_pct, new_count, new_pct in [
         ("success", stats["success"], pct_success),
         ("marginal", stats["marginal"], pct_marginal),
@@ -532,19 +532,7 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
         old_pct_pattern = rf'(<div class="quality-card {label_pct}">.*?<div class="pct">)[^<]+(</div>)'
         html = re.sub(old_pct_pattern, lambda m: m.group(1) + str(new_pct) + "% of queries" + m.group(2), html, flags=re.DOTALL)
 
-    # Inject no-data quality card into template if not present
-    if 'quality-card no-data' not in html:
-        # Find the marginal card and insert no-data card after it
-        marginal_card_end = html.find('</div></div>', html.find('class="quality-card marginal"'))
-        if marginal_card_end >= 0:
-            marginal_card_end += len('</div></div>')
-            no_data_card = f"""
-          <div class="quality-card no-data">
-            <div class="count">{stats['no_data']}</div>
-            <div class="pct">{pct_no_data}% of queries</div>
-            <div class="desc">No useful data returned</div>
-          </div>"""
-            html = html[:marginal_card_end] + no_data_card + html[marginal_card_end:]
+    # No-data card is now in template.html with proper CSS, no injection needed
 
     # Leak banner
     html = re.sub(

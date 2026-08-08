@@ -90,7 +90,7 @@ tr:last-child { border-bottom: none; }
 tr:hover { background: #f8fafc; }
 
 /* QUALITY BUCKETS */
-.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
 .quality-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); text-align: center; }
 .quality-card .icon { font-size: 36px; margin-bottom: 8px; }
 .quality-card .count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
@@ -102,6 +102,8 @@ tr:hover { background: #f8fafc; }
 .quality-card.marginal .count { color: var(--amber); }
 .quality-card.fail { border-top: 4px solid var(--red); }
 .quality-card.fail .count { color: var(--red); }
+.quality-card.no-data { border-top: 4px solid var(--amber); }
+.quality-card.no-data .count { color: var(--amber); }
 
 /* INFO LEAK */
 .leak-banner {
@@ -271,6 +273,16 @@ footer a:hover { text-decoration: underline; }
 /* NEW: Section spacing */
 #tool-accuracy-section, #step-count-section { margin-top: 32px; }
 
+/* No Data quality card */
+.quality-card.no-data { background: var(--surface); border-left: 4px solid var(--amber); border-radius: 8px; padding: 16px; }
+.quality-card.no-data .count { font-size: 28px; font-weight: 700; color: var(--amber); }
+.quality-card.no-data .pct { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
+.quality-card.no-data .desc { font-size: 12px; color: var(--text-tertiary); }
+
+/* Per-query table: color no_data responses */
+tr.row-no-data { background: rgba(245, 158, 11, 0.04); }
+tr.row-no-data .response-text { color: var(--amber); font-style: italic; }
+
 </style>
 </head>
 <body>
@@ -278,7 +290,7 @@ footer a:hover { text-decoration: underline; }
 <header>
   <h1>Copilot Eval Dashboard</h1>
   <p>Surana Polycot Test Suite &mdash; Seller Copilot Agent Tool-Selection Evaluation</p>
-  <span class="badge">Run v4 &middot; July 29, 2026 &middot; 80 queries &middot; 23.8 min</span>
+  <span class="badge">Run v4 &middot; August 08, 2026 &middot; 80 queries &middot; 23.8 min</span>
 </header>
 
 <div class="container">
@@ -356,9 +368,9 @@ footer a:hover { text-decoration: underline; }
     <div class="quality-grid">
       <div class="quality-card success">
         <div class="icon">&#9989;</div>
-        <div class="count">56</div>
+        <div class="count">55</div>
         <div class="desc"><strong>Success</strong> &mdash; Response contains real data, numbers, customer names, or actionable insights</div>
-        <div class="pct">70% of queries</div>
+        <div class="pct">69% of queries</div>
       </div>
       <div class="quality-card marginal">
         <div class="icon">&#9888;&#65039;</div>
@@ -371,6 +383,12 @@ footer a:hover { text-decoration: underline; }
         <div class="count">2</div>
         <div class="desc"><strong>Fail</strong> &mdash; Error, empty response, or generic "try again" with no data at all</div>
         <div class="pct">2% of queries</div>
+      </div>
+      <div class="quality-card no-data">
+        <div class="icon">&#9898;</div>
+        <div class="count">1</div>
+        <div class="desc"><strong>No Data</strong> &mdash; API responded but returned zero useful data to the user</div>
+        <div class="pct">1% of queries</div>
       </div>
     </div>
   </section>
@@ -569,7 +587,7 @@ const records = [
 {"query_index":48,"query":"Generate an item-wise sales report and identify seasonal trends.","copilot_response":"","remarks":"","category":"Products & Items","expected_tool":null,"thread_id":"da58d082-c28f-4565-b7e0-02638ebbd843","tool_calls":[{"tool": "get_sales", "input": {"start_date": "2025-07-23", "end_date": "2026-07-23", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["productId"]}}, {"tool": "get_sales", "input": {"start_date": "2025-07-23", "end_date": "2026-07-23", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["invoiceDate"]}}],"response":"Here’s the item-wise sales picture for **23/07/2025 to 23/07/2026**:\n\n| Rank | Item | Sales |\n|------|------|-------|\n| 1 | 57 OMTEX GOLD (NEW) | **₹3.20Cr** |\n| 2 | 57 JINPREETI AUTO (NEW) | **₹2.52Cr** |\n| 3 | 57 ANNAMALIYAR (64KG) | **₹2.29Cr** |\n| 4 | 58 SAI JAYAN | **₹1.73Cr** |\n| 5 | 58 SSK GOLD | **₹1.53Cr** |\n\n- The top items are led by the **57** and **58** series, and the first 20 items already show a strong concentration of sales in a few core products.\n- For seasonal trend analysis, sales peaks are clustered in **April–June 2026**, with the highest single-date sales on **19/06/2026** at **₹1.21Cr**, followed by several strong days in **April and May 2026**.\n- That pattern suggests a clear pre-monsoon / summer demand spike, with another visible lift in **mid-July 2026**.\n\nI found **73 item groups** and **73 date groups** in total; I’ve shown the top set here. If you want, I can next pull the full item list, break this down by month, or show the top items with quantities/average ticket value if available.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":19.35,"step_count":10,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating", "tool_start", "tool_done", "formulating", "tool_start", "tool_done", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:19:33.351087"},
 {"query_index":49,"query":"Show me products with the highest return rate and summarize customer feedback.","copilot_response":"","remarks":"","category":"Products & Items","expected_tool":null,"thread_id":"0b3f9313-be72-4cc8-aa75-5a4efde8186a","tool_calls":[{"tool": "get_product_analytics", "input": {"summary_only": true}}, {"tool": "get_product_analytics", "input": {"period": 90, "sort_key": "totalInvoiceValue", "sort_by": "DESC", "page_size": 5}}, {"tool": "spawn_filter_agent", "input": {"source_tool_name": "get_product_analytics", "prompt": "The seller asked for products with the highest return rate. Filter the product analytics results to keep only products that indicate return-rate performance if such signal exists in the data. If no return-rate field or return-related signal exists, keep the original best available product ranking results rather than dropping everything. Return the most relevant product rows for this intent.", "source_tool_args": {"period": 90, "sort_key": "totalInvoiceValue", "sort_by": "DESC", "page_size": 5}, "source_results_json": "{\"_preview\":true,\"tool\":\"get_product_analytics\",\"total\":5,\"showing\":5,\"has_more\":false,\"products\":[{\"sku\":\"d7f03669-5d4f-4231-ab83-3c2a5070e9b1-00000f39\",\"productName\":\"57 OMTEX GOLD (NEW)\",\"totalInvoiceValue\":28663543.08},{\"sku\":\"d7f03669-5d4f-4231-ab83-3c2a5070e9b1-00001a80\",\"productName\":\"57 ANNAMALIYAR (64KG)\",\"totalInvoiceValue\":22925422.52},{\"sku\":\"d7f03669-5d4f-4231-ab83-3c2a5070e9b1-00000f06\",\"productName\":\"57 JINPREETI AUTO (NEW)\",\"totalInvoiceValue\":21992743.57},{\"sku\":\"d7f03669-5d4f-4231-ab83-3c2a5070e9b1-000019f6\",\"productName\":\"58 SAI JAYAN\",\"totalInvoiceValue\":15929114.64},{\"sku\":\"d7f03669-5d4f-4231-ab83-3c2a5070e9b1-000019df\",\"productName\":\"57 LKP   64KG\",\"totalInvoiceValue\":12668147.81}]"}}],"response":"I couldn’t find a true **return-rate** view for products in the available data, so I can’t accurately rank items by returns.\n\nWhat I *could* fetch is the top-selling products over the last **90 days** by invoice value:\n- **57 OMTEX GOLD (NEW)** — **₹2.87Cr**\n- **57 ANNAMALIYAR (64KG)** — **₹2.29Cr**\n- **57 JINPREETI AUTO (NEW)** — **₹2.20Cr**\n- **58 SAI JAYAN** — **₹1.59Cr**\n- **57 LKP   64KG** — **₹1.27Cr**\n\nI also checked for customer feedback threads, but I don’t have any matching feedback conversations to summarize from the available search. If you want, I can help you with a product performance ranking, a thread search by issue type, or a customer-specific query next.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":36.81,"step_count":16,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating", "formulating", "tool_start", "tool_done", "formulating", "formulating", "tool_start", "tool_done", "formulating", "tool_start", "tool_done", "formulating", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:20:11.773139"},
 {"query_index":50,"query":"Find products that are often purchased together and recommend bundle offers.","copilot_response":"","remarks":"","category":"Products & Items","expected_tool":null,"thread_id":"0f0ae539-2a99-4ad4-8261-8f73dd625e5a","tool_calls":[],"response":"I can’t reliably identify products that are often bought together with the tools available here, so I shouldn’t guess bundle pairs or recommend offers from incomplete data.\n\nWhat I can do instead is help you build bundle ideas from working reports: I can show your **top-selling products**, **highest-revenue products**, or **customer order patterns** so you can spot natural pairings manually. If you want, I can pull one of those views next and help turn it into practical bundle suggestions.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":15.83,"step_count":4,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:20:29.050133"},
-{"query_index":51,"query":"Show me today's sales and compare them with yesterday.","copilot_response":"","remarks":"","category":"Sales","expected_tool":null,"thread_id":"b48ba030-86be-4827-af7c-b5403f96468f","tool_calls":[{"tool": "get_sales", "input": {"start_date": "2026-07-23", "end_date": "2026-07-23", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["customerId"]}}, {"tool": "get_sales", "input": {"start_date": "2026-07-22", "end_date": "2026-07-22", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["customerId"]}}],"response":"I checked sales for **23rd Jul (23/07/2026)** and **22nd Jul (22/07/2026)**.\n\n- **Today:** **0** sales found\n- **Yesterday:** **4** customers generated sales, totaling **₹8.31L**\n  - CHANDAN TEXTILES (AmirSETH) TDS — **₹2.81L**\n  - A.R.TEXO FAB (IQBAL BHAI) — **₹2.77L**\n  - MARJAAN TEX (FAROOQUE SETH) — **₹1.38L**\n  - HAMID TEXTILE (SOHAIL HAMID) — **₹1.36L**\n\nSo compared with yesterday, today is down by **₹8.31L** and there were no sales recorded yet. If you want, I can also show the customer-wise sales breakdown for a wider date range, compare another pair of days, or list the top customers by sales value.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":11.25,"step_count":9,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating", "tool_start", "tool_start", "tool_done", "tool_done", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:20:41.577791"},
+{"query_index":51,"query":"Show me today's sales and compare them with yesterday.","copilot_response":"","remarks":"","category":"Sales","expected_tool":null,"thread_id":"b48ba030-86be-4827-af7c-b5403f96468f","tool_calls":[{"tool": "get_sales", "input": {"start_date": "2026-07-23", "end_date": "2026-07-23", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["customerId"]}}, {"tool": "get_sales", "input": {"start_date": "2026-07-22", "end_date": "2026-07-22", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["customerId"]}}],"response":"I checked sales for **23rd Jul (23/07/2026)** and **22nd Jul (22/07/2026)**.\n\n- **Today:** **0** sales found\n- **Yesterday:** **4** customers generated sales, totaling **₹8.31L**\n  - CHANDAN TEXTILES (AmirSETH) TDS — **₹2.81L**\n  - A.R.TEXO FAB (IQBAL BHAI) — **₹2.77L**\n  - MARJAAN TEX (FAROOQUE SETH) — **₹1.38L**\n  - HAMID TEXTILE (SOHAIL HAMID) — **₹1.36L**\n\nSo compared with yesterday, today is down by **₹8.31L** and there were no sales recorded yet. If you want, I can also show the customer-wise sales breakdown for a wider date range, compare another pair of days, or list the top customers by sales value.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":11.25,"step_count":9,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating", "tool_start", "tool_start", "tool_done", "tool_done", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:20:41.577791"},
 {"query_index":52,"query":"Show the total sales for this month.","copilot_response":"","remarks":"","category":"Sales","expected_tool":null,"thread_id":"b44a78bd-e17f-41f9-857c-7c3fe64c060c","tool_calls":[{"tool": "get_sales", "input": {"start_date": "2026-07-01", "end_date": "2026-07-23", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["invoiceDate"]}}],"response":"Total sales for **July 2026 so far** (Date 01/07/2026 to 23/07/2026) are **₹5.99Cr**.\n\n- I found **13 sales-date entries** in the month-to-date summary.\n- The strongest sales day in the data was **21st Jul(21/07/2026)** with **₹87.54L**.\n\nIf you want, I can also show:\n- sales by day\n- top customers by sales\n- sales by product or category","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":13.7,"step_count":7,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating", "tool_start", "tool_done", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:20:56.496266"},
 {"query_index":53,"query":"Which customers contributed the highest sales this month?","copilot_response":"","remarks":"","category":"Sales","expected_tool":null,"thread_id":"96d5f2a9-4a2b-4c3f-81f4-2eee8136241d","tool_calls":[{"tool": "get_sales", "input": {"start_date": "2026-07-01", "end_date": "2026-07-23", "offset": 0, "limit": 20, "sort_by": "totalSales", "sort_direction": "DESC", "group_by": ["customerId"]}}],"response":"Here are the **top 20 customers by sales** for **1st Jul(01/07/2026) to 23rd Jul(23/07/2026)**:\n\n- **SAPNA VENTURES** — **₹39.79L**\n- **CHANDAN TEXTILES (AmirSETH) TDS** — **₹32.64L**\n- **IMRAN TEX (IMRAN SANDIP)** — **₹26.39L**\n- **TIME TEX (SIRAJ AHEMAD)** — **₹15.95L**\n- **JAY HIND FABRICS** — **₹13.23L**\n\nOverall, I found **108 customers** with sales in this period, and the list is sorted by highest contribution. I’ve shown the first **20** here; more customers are available if you want the next set. If helpful, I can also pull the biggest customers by order count, or narrow this down to a specific customer group, location, or product category.","info_leak":true,"leak_indicators":["internal_data_model"],"response_quality":"success","response_time_seconds":17.64,"step_count":7,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "formulating", "tool_start", "tool_done", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:21:15.411914"},
 {"query_index":54,"query":"Show the top 10 customers by sales value.","copilot_response":"","remarks":"","category":"Sales","expected_tool":null,"thread_id":"606f1db3-02f9-4f35-970b-90f2ab248b1c","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"order_metrics": ["totalOrderValue"], "sort_metric": "totalOrderValue", "sort_order": "DESC", "page_size": 10}}],"response":"Here are the top **10 customers by sales value**:\n\n| Customer | Sales Value |\n|---|---:|\n| Sarthak Surana | **₹36.58L** |\n| SRS TEXTILES | **₹26.19L** |\n| SAPNA VENTURES | **₹21.81L** |\n| TIME TEX (SIRAJ AHEMAD) | **₹20.98L** |\n| UJWAL FABRICS (AYYUB SAGAR) | **₹18.41L** |\n| ANEES AHMAD KAMAL AHMAD (ANIS AHE) | **₹17.10L** |\n| Karishma Textiles (KHALID BHIKU) | **₹15.12L** |\n| CHANDAN TEXTILES (AmirSETH) TDS | **₹15.03L** |\n| IMRAN TEX (IMRAN SANDIP) | **₹12.25L** |\n| CHANDAN FAB TEX (AAMIR YUSUF) | **₹12.19L** |\n\nThis is a ranked workspace-wide view, and there are **111 customers** in the full list. I’ve shown the first **10** here, and more customers are available if you want the next set.","info_leak":true,"leak_indicators":["workspace_ref"],"response_quality":"success","response_time_seconds":12.41,"step_count":6,"error":null,"status_sequence":["thinking", "analyzing", "formulating", "tool_start", "tool_done", "formulating"],"suggestions":[],"timestamp":"2026-07-23T06:21:29.268193"},
@@ -603,7 +621,7 @@ const records = [
 
 
 // === STATS REPLACE ===
-const stats = {"success": 56, "marginal": 22, "fail": 2, "leak": 27};
+const stats = {"success": 55, "marginal": 22, "no_data": 1, "fail": 2, "leak": 27};
 
 // === QUALITY BUCKETS ===
 // Already replaced via template strings above
@@ -636,7 +654,7 @@ records.filter(r => r.info_leak).forEach(r => {
 });
 
 // === QUALITY BY CATEGORY ===
-const catQuality = {"Reports & Analytics": {"success": 8, "marginal": 2, "fail": 0, "avg": 18.9, "n": 10}, "Outstanding & Payments": {"success": 8, "marginal": 2, "fail": 0, "avg": 17.8, "n": 10}, "Ledger": {"success": 5, "marginal": 4, "fail": 1, "avg": 17.0, "n": 10}, "Orders & Invoices": {"success": 6, "marginal": 4, "fail": 0, "avg": 16.9, "n": 10}, "Products & Items": {"success": 7, "marginal": 3, "fail": 0, "avg": 18.7, "n": 10}, "Sales": {"success": 9, "marginal": 1, "fail": 0, "avg": 13.8, "n": 10}, "Payments": {"success": 6, "marginal": 4, "fail": 0, "avg": 13.6, "n": 10}, "Items": {"success": 5, "marginal": 2, "fail": 0, "avg": 13.5, "n": 7}, "Dashboard": {"success": 2, "marginal": 0, "fail": 1, "avg": 30.2, "n": 3}};
+const catQuality = {"Reports & Analytics": {"success": 8, "marginal": 2, "no_data": 0, "fail": 0, "avg": 18.9, "n": 10}, "Outstanding & Payments": {"success": 8, "marginal": 2, "no_data": 0, "fail": 0, "avg": 17.8, "n": 10}, "Ledger": {"success": 5, "marginal": 4, "no_data": 0, "fail": 1, "avg": 17.0, "n": 10}, "Orders & Invoices": {"success": 6, "marginal": 4, "no_data": 0, "fail": 0, "avg": 16.9, "n": 10}, "Products & Items": {"success": 7, "marginal": 3, "no_data": 0, "fail": 0, "avg": 18.7, "n": 10}, "Sales": {"success": 8, "marginal": 1, "no_data": 1, "fail": 0, "avg": 13.8, "n": 10}, "Payments": {"success": 6, "marginal": 4, "no_data": 0, "fail": 0, "avg": 13.6, "n": 10}, "Items": {"success": 5, "marginal": 2, "no_data": 0, "fail": 0, "avg": 13.5, "n": 7}, "Dashboard": {"success": 2, "marginal": 0, "no_data": 0, "fail": 1, "avg": 30.2, "n": 3}};
 const qualCatTbody = document.getElementById("qual-cat-tbody");
 Object.entries(catQuality).forEach(([cat, q]) => {
   const total = q.success + q.marginal + q.fail;

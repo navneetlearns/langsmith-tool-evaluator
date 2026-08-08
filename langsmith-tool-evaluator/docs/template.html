@@ -90,7 +90,7 @@ tr:last-child { border-bottom: none; }
 tr:hover { background: #f8fafc; }
 
 /* QUALITY BUCKETS */
-.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
 .quality-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); text-align: center; }
 .quality-card .icon { font-size: 36px; margin-bottom: 8px; }
 .quality-card .count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
@@ -102,6 +102,8 @@ tr:hover { background: #f8fafc; }
 .quality-card.marginal .count { color: var(--amber); }
 .quality-card.fail { border-top: 4px solid var(--red); }
 .quality-card.fail .count { color: var(--red); }
+.quality-card.no-data { border-top: 4px solid var(--amber); }
+.quality-card.no-data .count { color: var(--amber); }
 
 /* INFO LEAK */
 .leak-banner {
@@ -346,6 +348,12 @@ footer a:hover { text-decoration: underline; }
         <div class="count">2</div>
         <div class="desc"><strong>Fail</strong> &mdash; Error, empty response, or generic "try again" with no data at all</div>
         <div class="pct">2% of queries</div>
+      </div>
+      <div class="quality-card no-data">
+        <div class="icon">&#9898;</div>
+        <div class="count">0</div>
+        <div class="desc"><strong>No Data</strong> &mdash; API responded but returned zero useful data to the user</div>
+        <div class="pct">0% of queries</div>
       </div>
     </div>
   </section>
