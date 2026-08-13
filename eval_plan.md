@@ -886,7 +886,14 @@ Added two new pitfalls to the skill file:
   `.env` copied into the pipeline root (previously only at the repo top level).
 
 ### Status
-- Both working copies (eval-dashboard/ and langsmith-tool-evaluator/) synced.
-- Git dirty in both repos (not committed): 4 modified + 6 new files per copy.
-- Pending (user decision): commit/push; multi-turn section in build_dashboard.py;
-  full multi-turn eval run across all sessions.
+- Both working copies (eval-dashboard/ and langsmith-tool-evaluator/) synced and
+  pushed to `navneetlearns/langsmith-tool-evaluator` main.
+- Commits: `5e00acd` (langsmith-tool-evaluator copy — evaluator + fixes + docs),
+  `0287bf4` (eval-dashboard copy — Part 15 + synced files; also carried the
+  previously-unpushed `94052ab` "Decouple pipeline and dashboard infrastructure").
+- `.env.bak` backups deleted (3 files); `*.env.bak` added to .gitignore in both
+  repos; live `.env` files kept (gitignored, never committed).
+- Remaining roadmap (user decision): multi-turn section in build_dashboard.py;
+  full multi-turn eval run across all sessions (only the 13:07 session evaluated
+  so far); LangSmith SDK migration to `client.runs.query()`/`retrieve()`
+  (deprecation removal Jan 31 2027).
