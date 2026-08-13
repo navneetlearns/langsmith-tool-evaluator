@@ -721,3 +721,172 @@ cd ~/AgentWork/langsmith-tool-evaluator   # or eval-dashboard/langsmith-tool-eva
 python3 evaluate_project.py --limit 100
 ```
 
+
+---
+
+## Part 14: Infrastructure Decoupling — August 8, 2026
+
+### Goal
+Decouple pipeline execution from dashboard building to enable faster iteration, partial run recovery, and version-specific dashboard generation.
+
+### Changes Implemented
+
+#### 1. Incremental JSONL Writes
+**Before:** All query results were buffered in memory and written to JSONL at the end of the pipeline run.
+
+**After:** Each query result is written to JSONL immediately after execution (append mode).
+
+**Benefits:**
+- Can inspect partial results mid-run (`tail -f accounts/hirafoods/runs/query_results_v5.jsonl`)
+- If the pipeline crashes or times out, completed queries are already persisted
+- Resume capability can skip already-completed queries
+
+**Implementation:** Changed `copilot_query_pipeline.py` line 658-660:
+```python
+# Write this query result immediately (incremental)
+with open(output_file, "a") as f:
+    f.write(json.dumps(record, ensure_ascii=False) + "\n")
+```
+
+#### 2. Pipeline CLI Flags
+Added three new flags to `copilot_query_pipeline.py`:
+
+- **`--run N`** — Specify an explicit version number for a new run (instead of auto-increment)
+  ```bash
+  python3 copilot_query_pipeline.py --account hirafoods --run 5
+  ```
+
+- **`--resume N`** — Resume a partial run from where it left off (skips already-completed query_index values)
+  ```bash
+  python3 copilot_query_pipeline.py --account hirafoods --resume 4
+  ```
+
+- **`--query "text"`** — Run a single query (for debugging)
+  ```bash
+  python3 copilot_query_pipeline.py --account hirafoods --query "Show me top products"
+  ```
+
+**Implementation:** Added argument parsing in `copilot_query_pipeline.py` line 541-575, and resume logic at line 634-647.
+
+#### 3. Dashboard Version Selection
+Added `--version` flag to `build_dashboard.py` to build dashboards for specific historical runs.
+
+**Before:** Dashboard always built from the latest version in manifest.json.
+
+**After:**
+```bash
+# Build latest version (default behavior)
+python3 build_dashboard.py --account hirafoods
+
+# Build specific version
+python3 build_dashboard.py --account hirafoods --version 1
+python3 build_dashboard.py --account hirafoods --version 2
+```
+
+**Implementation:** Added argument parsing and version selection logic in `build_dashboard.py` line 185-236.
+
+### Time Analysis
+
+Measured wall-clock time for pipeline execution:
+
+| Account | Queries | Avg Response Time | Wall Time |
+|---------|---------|-------------------|-----------|
+| HiraFoods v2 | 17 | 11.3s | 4.3 min |
+| Surana v4 | 80 | 16.9s | ~22.8 min |
+| Unifoods v2 | 60 | 17.4s | ~17.7 min |
+| **Full 3-account run** | **157** | **~14s avg** | **~45 min** |
+
+**Parallelization potential:** With 10 concurrent queries, full run could complete in ~5 min instead of 45 min.
+
+### Verification
+
+Created and ran `/tmp/hermes-verify-decoupled-infra.py` with 13 checks:
+
+```
+✓ Test 1: Incremental writes produce valid JSONL
+✓ Test 2: --run 99 flag parsed correctly
+✓ Test 3: --resume 2 flag parsed correctly
+✓ Test 4: --resume 999 errors correctly (file not found)
+✓ Test 5: build_dashboard.py --version 1 builds successfully
+✓ Test 6: build_dashboard.py --version 2 builds successfully
+✓ Test 7: Default (no --version) uses latest
+✓ Test 8: --version 999 errors correctly (not found)
+✓ Test 9: surana dashboard builds
+✓ Test 10: unifoods dashboard builds
+✓ Test 11: copilot_query_pipeline.py compiles cleanly
+✓ Test 12: build_dashboard.py compiles cleanly
+✓ Test 13: All existing dashboards still build
+```
+
+All 13 checks passed.
+
+### Documentation Updates
+
+- **README.md**: Added "Pipeline Modes" and "Dashboard Versioning" sections with usage examples
+- **Skill file** (`zotok-copilot-eval`): Full rewrite to include infrastructure documentation, new CLI flags, time analysis, and updated pitfalls (JSONL incremental writes, resume by query_index)
+
+### Pitfalls Documented
+
+Added two new pitfalls to the skill file:
+
+1. **JSONL incremental writes (2026-08-08)**: Each query result is appended immediately, so you CAN inspect partial results mid-run. Previously it was buffered until the end.
+
+2. **Resume works by query_index**: When you `--resume N`, the pipeline loads existing results, extracts completed query_index values, and skips those in the main loop. If a query fails mid-stream, its query_index is NOT marked complete, so resume will re-run it.
+
+### Commit
+
+`1d1bc2a` — "Decouple pipeline and dashboard infrastructure"
+
+### Future Work
+
+- Implement parallel query execution (asyncio/aiohttp) to reduce wall time from 45 min to ~5 min
+- Add auth token caching (JWT valid 20 min, currently re-authenticates per pipeline invocation)
+- Implement cron-scheduled runs (daily/weekly, results accumulate, dashboard auto-rebuilds)
+
+---
+
+## Part 15: New LangSmith Account + Multi-Turn Evaluator — August 13, 2026
+
+### Account switch
+- New LangSmith API key written to both .env copies (backups: `.env.bak-20260813`).
+  Verified with the new key: same projects visible (`default`, `seller-copilot-agent`),
+  traces current (newest run 13:07 UTC). Project name unchanged.
+- Traced tool set expanded: `get_sheet_data`, `list_spreadsheets`, `search_agent`
+  now appear (spreadsheet/agent-orchestration tools). Registry updated to 20 tools
+  with a new `agent_internal` family (think, write_todos, column_selector,
+  format_node, search_tools_condition, compress_node) so the tool-selection judge
+  no longer phantom-scores them.
+
+### Multi-turn evaluation (new goal: check multi-turn agent responses)
+- Discovery: every node run's `inputs.messages` embeds the FULL conversation
+  (43 msgs / 11 user turns observed), keyed by `langfuse_session_id` in
+  extra.metadata. Same conversation appears in every node run -> dedupe by session,
+  keep the fullest message list. No tracer changes needed.
+- New files: `evaluators/multiturn.py`, `prompts/multiturn_prompt.txt`.
+- Usage: `python3 evaluate_project.py --eval multiturn [--since X --limit N]`
+  (run from `langsmith-tool-evaluator/` with its `.venv`; pipeline root needs its
+  own `.env` — system python lacks openai/langsmith).
+- Per-turn judge verdicts: quality (success/no_data/marginal/fail), score 0–1,
+  data_present, context_used, new_flow, reason; last-8-turns context window.
+- Output: `runs/multiturn_results_v{N}.jsonl` + `runs/multiturn_manifest.json`.
+- v1 run (2026-08-13, live session): 1 conversation / 11 turns judged, avg 0.545
+  (1 success / 8 marginal / 2 no_data). Grounded verdicts (e.g. "Are sheets
+  connected?" -> 1.0, agent named the 2 connected KCCL sheets via list_spreadsheets).
+- problems-and-solutions.md "Problem 1" is now RESOLVED (Approach A).
+
+### Fixes landed
+- `utils/langsmith_client.py` exports `LangSmithClientWrapper` — evaluators must
+  import the WRAPPER. Importing `LangSmithClient` silently grabs the raw SDK
+  Client (module-top import shadows the class) -> HTTP 400 "At least one of
+  'session'/'id'/'parent_run'/'trace' must be specified".
+- langsmith SDK >=0.10: `list_runs` requires an explicit `limit` (no-limit calls
+  hit /runs/query and 400). Wrapper now paginates limit=100 + offset and applies
+  `--since` client-side (runs arrive newest-first).
+- Project venv created at `langsmith-tool-evaluator/langsmith-tool-evaluator/.venv`;
+  `.env` copied into the pipeline root (previously only at the repo top level).
+
+### Status
+- Both working copies (eval-dashboard/ and langsmith-tool-evaluator/) synced.
+- Git dirty in both repos (not committed): 4 modified + 6 new files per copy.
+- Pending (user decision): commit/push; multi-turn section in build_dashboard.py;
+  full multi-turn eval run across all sessions.
