@@ -98,6 +98,31 @@ Trade-offs:
 - + Good enough for aggregate metrics
 - - Never fixes the per-run accuracy issue
 
+### Resolution (August 13, 2026) — Approach A implemented
+
+Multi-turn evaluation shipped as `--eval multiturn` (evaluators/multiturn.py +
+prompts/multiturn_prompt.txt). Design decisions from live data:
+
+- **Grouping:** chain runs are grouped by `langfuse_session_id`
+  (extra.metadata). Discovery: every node run embeds the ENTIRE conversation in
+  `inputs.messages` (observed 43 msgs / 11 user turns), so the same conversation
+  appears in several node runs — dedupe by session, keep the fullest message list.
+- **Turn reconstruction:** walk the message list; a `human` message opens a turn,
+  following `ai`/`tool` messages fill it (last `ai` text = response, tool names
+  deduped).
+- **Judge:** one LLM call per turn with the last 8 prior turns as context.
+  Per-turn verdicts: quality (success/no_data/marginal/fail), score 0–1,
+  data_present, context_used, new_flow, reason.
+- **Output:** `runs/multiturn_results_v{N}.jsonl` + `runs/multiturn_manifest.json`
+  (versioned, same convention as the copilot pipeline).
+- **v1 run (2026-08-13):** 1 conversation / 11 turns judged, avg 0.545
+  (1 success / 8 marginal / 2 no_data). Grounded verdicts — e.g. the
+  "Are sheets connected?" turn scored 1.0 (agent listed the 2 connected KCCL
+  sheets via list_spreadsheets).
+
+No tracer changes were needed — the agent already traces full conversation
+history; the evaluator was the missing piece.
+
 ---
 
 ## Problem 2: Phantom Tools — Agent Calls Tools Not in the Registry

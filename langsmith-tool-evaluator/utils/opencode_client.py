@@ -25,6 +25,10 @@ class OpenCodeClient:
         model: Model name to use (e.g. 'deepseek-v4-flash').
     """
 
+    _TOOL_SELECTION_FIELDS = {
+        "expected_tool", "selected_tool", "score", "reason", "candidate_tools",
+    }
+
     def __init__(self) -> None:
         api_key = os.getenv("OPENCODE_API_KEY", "")
         base_url = os.getenv("OPENCODE_BASE_URL", "")
@@ -49,15 +53,24 @@ class OpenCodeClient:
             base_url,
         )
 
-    def evaluate(self, prompt: str) -> dict[str, Any] | None:
+    def evaluate(
+        self,
+        prompt: str,
+        required_fields: set[str] | None = None,
+    ) -> dict[str, Any] | None:
         """Send a prompt to the LLM judge and parse the JSON response.
 
         Args:
             prompt: The full evaluation prompt (including tool registry, query, etc.).
+            required_fields: Fields the parsed JSON must contain. Defaults to the
+                tool-selection set (expected_tool, selected_tool, score, reason,
+                candidate_tools). Multi-turn evaluation passes its own field set.
 
         Returns:
             Parsed JSON dict on success, or None if both attempts fail.
         """
+        required = required_fields or self._TOOL_SELECTION_FIELDS
+
         messages = [
             {"role": "system", "content": "You are a precise evaluation judge."},
             {"role": "user", "content": prompt},
@@ -80,7 +93,7 @@ class OpenCodeClient:
                 content = self._strip_fences(content)
 
                 parsed = json.loads(content)
-                validated = self._validate(parsed)
+                validated = self._validate(parsed, required)
                 if validated:
                     return validated
 
@@ -113,12 +126,13 @@ class OpenCodeClient:
         return text
 
     @staticmethod
-    def _validate(parsed: dict[str, Any]) -> dict[str, Any] | None:
-        """Ensure the response contains all required fields.
+    def _validate(parsed: dict[str, Any], required: set[str]) -> dict[str, Any] | None:
+        """Ensure the response contains all required fields and a valid score.
 
-        Required: expected_tool, selected_tool, score, reason, candidate_tools.
+        Args:
+            parsed: The parsed judge response.
+            required: Field names that must be present.
         """
-        required = {"expected_tool", "selected_tool", "score", "reason", "candidate_tools"}
         if not required.issubset(parsed.keys()):
             missing = required - parsed.keys()
             logger.warning("Missing fields in judge response: %s", missing)

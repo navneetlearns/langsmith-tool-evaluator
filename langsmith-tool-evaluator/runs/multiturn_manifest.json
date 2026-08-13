@@ -1,0 +1,19 @@
+{
+  "runs": [
+    {
+      "version": 1,
+      "file": "multiturn_results_v1.jsonl",
+      "timestamp": "2026-08-13T14:17:37+00:00",
+      "conversations": 1,
+      "turns": 11,
+      "succeeded": 11,
+      "failed": 0,
+      "avg_score": 0.545,
+      "quality": {
+        "success": 1,
+        "marginal": 8,
+        "no_data": 2
+      }
+    }
+  ]
+}

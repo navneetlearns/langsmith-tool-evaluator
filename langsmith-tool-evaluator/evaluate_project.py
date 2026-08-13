@@ -88,6 +88,15 @@ def _parse_args() -> argparse.Namespace:
              "Examples: '2026-07-01', '2026-07-01T00:00:00', '7d' (last 7 days), '24h'",
     )
     parser.add_argument(
+        "--eval",
+        type=str,
+        choices=("tool", "multiturn"),
+        default="tool",
+        help="Which evaluation to run: 'tool' = tool-selection accuracy "
+             "(default), 'multiturn' = per-turn response quality in "
+             "multi-turn conversations",
+    )
+    parser.add_argument(
         "--run-type",
         type=str,
         default="tool",
@@ -231,7 +240,17 @@ def main() -> None:
 
     # ── Run or Watch ────────────────────────────────────────────
     try:
-        if args.watch:
+        if args.eval == "multiturn":
+            if args.watch or args.experiment:
+                print(
+                    "ERROR: --eval multiturn cannot be combined with "
+                    "--watch or --experiment.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+            from evaluators.multiturn import MultiTurnEvaluator
+            MultiTurnEvaluator().run(limit=limit, since=since_dt)
+        elif args.watch:
             _run_watch_mode(
                 limit=limit,
                 run_type=run_type,

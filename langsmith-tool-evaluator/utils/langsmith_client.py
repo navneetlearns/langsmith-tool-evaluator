@@ -66,20 +66,40 @@ class LangSmithClientWrapper:
             Each run as a dictionary.
         """
         try:
-            kwargs: dict[str, Any] = {
-                "project_name": self.project_name,
-                "run_type": run_type,
-            }
-            if since is not None:
-                kwargs["filter"] = f'and(gte(start_time, "{since.isoformat()}"))'
-            runs = self.client.list_runs(**kwargs)
             count = 0
-            for run in runs:
-                if limit is not None and count >= limit:
-                    logger.warning("Reached run limit of %d, stopping.", limit)
+            offset = 0
+            page_size = 100
+            while True:
+                batch = list(self.client.list_runs(
+                    project_name=self.project_name,
+                    run_type=run_type,
+                    limit=page_size,
+                    offset=offset,
+                ))
+                if not batch:
                     break
-                yield run.dict() if hasattr(run, "dict") else run
-                count += 1
+                for run in batch:
+                    # langsmith >=0.10 list_runs requires an explicit limit
+                    # (no-limit calls hit /runs/query which demands a
+                    # session/id/trace selector). Page with limit+offset and
+                    # apply the --since window client-side; runs come
+                    # newest-first, so once one is older than `since` the
+                    # rest are too.
+                    if since is not None:
+                        st = getattr(run, "start_time", None)
+                        if st is None or st < since:
+                            logger.info(
+                                "Reached --since window, stopping (count=%d).", count
+                            )
+                            return
+                    if limit is not None and count >= limit:
+                        logger.warning("Reached run limit of %d, stopping.", limit)
+                        return
+                    yield run.dict() if hasattr(run, "dict") else run
+                    count += 1
+                offset += len(batch)
+                if len(batch) < page_size:
+                    break
 
             logger.info("Fetched %d runs from project '%s'.", count, self.project_name)
 

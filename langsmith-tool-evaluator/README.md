@@ -25,6 +25,23 @@ Calls the ZoTok Copilot API directly — sends 80 user queries from the Surana P
 
 Results: `runs/query_results_v4.jsonl` (v4) | `runs/query_results_v3.jsonl` (v3) | `runs/query_results_v2.jsonl` (v2) | `runs/query_results_v1.jsonl` (v1) | Manifest: `runs/manifest.json`
 
+## Multi-Turn Evaluation (Aug 13, 2026)
+
+```bash
+python3 evaluate_project.py --eval multiturn [--since X --limit N]
+```
+
+Evaluates per-turn response quality inside multi-turn conversations. Groups
+`chain` runs by `langfuse_session_id` (every node run embeds the FULL conversation
+in `inputs.messages`), reconstructs turns, and judges each turn in context
+(last 8 turns window): quality (success/no_data/marginal/fail), score 0–1,
+data_present, context_used, new_flow, reason.
+
+Results: `runs/multiturn_results_vN.jsonl` (one line per turn) | Manifest:
+`runs/multiturn_manifest.json` | Prompt: `prompts/multiturn_prompt.txt`
+
+v1 (2026-08-13): 1 conversation / 11 turns, avg 0.545 (1 success / 8 marginal / 2 no_data).
+
 ## Architecture
 
 ```
@@ -61,6 +78,7 @@ langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-
 ├── evaluate_project.py          # CLI entry point (LangSmith mode)
 ├── evaluators/
 │   ├── tool_selection.py        # Per-run feedback evaluator
+│   ├── multiturn.py             # Multi-turn response evaluator (--eval multiturn)
 │   ├── experiment.py            # LangSmith experiment runner
 │   └── prompt_builder.py        # Tool registry parser + prompt builder
 ├── utils/

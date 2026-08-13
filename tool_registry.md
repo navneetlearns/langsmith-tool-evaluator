@@ -14,7 +14,16 @@ One-line description of each tool available in the ZoTok Copilot.
 | `search_product_master` | product_master | ✅ | Search the product catalog by name, SKU code, or filters to resolve product IDs and SKU codes. |
 | `get_product_analytics` | product_analytics | ✅ | Fetch product performance and inventory metrics (revenue, units sold, stock) grouped by product/category/sku/etc. |
 | `get_sales` | sales_analytics | ✅ | Fetch sales performance data — ranked lists of top customers/products by sales amount, with date ranges. |
-| `spawn_filter_agent` | agent_orchestration | ✅ | Spawn a sub-agent for complex multi-step filtering or cross-referencing tasks. |
+| `spawn\_filter\_agent` | agent\_orchestration | ✅ | Spawn a sub-agent for complex multi-step filtering or cross-referencing tasks. |
+| `get\_sheet\_data` | spreadsheet\_read | ✅ | Fetch data from a named spreadsheet/sheet — rows/columns by reference or filter. |
+| `list\_spreadsheets` | spreadsheet\_read | ✅ | List available spreadsheets in the workspace. |
+| `search\_agent` | agent\_orchestration | ✅ | Delegate retrieval to the search sub-agent (spans channels/sheets). |
+| `think` | agent\_internal | ✅ | Internal reasoning step (no external call) — planner node of the agent graph. |
+| `write\_todos` | agent\_internal | ✅ | Write/update the agent's todo list for the current task. |
+| `column\_selector` | agent\_internal | ✅ | Select relevant columns for a data extraction/formatting task. |
+| `format\_node` | agent\_internal | ✅ | Format the final response into the output schema/message. |
+| `search\_tools\_condition` | agent\_internal | ✅ | Route the query to the appropriate search tool (condition node). |
+| `compress\_node` | agent\_internal | ✅ | Compress/trim conversation context for the model window. |
 
 ## Usage Across Runs (v1–v4)
 
