@@ -897,3 +897,53 @@ Added two new pitfalls to the skill file:
   full multi-turn eval run across all sessions (only the 13:07 session evaluated
   so far); LangSmith SDK migration to `client.runs.query()`/`retrieve()`
   (deprecation removal Jan 31 2027).
+
+## Part 16: HiraFoods v3 Run + Probe Scripts — August 18, 2026
+
+### Why
+The HiraFoods baseline (v1, Aug 7) was 11 days stale, and v2 (Aug 8) was a
+17-query items-only subset that surfaced a "no product-level data in workspace"
+finding. Re-ran the full 80-query set to (a) refresh the baseline and (b)
+re-check whether the workspace had gained product data since.
+
+### Run
+- `python3 copilot_query_pipeline.py --account hirafoods` → `query_results_v3.jsonl`,
+  28.9 min wall, auto-incremented to v3.
+- Pre-flight: config verified with the pipeline's own loader; sendOtp probe
+  confirmed phone registered on prod (OTP echoed, SIGNIN flow).
+- 79/80 API success. 1 fail: q74 "products with lowest current stock" — SSE read
+  timeout at 591.9s (recorded as-is per HEART, no retry). JWT auto-refresh fired
+  mid-run without disruption.
+- Dashboard rebuilt (`build_dashboard.py --account hirafoods`) and visually
+  verified headless (Playwright): 10/10 checks, 0 console errors.
+
+### Results
+| Bucket | v1 (Aug 7) | v3 (Aug 18) |
+|--------|-----------|-------------|
+| success | 42 | 51 |
+| marginal | 19 | 15 |
+| no_data | 19 | 13 |
+| fail | 0 | 1 |
+
+- **Finding: the v2 "no product data" conclusion is SUPERSEDED.** The workspace
+  gained product-level data: Items 5/7 success (was no_data-heavy in v2),
+  Products & Items 6/10 success (v2 items-only: 12/17 no_data).
+- Avg response time 13.2s excl. the timeout (v1: 11.5s) — slightly slower.
+- Classification churn v1→v3: 33/80 (41%) — mostly explained by real data
+  changes, but above the 30% trust threshold from the Uber eval-maturity audit.
+- Weakest areas: Outstanding & Payments 5/10 marginal (hedged, no concrete
+  numbers); Reports & Analytics 4 no_data ("no customers found" for
+  dormant/decline reports — likely missing customer-group classification data).
+
+### Probe scripts (created this session)
+The workflow documented `scripts/verify_account_config.py` and
+`scripts/preflight_otp.py` but they did not exist on disk. Created both and
+verified happy + failure paths (config happy/failure, OTP registered/refused).
+Known quirk: the prod sendOtp endpoint echoes an OTP for ANY phone, so the OTP
+probe's failure path is a dead/refused base URL, not an unregistered number.
+
+### Status
+- Committed + pushed: `8474a5c` ("eval: HiraFoods v3 run (80q, 79/80) + config/OTP
+  probe scripts"). Both working copies synced to origin/main, clean.
+- Run log kept at `hirafoods_pipeline_run.log` (gitignored).
+- Remaining roadmap unchanged (Part 15 Status).

@@ -23,9 +23,11 @@ python3 build_dashboard.py --account hirafoods
 |---------|---------|------------|-------|-------------|
 | Surana Polycot | 80 | 9 | Tally, ERP, ledger, sales | v4 (79/80, 16.9s) |
 | Unifoods | 60 | 10 | WhatsApp groups, orders, dispatch | v2 (59/60, 17.4s) |
-| HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v1 (80/80, 11.5s) |
+| HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v3 (79/80, 13.2s) |
 
-**HiraFoods v2 (items-only subset, 2026-08-08):** 17 queries (Products & Items + Items categories only). 16/17 API success, 1 fail (SSE IncompleteRead). Response quality breakdown: 1 success, 3 marginal, **12 no-data**, 1 fail. Finding: the HiraFoods workspace appears to have no product-level data — most queries returned "no products found" responses.
+**HiraFoods v2 (items-only subset, 2026-08-08):** 17 queries (Products & Items + Items categories only). 16/17 API success, 1 fail (SSE IncompleteRead). Response quality breakdown: 1 success, 3 marginal, **12 no-data**, 1 fail. Original finding: the HiraFoods workspace appeared to have no product-level data.
+
+**HiraFoods v3 (full run, 2026-08-18):** 79/80 API success, 1 fail (q74 SSE read timeout at 591.9s). Quality: 51 success / 15 marginal / 13 no_data / 1 fail (vs v1: 42/19/19/0). **The v2 "no product data" finding is SUPERSEDED — the workspace gained product-level data** (Items: 5/7 success, Products & Items: 6/10 success vs 12/17 no_data in v2). Avg 13.2s excl. the timeout (v1: 11.5s). Weakest areas: Outstanding & Payments 5/10 marginal (hedged answers), Reports & Analytics 4 no_data ("no customers found" for dormant/decline reports).
 
 **Response quality metric (v3, added 2026-08-08):** the dashboard now classifies responses into 4 buckets instead of 3. The new `no_data` bucket captures responses where the API succeeded technically but returned zero useful data to the user (no products found, couldn't complete request, try again, no matching rows, etc.). This distinguishes "graceful empty responses" from real technical failures. Detection uses pattern matching on response text against ~18 no-data indicators.
 
@@ -54,6 +56,9 @@ langsmith-tool-evaluator/docs/
 ├── surana/index.html        # Surana dashboard
 ├── unifoods/index.html      # Unifoods dashboard
 └── hirafoods/index.html     # HiraFoods dashboard
+scripts/
+├── verify_account_config.py # Probe: parse config with pipeline's own loader, assert fields
+└── preflight_otp.py         # Probe: confirm phone registered on env before a long run
 ```
 
 **Pipeline Modes:**
