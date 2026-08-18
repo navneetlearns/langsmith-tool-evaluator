@@ -947,3 +947,74 @@ probe's failure path is a dead/refused base URL, not an unregistered number.
   probe scripts"). Both working copies synced to origin/main, clean.
 - Run log kept at `hirafoods_pipeline_run.log` (gitignored).
 - Remaining roadmap unchanged (Part 15 Status).
+## Part 17: KCCL 2-Turn Probe + LangSmith Quota Exhaustion — August 18, 2026
+
+### Context
+Part 16 closed the KCCL multi-turn eval design with an open blocker: whether a
+follow-up turn's tool call incorporates prior-turn context or is just the raw
+current message. Run 2 of that probe was completed and checked in LangSmith.
+
+### Finding 1 — Turn-2 tool calls DO carry prior-turn context (blocker lifted)
+Probed live trace 01a0149a (seller-copilot-agent, 27 runs, two turns ~11:20 UTC):
+- Turn 1 "What's the status of the Intake well in Alakkode?" → `search_threads`
+  (semantic topic search, input = raw NL query).
+- Turn 2 "yes, find status wise list of all activities in this project" →
+  `get_thread_messages` with channel_id resolved from Turn 1's result
+  (070ecbd6-44a5-...). The `think` tool input makes the reasoning explicit:
+  "We already have the likely project thread from KWA-JJM-Alakkode-I-WTP, but
+  per instructions every business data query needs a fresh tool call... the
+  right tool is get_thread_messages for the specific channel."
+
+Corrected understanding (replaces earlier single-turn assumption):
+1. Cross-turn context IS carried and used (LangGraph state + Supervisor
+   "Previous turn: workflow=search"). TurnRelevancy/KnowledgeRetention metrics
+   are meaningful; tool params get enriched from prior state.
+2. Tool selection is DYNAMIC per turn, not fixed to `search_threads`:
+   entity/topic query -> search_threads; "all activities in project" ->
+   get_thread_messages with resolved channel_id. Scenarios must map
+   per-turn intent -> tool + resolved parameter, not hardcode one tool.
+3. Freshness IS enforced by system prompt ("every business data query needs a
+   fresh tool call") — the agent consciously re-fetches instead of reusing the
+   prior answer. Freshness checks are genuinely testable.
+4. There are NO structured business APIs (project-status/indent/PO/quotation
+   are fictional). Real tool surface: search_threads, get_thread_messages,
+   think (meta) + OpenSearch retrievers (get_messages_by_thread). Faithfulness
+   judged against retrieved _meta.messages / channel messages.
+
+Consequence: every `expected_tool_call`/`expected_tools` in
+`~/AgentWork/kccl-prompt-dataset/evals/multiturn/scenarios_deepeval.json`
+named a fictional API and needs rewriting to the real per-turn tool mapping.
+mt-004's "NEEDS CONFIRMATION (requires historical-status API)" flag is now
+resolved — no historical API needed; the agent re-fetches the channel fresh.
+
+### Finding 2 — LangSmith free-trace quota exhausted (ingestion dead)
+Verified live: the 'default' KCCL cron runs ~every 20 min (11:00, 11:20, ...).
+Last trace to land was 11:20:04; the 11:40 batch never arrived. The app still
+runs; LangSmith silently drops new traces. LangSmith is now a frozen READ-ONLY
+archive of everything up to ~11:20 on 2026-08-18.
+
+Still works (API probe): list_projects, list_runs (history), read_run,
+create_feedback/experiments. Only NEW trace capture is broken.
+
+### Impact by workstream
+- Tool-selection eval (evaluate_project.py): DEGRADED — historical runs only,
+  goes stale at 11:20 today; feedback/experiment writes still work.
+- Multi-turn eval (--eval multiturn): SAME — historical only.
+- KCCL multi-turn eval: pivot — the DeepEval design fires turns at the LIVE
+  copilot and observes tool calls, which does NOT need LangSmith ingestion.
+  LangSmith was only for grounding (now done). Route scenarios through the
+  Direct-API pipeline (copilot_query_pipeline.py, auto-OTP + SSE) instead.
+- Direct-API pipelines (surana/unifoods/hirafoods/playground): UNAFFECTED —
+  hit the copilot API directly, never touch LangSmith. Caveat: 20-min JWT TTL,
+  and it measures the agent as a user experiences it (more faithful than
+  traces).
+- KCCL model-swap regression + dashboards + GitHub Pages: UNAFFECTED.
+
+### Recommendation / status
+Pivot KCCL multi-turn eval to run scenarios_deepeval.json through the live
+Direct-API copilot pipeline (reuse copilot_query_pipeline.py auth + SSE), which
+sidesteps the quota entirely and tests the agent the way DeepEval intended.
+LangSmith stays only as static reference for grounding already done.
+Next step pending user decision: rewrite scenario tool mapping + wire Direct-API
+multi-turn runner (OUT OF SCOPE for this session — not yet started).
+
