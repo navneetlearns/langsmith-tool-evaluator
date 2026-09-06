@@ -1,0 +1,13 @@
+{
+  "runs": [
+    {
+      "version": 1,
+      "file": "query_results_v1.jsonl",
+      "timestamp": "2026-09-06T07:33:36.465219",
+      "total_queries": 80,
+      "success": 80,
+      "failed": 0,
+      "avg_response_time_seconds": 6.62
+    }
+  ]
+}

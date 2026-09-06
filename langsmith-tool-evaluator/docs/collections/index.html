@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copilot Eval — Collections Receivables Agent Test Suite v1</title>
+<style>
+:root {
+  --bg: #f8f9fb;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --radius: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: white;
+  padding: 48px 24px 40px;
+  text-align: center;
+}
+header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+header p { font-size: 15px; opacity: 0.88; }
+header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 14px;
+  margin: -32px 0 40px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-card .number { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-card.green .number { color: var(--green); }
+.stat-card.red .number { color: var(--red); }
+.stat-card.amber .number { color: var(--amber); }
+.stat-card.blue .number { color: var(--primary); }
+.stat-card.purple .number { color: var(--purple); }
+
+/* SECTION */
+section { margin-bottom: 40px; }
+section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+th, td { padding: 10px 14px; text-align: left; font-size: 13px; }
+th { background: #f1f5f9; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+tr { border-bottom: 1px solid var(--border); }
+tr:last-child { border-bottom: none; }
+tr:hover { background: #f8fafc; }
+
+/* QUALITY BUCKETS */
+.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+.quality-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); text-align: center; }
+.quality-card .icon { font-size: 36px; margin-bottom: 8px; }
+.quality-card .count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+.quality-card .desc { font-size: 13px; color: var(--text-muted); }
+.quality-card .pct { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.quality-card.success { border-top: 4px solid var(--green); }
+.quality-card.success .count { color: var(--green); }
+.quality-card.marginal { border-top: 4px solid var(--amber); }
+.quality-card.marginal .count { color: var(--amber); }
+.quality-card.fail { border-top: 4px solid var(--red); }
+.quality-card.fail .count { color: var(--red); }
+.quality-card.no-data { border-top: 4px solid var(--amber); }
+.quality-card.no-data .count { color: var(--amber); }
+
+/* INFO LEAK */
+.leak-banner {
+  background: var(--amber-light);
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.leak-banner .summary { font-size: 15px; font-weight: 600; color: #92400e; }
+.leak-banner .types { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.leak-type-badge {
+  background: white;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #92400e;
+}
+.leak-type-badge strong { font-weight: 700; }
+
+/* BAR */
+.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.bar-row .label { width: 180px; font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; background: #f1f5f9; border-radius: 6px; height: 24px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; color: white; font-size: 11px; font-weight: 600; }
+
+/* STacked quality bar */
+.qbar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; }
+.qbar .seg-success { background: var(--green); }
+.qbar .seg-marginal { background: var(--amber); }
+.qbar .seg-fail { background: var(--red); }
+.qbar .seg { display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; }
+
+/* TOOL GRID */
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.tool-card { background: var(--card); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+.tool-card .tool-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.tool-card .tool-count { font-size: 20px; font-weight: 700; color: var(--primary); }
+.tool-card .tool-bar { margin-top: 6px; height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.tool-card .tool-bar-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+
+/* QUERY TABLE */
+.search-box { width: 100%; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: var(--card); }
+.filter-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.filter-tab:hover { border-color: var(--primary); }
+.filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+.query-table th { cursor: pointer; user-select: none; }
+.query-table th:hover { background: #e2e8f0; }
+.query-table th .sort-arrow { font-size: 10px; margin-left: 3px; opacity: 0.4; }
+.query-table th.sorted .sort-arrow { opacity: 1; }
+.query-table .q-num { font-weight: 600; color: var(--text-muted); }
+.query-table .q-tools .tool-tag { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 4px; margin: 1px; font-size: 11px; }
+.query-table .q-tools .no-tool { color: var(--text-muted); font-style: italic; font-size: 11px; }
+.query-table tr.clickable { cursor: pointer; }
+.query-table .expand-row { display: none; }
+.query-table .expand-row.show { display: table-row; }
+.query-table .expand-content { background: #f8fafc; padding: 16px 20px; font-size: 13px; }
+.query-table .expand-content .section-label { font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
+.query-table .expand-content .section-label:first-child { margin-top: 0; }
+.query-table .expand-content pre { background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; }
+.q-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.q-badge.success { background: var(--green-light); color: var(--green); }
+.q-badge.marginal { background: var(--amber-light); color: var(--amber); }
+.q-badge.fail { background: var(--red-light); color: var(--red); }
+.leak-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; margin-left: 4px; title: "Info leak"; }
+.leak-dot.clean { background: #e2e8f0; }
+
+/* PRINCIPLES */
+.principles { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+.principles ol { padding-left: 20px; }
+.principles li { margin-bottom: 8px; font-size: 14px; }
+.principles li strong { color: var(--primary); }
+
+/* RAW DATA */
+.raw-data { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+.raw-data a { color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none; }
+.raw-data a:hover { text-decoration: underline; }
+.raw-data .link-row { margin-bottom: 10px; }
+.raw-data .link-row .desc { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+footer { background: #1e293b; color: #94a3b8; text-align: center; padding: 32px 20px; margin-top: 40px; }
+footer a { color: #60a5fa; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* COMPARISON SNAPSHOT */
+.comparison-snapshot {
+  margin: 0 0 40px;
+}
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+.snapshot-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  box-shadow: var(--shadow);
+}
+
+
+.snapshot-card h3 { font-size: 15px; margin-bottom: 12px; }
+
+
+.snapshot-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.snapshot-metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.snapshot-metric .label { color: var(--text-muted); }
+.snapshot-metric .value { font-weight: 700; }
+
+
+
+
+
+.snapshot-card.v1 .snapshot-metric .value { color: var(--amber); }
+.snapshot-card.v2 { border-top: 4px solid var(--primary); }
+.snapshot-card.v2 h3 { color: var(--primary); }
+.snapshot-card.v2 .snapshot-metric .value { color: var(--primary); }
+.snapshot-card.v3 { border-top: 4px solid var(--primary); }
+.snapshot-card.v3 h3 { color: var(--primary); }
+.snapshot-card.v3 .snapshot-metric .value { color: var(--primary); }
+.snapshot-card.v4 { border-top: 4px solid var(--green); }
+.snapshot-card.v4 h3 { color: var(--green); }
+.snapshot-card.v4 .snapshot-metric .value { color: var(--green); }
+
+.snapshot-improvement {
+  grid-column: 1 / -1;
+  background: var(--green-light);
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #166534;
+}
+.snapshot-improvement strong { font-size: 18px; }
+
+
+/* NEW: Tool Accuracy + Avg Steps stat cards */
+.stat-card.green { border-left: 4px solid var(--green); }
+.stat-card.purple { border-left: 4px solid var(--purple); }
+
+/* NEW: Mini bar for accuracy / step count tables */
+.mini-bar { height: 8px; background: var(--border); border-radius: 4px; min-width: 60px; overflow: hidden; }
+.mini-bar-fill { height: 100%; border-radius: 4px; }
+.mini-bar-fill.green { background: var(--green); }
+.mini-bar-fill.amber { background: var(--amber); }
+.mini-bar-fill.red { background: var(--red); }
+.mini-bar-fill.blue { background: var(--primary); }
+.mini-bar-fill.purple { background: var(--purple); }
+.mini-bar-fill.teal { background: #0d9488; }
+.mini-bar-fill.orange { background: #ea580c; }
+.mini-bar-fill.pink { background: #db2777; }
+.mini-bar-fill.indigo { background: #4f46e5; }
+
+/* NEW: Section spacing */
+#tool-accuracy-section, #step-count-section { margin-top: 32px; }
+
+/* No Data quality card */
+.quality-card.no-data { background: var(--surface); border-left: 4px solid var(--amber); border-radius: 8px; padding: 16px; }
+.quality-card.no-data .count { font-size: 28px; font-weight: 700; color: var(--amber); }
+.quality-card.no-data .pct { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
+.quality-card.no-data .desc { font-size: 12px; color: var(--text-tertiary); }
+
+/* Per-query table: color no_data responses */
+tr.row-no-data { background: rgba(245, 158, 11, 0.04); }
+tr.row-no-data .response-text { color: var(--amber); font-style: italic; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Copilot Eval Dashboard</h1>
+  <p>Collections Receivables Agent Test Suite &mdash; Seller Copilot Agent Tool-Selection Evaluation</p>
+  <span class="badge">Run v1 &middot; September 06, 2026 &middot; 80 queries &middot; 10.2 min</span>
+</header>
+
+<div class="container">
+
+  <!-- COMPARISON SNAPSHOT: v1..v1 -->
+  <div class="comparison-snapshot">
+    <div class="snapshot-grid">
+      <div class="snapshot-card v1">
+        <h3>Run v1 &mdash; September 06, 2026</h3>
+        <div class="snapshot-metrics">
+          <div class="snapshot-metric"><span class="label">Queries</span><span class="value">80</span></div>
+          <div class="snapshot-metric"><span class="label">API Success</span><span class="value">80</span></div>
+          <div class="snapshot-metric"><span class="label">Failed</span><span class="value">0</span></div>
+          <div class="snapshot-metric"><span class="label">Avg Response</span><span class="value">6.6s</span></div>
+          <div class="snapshot-metric"><span class="label">Total Time</span><span class="value">10.2 min</span></div>
+        </div>
+      </div>
+      <div class="snapshot-improvement">
+        <strong>&#128640; First run v1 complete</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOP STATS --><!-- TOP STATS --><!-- TOP STATS -->
+  <div class="stats-grid">
+    <div class="stat-card blue"><div class="number">80</div><div class="label">Total Queries</div></div>
+    <div class="stat-card green"><div class="number">80</div><div class="label">API Success</div></div>
+    <div class="stat-card red"><div class="number">0</div><div class="label">API Failed</div></div>
+    <div class="stat-card blue"><div class="number">6.6s</div><div class="label">Avg Response</div></div>
+    <div class="stat-card amber"><div class="number">62</div><div class="label">No Tool Called</div></div>
+    <div class="stat-card blue"><div class="number">5</div><div class="label">Tools Used</div></div>
+  </div>
+          <div class="stat-card green">
+            <div class="number">0.0%</div>
+            <div class="label">Tool Accuracy</div>
+          </div>
+          <div class="stat-card purple">
+            <div class="number">62.9</div>
+            <div class="label">Avg Steps</div>
+          </div>
+
+  <!-- RESPONSE QUALITY BUCKETS -->
+  <section>
+    <h2>Response Quality — Does the Response Add Value to the User?</h2>
+    <div class="quality-grid">
+      <div class="quality-card success">
+        <div class="icon">&#9989;</div>
+        <div class="count">6</div>
+        <div class="desc"><strong>Success</strong> &mdash; Response contains real data, numbers, customer names, or actionable insights</div>
+        <div class="pct">8% of queries</div>
+      </div>
+      <div class="quality-card marginal">
+        <div class="icon">&#9888;&#65039;</div>
+        <div class="count">70</div>
+        <div class="desc"><strong>Marginal</strong> &mdash; Partial data or hedged response; copilot found something but couldn't fully answer</div>
+        <div class="pct">88% of queries</div>
+      </div>
+      <div class="quality-card fail">
+        <div class="icon">&#10060;</div>
+        <div class="count">0</div>
+        <div class="desc"><strong>Fail</strong> &mdash; Error, empty response, or generic "try again" with no data at all</div>
+        <div class="pct">0% of queries</div>
+      </div>
+      <div class="quality-card no-data">
+        <div class="icon">&#9898;</div>
+        <div class="count">4</div>
+        <div class="desc"><strong>No Data</strong> &mdash; API responded but returned zero useful data to the user</div>
+        <div class="pct">5% of queries</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INFO LEAK DETECTION -->
+  <section>
+    <h2>Information Leak Detection</h2>
+    <div class="leak-banner">
+      <div class="summary">&#128274; 3 out of 80 responses expose internal system details</div>
+      <p style="font-size:13px;color:#92400e;margin-top:6px;">These responses mention tool names, UI components, workspace references, auth session issues, or internal data models that a real user should never see.</p>
+      <div class="types" id="leak-types"></div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Category</th><th>Query</th><th>Leak Type</th></tr>
+      </thead>
+      <tbody id="leak-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- QUALITY BY CATEGORY -->
+  <section>
+    <h2>Response Quality by Category</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Success</th>
+          <th>Marginal</th>
+          <th>Fail</th>
+          <th>Distribution</th>
+          <th>Avg Time</th>
+        </tr>
+      </thead>
+      <tbody id="qual-cat-tbody"></tbody>
+    </table>
+  </section>
+    <section>
+      <h2>&#127919; Tool Selection Accuracy by Category</h2>
+      <p class="section-desc">Percentage of queries where the agent called the expected tool (only queries with expected_tool specified in test data).</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Expected Tool Queries</th><th>Correct</th><th>Accuracy</th><th></th></tr></thead>
+          <tbody id="tool-acc-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  <!-- RESPONSE TIME BY CATEGORY -->
+  <section>
+    <h2>Response Time by Category</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th><th>Avg</th><th>Min</th><th>Max</th><th>Queries</th><th>Visual (avg)</th>
+        </tr>
+      </thead>
+      <tbody id="cat-tbody"></tbody>
+    </table>
+  </section>
+    <section>
+      <h2>&#128260; Step Count per Completion</h2>
+      <p class="section-desc">Number of SSE status transitions per query (thinking → analyzing → tool_start → ... → done). Higher = more complex interactions.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Queries</th><th>Avg Steps</th><th>Min</th><th>Max</th><th></th></tr></thead>
+          <tbody id="step-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  <!-- TOOL USAGE -->
+  <section>
+    <h2>Tool Usage Frequency</h2>
+    <div class="tool-grid" id="tool-grid"></div>
+  </section>
+
+  <!-- QUERY RESULTS -->
+  <section>
+    <h2>Per-Query Results</h2>
+    <input type="text" class="search-box" id="search" placeholder="Search queries, tools, responses...">
+    <div class="filter-tabs" id="filter-tabs">
+      <div class="filter-tab active" data-cat="all">All (80)</div>
+    </div>
+    <table class="query-table">
+      <thead>
+        <tr>
+          <th class="sortable" data-sort="query_index"># <span class="sort-arrow">&#9660;</span></th>
+          <th>Category</th>
+          <th>Query</th>
+          <th>Quality</th>
+          <th>Tools Called</th>
+          <th class="sortable" data-sort="response_time_seconds">Time <span class="sort-arrow"></span></th>
+          <th>Response</th>
+          <th class="sortable" data-sort="info_leak">Leak <span class="sort-arrow"></span></th>
+          <th class="sortable" data-sort="response_quality">Status <span class="sort-arrow"></span></th>
+        </tr>
+      </thead>
+      <tbody id="query-tbody"></tbody>
+    </table>
+  </section>
+
+  <!-- RAW DATA -->
+  <section>
+    <h2>Raw Data</h2>
+    <div class="raw-data">
+      <div class="link-row">
+        <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/collections/runs/query_results_v1.jsonl" target="_blank">&#128206; query_results_v1.jsonl</a>
+        <div class="desc">Full JSONL with all 80 query traces (tool calls, SSE status, response text, timing, quality classification, leak detection) — v4 run (July 23, 2026)</div>
+      </div>
+      <div class="link-row">
+        <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/collections/runs/query_results_v1.jsonl" target="_blank">&#128206; query_results_v1.jsonl</a>
+        <div class="desc">v1 baseline &mdash; 50 query traces (July 11, 2026)</div>
+      </div>
+      <div class="link-row">
+        <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/runs/manifest.json" target="_blank">&#128206; manifest.json</a>
+        <div class="desc">Versioned run manifest for tracking improvement across reruns</div>
+      </div>
+      <div class="link-row">
+        <a href="https://github.com/navneetlearns/langsmith-tool-evaluator" target="_blank">&#128187; GitHub Repository</a>
+        <div class="desc">Source code, pipeline script, HEART.md principles, eval plan</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HEART PRINCIPLES -->
+  <section>
+    <h2>Eval Testing Principles (HEART.md)</h2>
+    <div class="principles">
+      <ol>
+        <li><strong>Think like a user</strong> &mdash; send the query, capture what comes back. Errors are real results.</li>
+        <li><strong>Wait patiently</strong> &mdash; SSE timeout 300s. Multi-turn, data-driven responses take time.</li>
+        <li><strong>Measure response time</strong> &mdash; every query records response_time_seconds.</li>
+        <li><strong>Versioned reruns</strong> &mdash; query_results_v{N}.jsonl. Never overwrites. Compare across versions.</li>
+        <li><strong>No retry, no masking</strong> &mdash; if a query fails, that IS the result.</li>
+        <li><strong>Full trace capture</strong> &mdash; tool calls, SSE status sequence, response, suggestions, errors, timing.</li>
+      </ol>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <p>Copilot Eval Pipeline &middot; <a href="https://github.com/navneetlearns/langsmith-tool-evaluator">langsmith-tool-evaluator</a> &middot; Run v1 &middot; Collections Receivables Agent</p>
+</footer>
+
+<script>
+const records = [
+{"query_index":1,"query":"Show me all customers with outstanding payments.","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"2763eca3-0b18-4853-b68d-2f4f283ffaa8","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_no": 1, "page_size": 20}}],"response":"Top customers with outstanding balance are: 1) **Radha Traders & Co 980**, 2) **Om Wholesalers Traders 219**, 3) **Ganesh Wholesalers Traders 506**, 4) **Sri Distributors LLP 717**, 5) **Om Agencies LLP 640**. The result set has **20 customers** in total and is **showing 5** on this page. I cannot see the outstanding amounts in the returned data, only the customer names.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":12.85,"step_count":115,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:23:22.588922"},
+{"query_index":2,"query":"What is our total outstanding receivables?","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"f5c61fec-e2fd-4932-bc35-84168d2effd4","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"page_no": 1, "page_size": 20}}],"response":"I couldn’t retrieve the outstanding receivables total from the returned data. Please try again shortly.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":9.6,"step_count":31,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:23:33.318836"},
+{"query_index":3,"query":"Show me all unpaid invoices.","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"NO_TOOL","thread_id":"01f5cdf1-f47d-44d6-957c-da9063bb2f34","tool_calls":[],"response":"Requested invoice payment status is not currently available. I cannot reliably tell which invoices are unpaid from the available records. If you want, I can help you check an external accounting system such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.62,"step_count":46,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:23:39.065322"},
+{"query_index":4,"query":"Which customers currently have overdue payments?","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"NO_TOOL","thread_id":"531e50e2-6af4-45d2-a9c5-5b6749258c2a","tool_calls":[],"response":"The requested overdue-payment data is not currently available, so I cannot reliably identify customers with overdue payments from ZoTok data alone. You may want to check your external accounting system such as Tally for overdue status.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.03,"step_count":48,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:23:44.228793"},
+{"query_index":5,"query":"Show me the latest payment received from each customer.","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"TOOL:getCustomerAccountData","thread_id":"0da5742f-17e4-4a83-b654-6e2012c4f1b1","tool_calls":[],"response":"I cannot reliably show the latest payment received from each customer with the data currently available. That per-customer latest-payment view is not currently exposed. You can check an external accounting system such as Tally for this.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.91,"step_count":50,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:23:51.262456"},
+{"query_index":6,"query":"Give me the outstanding amount customer-wise.","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"cd997d23-e935-4e0c-a859-d924c8b9b73d","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_no": 1, "page_size": 20}}],"response":"Here are the **top 5 customers by outstanding balance** from the first page: 1) Radha Traders & Co 980 2) Om Wholesalers Traders 219 3) Ganesh Wholesalers Traders 506 4) Sri Distributors LLP 717 5) Om Agencies LLP 640. The response shows **20 customers total** on this page, with **more results available**. The returned data did not include the outstanding amounts, so I **cannot** state the balances yet from this response alone.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":10.67,"step_count":120,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:03.800593"},
+{"query_index":7,"query":"Show me all invoices that are still partially unpaid.","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"NO_TOOL","thread_id":"543c1f20-af57-4701-856b-a7fffab681c7","tool_calls":[],"response":"I cannot reliably show invoices that are still partially unpaid because that specific invoice status is not currently available from the supported data here.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.67,"step_count":31,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:09.611437"},
+{"query_index":8,"query":"Which customers have no outstanding balance?","copilot_response":"","remarks":"","category":"Basic Retrieval","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"2e55d9d5-093b-4d27-87a3-166c9e2b9656","tool_calls":[],"response":"The requested list of customers with **no outstanding balance** is not currently available from the data I can access, so I **cannot** reliably answer it. You can check an external accounting system such as Tally, or ask me for the customers with the highest current outstanding instead.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.9,"step_count":63,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:16.650346"},
+{"query_index":9,"query":"Show me invoices overdue by more than 30 days.","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"e06b1873-2be0-49a2-810c-3209a42d9ae6","tool_calls":[],"response":"The requested overdue ageing bucket is unavailable right now, so I cannot reliably answer which invoices are overdue by more than 30 days. If you want, I can share the current outstanding balance instead, or you can check overdue ageing in your accounting system such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.51,"step_count":60,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:22.289789"},
+{"query_index":10,"query":"Which customers have payments overdue by more than 60 days?","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"6d9de689-4c47-4ddd-8922-b9052be3800b","tool_calls":[],"response":"The requested ageing bucket is unavailable, so I cannot reliably identify customers overdue by more than 60 days. I can share current outstanding balances instead if you want an unaged view, or you can check ageing in your external accounting system such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.89,"step_count":57,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:29.301878"},
+{"query_index":11,"query":"Give me the receivables aging breakup.","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"f287a899-2b2d-4060-97a4-71e6edf52e9a","tool_calls":[],"response":"The requested receivables ageing breakup is not currently available, so I cannot reliably answer it. I can, however, share the current outstanding balance if you want a non-aged fallback, or you can check your accounting system such as Tally for ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.38,"step_count":57,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:34.817883"},
+{"query_index":12,"query":"How much money is overdue by more than 90 days?","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"f718c6ee-8c41-402a-9da3-aff44e25a2a5","tool_calls":[],"response":"The requested ageing bucket is unavailable, so I cannot reliably answer how much is overdue by more than 90 days. If helpful, I can provide the current outstanding balance instead, but that would not be an ageing amount. You may also check an external accounting system such as Tally for ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.93,"step_count":65,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:39.865055"},
+{"query_index":13,"query":"Which customers have the oldest outstanding invoices?","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"0b1551cf-7daa-4ffb-a8f5-086307ba7a3d","tool_calls":[],"response":"I cannot reliably answer which customers have the oldest outstanding invoices, because ageing / oldest-invoice data is not currently available here. I can help with **current outstanding balances** instead if you want.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.45,"step_count":46,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:46.500761"},
+{"query_index":14,"query":"Show me the top 10 overdue accounts.","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"e32612af-57cc-4ad3-86af-c3e83c39daae","tool_calls":[],"response":"I cannot reliably show overdue accounts because ageing/overdue data is not currently available. If you want, I can show the top 10 customers by current outstanding instead, without ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.37,"step_count":44,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:52.992122"},
+{"query_index":15,"query":"Which overdue invoices have the highest amounts?","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"8e995ce0-562d-4176-b974-22513e98bc36","tool_calls":[],"response":"The requested overdue-invoice data is not currently available here, so I cannot reliably answer which invoices are overdue or rank them by overdue amount. If you need, I can help you check an external accounting system such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.42,"step_count":52,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:24:59.538501"},
+{"query_index":16,"query":"Are there any invoices that have been overdue for more than 6 months?","copilot_response":"","remarks":"","category":"Overdue & Aging","expected_tool":"NO_TOOL","thread_id":"da60316c-dd00-4d4e-9ced-9ad5c633f8c8","tool_calls":[],"response":"The requested ageing bucket is unavailable, so I cannot reliably identify invoices overdue for more than 6 months. If helpful, I can provide the current **outstanding** balance instead, but that is not an ageing amount. You may also check your external accounting system such as Tally for ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.67,"step_count":65,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:25:05.337575"},
+{"query_index":17,"query":"Show me all outstanding invoices for ABC Industries.","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"3906429a-2283-4b42-81e4-bb9444466fb4","tool_calls":[],"response":"I cannot reliably show **outstanding invoices** for **ABC Industries** because invoice paid/unpaid status is not currently available from the data I can access. If you want, I can help with the customer’s **current outstanding balance** instead, or you can check your accounting system such as Tally for invoice status.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.04,"step_count":71,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:25:12.490419"},
+{"query_index":18,"query":"How much does ABC Industries currently owe us?","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"b97bbbef-b722-4925-993a-6edbfc03b2fd","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"invite_ids": ["ABC Industries"], "order_metrics": ["totalOutstandingValue"], "page_no": 1, "page_size": 20}}],"response":"I couldn’t find a matching customer record for **ABC Industries**, so I cannot determine the current outstanding balance. Please try searching by exact mobile number, customer code, or a narrower customer name.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":11.66,"step_count":51,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:25:25.275041"},
+{"query_index":19,"query":"When was the last payment received from ABC Industries?","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"TOOL:getCustomerAccountData","thread_id":"5e1dcb80-b42b-4b6b-b010-30cc16bcd652","tool_calls":[{"tool": "search_customers_master", "input": {"search_key": "ABC Industries", "page_no": 1, "page_size": 20, "ids_only": true}}],"response":"No customer matched **ABC Industries** in the master list, so I cannot fetch the last payment record for that name. Please check the exact customer name or search by mobile number/code.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":11.81,"step_count":49,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:25:39.075715"},
+{"query_index":20,"query":"Show me the payment history of ABC Industries.","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"TOOL:getCustomerAccountData","thread_id":"a77c3548-a32d-4b83-a87f-87f1c0728ca1","tool_calls":[{"tool": "search_customers_master", "input": {"search_key": "ABC Industries", "page_no": 1, "page_size": 20, "ids_only": true}}],"response":"I couldn’t find a customer named **ABC Industries**. I cannot show payment history until the customer is matched.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":10.32,"step_count":37,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "todo", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:25:50.514338"},
+{"query_index":21,"query":"Does ABC Industries have any invoices overdue by more than 60 days?","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"NO_TOOL","thread_id":"5c909049-07c1-4bb9-8709-e939dc725140","tool_calls":[],"response":"ABC Industries के लिए **60 दिनों से अधिक overdue** वाला ageing bucket उपलब्ध नहीं है, इसलिए मैं इसे reliably answer **cannot** कर सकता। अगर चाहें, मैं अभी का **current outstanding** बता सकता हूँ, जो unaged fallback होगा.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.89,"step_count":57,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:25:57.539388"},
+{"query_index":22,"query":"What is the total invoiced amount versus the amount paid by ABC Industries?","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"TOOL:getCustomerAccountData","thread_id":"e5c6c635-ccd0-4855-9d4a-a1dbb1c7fcdb","tool_calls":[{"tool": "search_customers_master", "input": {"search_key": "ABC Industries", "page_no": 1, "page_size": 20, "ids_only": true}}],"response":"ABC Industries was not found in the customer master, so I cannot reliably compare its invoiced amount versus amount paid. Please check the exact customer name or search by mobile number/customer code.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":10.95,"step_count":48,"error":null,"status_sequence":["connected", "status", "status", "status", "todo", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:26:09.625554"},
+{"query_index":23,"query":"Has ABC Industries been consistently paying late?","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"NO_TOOL","thread_id":"09e8eaef-c136-49ec-928b-f737c8f14716","tool_calls":[],"response":"I cannot reliably tell whether **ABC Industries** has been consistently paying late from ZoTok. Late-payment, overdue, ageing, due-date, and payment-allocation status are not available here. Please check your accounting system such as Tally for that verification.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.89,"step_count":58,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:26:16.643934"},
+{"query_index":24,"query":"Which invoices from ABC Industries are still pending?","copilot_response":"","remarks":"","category":"Customer-Specific","expected_tool":"TOOL:getCustomerAccountData","thread_id":"5f580c8c-752a-4baa-a35d-dd0c9c590a82","tool_calls":[{"tool": "search_customers_master", "input": {"search_key": "ABC Industries", "page_no": 1, "page_size": 20, "ids_only": true}}],"response":"I couldn’t find **ABC Industries** in the customer master, so I cannot check its invoices. If you want, you can try a different customer name, mobile number, or customer code.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":9.76,"step_count":51,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:26:27.522332"},
+{"query_index":25,"query":"Which customers owe us the most money?","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"78c2c99e-fc01-487a-bc26-7a03f1c0e1b4","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_no": 1, "page_size": 20}}],"response":"Top customers by outstanding balance are: **Radha Traders & Co 980**, **Om Wholesalers Traders 219**, **Ganesh Wholesalers Traders 506**, **Sri Distributors LLP 717**, and **Om Agencies LLP 640**. The response is only a preview, so I can’t see the outstanding amounts yet.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":11.39,"step_count":80,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:26:40.060836"},
+{"query_index":26,"query":"Who should our collection team follow up with first?","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"a6d6afe5-1486-457b-abaa-7d86778a94dc","tool_calls":[{"tool": "get_channel_data", "input": {"channel_name": "__not_used__"}}],"response":"I couldn’t complete that request. Please try again shortly.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":10.13,"step_count":27,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:26:51.330935"},
+{"query_index":27,"query":"Show me high-value customers with overdue payments.","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"02cf7d2a-82eb-45a7-8c96-66e240e6ba1a","tool_calls":[],"response":"I cannot reliably show **high-value customers with overdue payments** because overdue, due-date, and ageing status are not currently available. If you want, I can show **customers with the highest current outstanding** or **top customers by sales** instead.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.57,"step_count":57,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:26:58.943546"},
+{"query_index":28,"query":"Which overdue accounts pose the biggest collection risk?","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"bc4153d2-6e29-4790-b917-87162aafd158","tool_calls":[],"response":"I cannot reliably identify overdue accounts or collection risk because ageing and overdue status are not currently available. I can, however, show the biggest current outstanding balances as an unaged fallback.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.4,"step_count":43,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:05.486129"},
+{"query_index":29,"query":"Identify customers with both high outstanding amounts and long payment delays.","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"7f4e7508-5ebb-49ee-b654-98ec660d7996","tool_calls":[],"response":"The requested ageing/delay bucket is unavailable, so I cannot reliably identify customers with long payment delays. I can still provide current **outstanding** customers if you want an unaged view.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.09,"step_count":44,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:12.709586"},
+{"query_index":30,"query":"Which 5 customers should we prioritize for collection today?","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"c511dc60-f596-48d8-857a-ce160bdf78ed","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_size": 5, "page_no": 1}}],"response":"Top 5 customers to prioritize for collection today, ranked by **totalOutstandingValue** (all-time outstanding):\n1. **Radha Traders & Co 980** — **₹20,48,183.14**\n2. **Om Wholesalers Traders 219** — **₹20,23,636.95**\n3. **Ganesh Wholesalers Traders 506** — **₹19,61,251.19**\n4. **Sri Distributors LLP 717** — **₹19,29,328.66**\n5. **Om Agencies LLP 640** — **₹18,37,692.35**","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":11.96,"step_count":146,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:25.801627"},
+{"query_index":31,"query":"Which customers have a large outstanding balance but haven't made any recent payments?","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"6861b3b1-9719-49cf-8642-ae885a071baf","tool_calls":[],"response":"I can’t reliably identify customers who have a large outstanding balance **and** no recent payments, because recent-payment absence analysis is not currently available. I can only provide **current outstanding** balances if you want that fallback.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.68,"step_count":51,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:33.616329"},
+{"query_index":32,"query":"Highlight accounts where the overdue amount is unusually high.","copilot_response":"","remarks":"","category":"High-Value / Priority","expected_tool":"NO_TOOL","thread_id":"04ccf2a2-4729-420e-b534-bd8323619075","tool_calls":[],"response":"The requested overdue amount is not currently available in a reliable, supported way. I cannot identify overdue accounts from the data exposed here. If you want, I can still show **current outstanding** accounts as an unaged fallback, or you can check your accounting system such as Tally for overdue details.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.73,"step_count":66,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:39.471000"},
+{"query_index":33,"query":"Which customers usually pay after their due date?","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"88412018-f5a4-46c9-8a83-d6531c156781","tool_calls":[],"response":"The requested due-date and payment-timing analysis is not currently available from the tools, so I cannot reliably identify which customers usually pay after their due date. If you need this, please check your accounting system such as Tally or a similar ledger source.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.66,"step_count":57,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:47.308255"},
+{"query_index":34,"query":"Who are our most consistent late-paying customers?","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"1ff9c99f-760e-400a-a3ba-20b92ab43701","tool_calls":[],"response":"The requested late-payment consistency data is not currently available from ZoTok, so I cannot reliably identify those customers here. You may want to check an external accounting system such as Tally for ageing or late-payment patterns.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.75,"step_count":49,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:27:55.319524"},
+{"query_index":35,"query":"Which customers have improved their payment behavior recently?","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"51fa7fa6-71f1-4334-b14c-98d592592589","tool_calls":[],"response":"The requested data is not currently available from ZoTok, so I cannot reliably identify customers who have improved their payment behavior recently. You may want to check your external accounting system such as Tally for payment-trend or collection-history analysis.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.37,"step_count":53,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:02.804075"},
+{"query_index":36,"query":"Which customers have started delaying payments compared with previous months?","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"34c38020-4dd5-4d74-a12a-cefb4df0ffe0","tool_calls":[],"response":"I cannot reliably answer that from the currently available data. Delaying payments compared with previous months is an ageing or payment-timing analysis, and that specific comparison is not currently available through the data I can retrieve here. If you want, I can still help with current outstanding balances or you can check an external accounting system such as Tally for payment timing trends.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.04,"step_count":78,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:07.986670"},
+{"query_index":37,"query":"Show me customers who frequently make partial payments.","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"b32b4175-46c6-4daf-a2a9-f2a8a5a6c020","tool_calls":[],"response":"The requested data is not currently available, so I cannot reliably identify customers who frequently make partial payments. Partial-payment frequency, payment allocation, and reconciliation status are not exposed by the available data tools. You may want to check an external accounting system such as Tally for that analysis.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.02,"step_count":62,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:13.115098"},
+{"query_index":38,"query":"Are there customers whose payment behavior is getting worse?","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"5a8aeb8b-8323-444f-987c-ea1c9871da9b","tool_calls":[],"response":"I cannot reliably answer that from the available data. Customer payment behavior trends, including whether it is getting worse, are not currently available in the supported fields. You may want to check an external accounting system such as Tally for ageing or payment-trend analysis.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.01,"step_count":58,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:18.236776"},
+{"query_index":39,"query":"Which customers usually clear their dues before the due date?","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"ce0a2f69-6809-4b68-9066-ff7990ca0de4","tool_calls":[],"response":"The requested due-date or before-due-date clearing information is not currently available, and I cannot reliably answer it from the data I can access. You may want to check your external accounting system such as Tally for payment timing or settlement status.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.86,"step_count":55,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:23.208962"},
+{"query_index":40,"query":"Compare the payment behavior of our top customers.","copilot_response":"","remarks":"","category":"Payment Behavior Analysis","expected_tool":"NO_TOOL","thread_id":"5bcc4d63-f074-4598-8b33-06db8919832e","tool_calls":[],"response":"I cannot reliably compare payment behavior of top customers because paid/unpaid, collection, reconciliation, overdue, and ageing data are not currently available here. You may want to check an external accounting system such as Tally. If you want, I can compare your top customers by **realized sales** or **outstanding** instead.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":7.36,"step_count":73,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:31.806888"},
+{"query_index":41,"query":"How has our total outstanding changed over the last 6 months?","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"896cbd7d-6cc3-4b19-bd88-4720d307f9aa","tool_calls":[],"response":"I cannot reliably tell how **total outstanding** has changed over the last 6 months, because that time-based trend is not currently available. I can share the **current total outstanding** instead, if you want an unaged snapshot.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.87,"step_count":54,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:39.814754"},
+{"query_index":42,"query":"Compare this month's collections with last month's.","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"NO_TOOL","thread_id":"541bc033-5f55-4176-82cb-cee639c05d88","tool_calls":[],"response":"I cannot reliably compare this month's collections with last month's using the currently available data. Collections status is not available here. You may check your accounting system such as Tally for that comparison.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":8.83,"step_count":44,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:50.127887"},
+{"query_index":43,"query":"Are overdue receivables increasing or decreasing?","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"NO_TOOL","thread_id":"3e7f27f5-fcb5-496c-bd60-70fa9ab13730","tool_calls":[],"response":"The requested ageing/overdue trend is not currently available, so I cannot reliably answer whether overdue receivables are increasing or decreasing. I can share the current **outstanding** balance as an unaged fallback if you want, but that is not an overdue/ageing figure.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.04,"step_count":63,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:28:55.290808"},
+{"query_index":44,"query":"Show me the monthly outstanding receivables trend.","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"94571424-13da-4e8a-bb48-33f81ba3a02c","tool_calls":[],"response":"The requested monthly receivables trend is not currently available from the supported data. I cannot reliably provide a month-by-month outstanding trend here. If needed, I can help with current outstanding instead.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.17,"step_count":45,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:01.608885"},
+{"query_index":45,"query":"Which month had the highest collections?","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"NO_TOOL","thread_id":"a49503b9-1022-4436-9b3b-67b64a7a628b","tool_calls":[],"response":"The requested collections-by-month data is not currently available, so I cannot reliably answer which month had the highest collections. If you want, I can help you check an external accounting system such as Tally for month-wise collections.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.29,"step_count":51,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:10.844717"},
+{"query_index":46,"query":"Compare overdue amounts for the last three months.","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"NO_TOOL","thread_id":"4024bc15-62dc-460b-9943-051aca16c455","tool_calls":[],"response":"The requested overdue amount by ageing bucket for the last three months is not currently available, so I cannot reliably answer that comparison. I can share current outstanding instead, or you can check your accounting system such as Tally for ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.72,"step_count":52,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:15.702406"},
+{"query_index":47,"query":"Has our collection performance improved this quarter?","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"NO_TOOL","thread_id":"e2f26fbf-bb7f-4ffd-84d3-6aad2a056e89","tool_calls":[],"response":"I cannot reliably answer this from the currently available data. Collection performance, collection trends, and collection-to-quarter comparison are not currently available through the tools I can access. If you want, I can help check current outstanding or realized sales instead, or you can compare with your external accounting system such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.72,"step_count":68,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:20.554030"},
+{"query_index":48,"query":"Which customers contributed most to the increase in outstanding receivables?","copilot_response":"","remarks":"","category":"Trend & Comparison","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"eeae4798-ae9c-41cc-a29c-4252abec4f36","tool_calls":[],"response":"I cannot reliably identify which customers contributed most to the increase in outstanding receivables from the available data. I can only provide current outstanding balances and rankings, not the change over time or increase attribution. If you want, I can show the current top outstanding customers instead.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.44,"step_count":61,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:28.117363"},
+{"query_index":49,"query":"What percentage of our total receivables is currently overdue?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"NO_TOOL","thread_id":"e15d5982-597c-4816-9226-d966df517e37","tool_calls":[],"response":"The requested overdue percentage cannot be reliably answered from the available data. I can provide **current outstanding** instead, but I cannot calculate or verify overdue or ageing without an ageing bucket that the system does not return.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.17,"step_count":48,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:33.413887"},
+{"query_index":50,"query":"What percentage of outstanding receivables is more than 90 days old?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"NO_TOOL","thread_id":"1c2b4f72-3994-4a85-907f-fc5206470005","tool_calls":[],"response":"The requested **ageing bucket** (receivables **more than 90 days old**) is **unavailable**, so I cannot reliably calculate that percentage from the available data. If you want, I can still share the current **outstanding balance** as an unaged fallback, or you can check your accounting system such as Tally for ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.58,"step_count":77,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:38.119701"},
+{"query_index":51,"query":"What is the average outstanding amount per customer?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"f3dfaa96-2a45-4d52-8eb0-bf67fe99650e","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"order_metrics": ["totalOutstandingValue"], "sort_by_outstanding": "DESC", "page_no": 1, "page_size": 20}}],"response":"I cannot reliably calculate the average outstanding amount per customer from the returned data because this response only shows a preview of customer names and does not include the full **totalOutstandingValue** or the complete customer count needed for the average.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":11.78,"step_count":56,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:51.146339"},
+{"query_index":52,"query":"What is the average payment delay across customers?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"NO_TOOL","thread_id":"88248aab-052a-49aa-be46-36eb7a653c9c","tool_calls":[],"response":"The requested payment-delay metric is not currently available, so I cannot reliably answer this from ZoTok data. You may want to check your external accounting system such as Tally for payment timing details.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.18,"step_count":45,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:29:56.469666"},
+{"query_index":53,"query":"How much have we collected versus the total amount invoiced?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"NO_TOOL","thread_id":"f093ad7e-e106-4701-8823-d136cfd6dc6d","tool_calls":[],"response":"The requested collection-versus-invoiced comparison is **not currently available** in the tools I can access, so I **cannot** reliably answer it. I can’t verify collected amount against invoiced amount from the available records. If you use an external accounting system such as Tally, you may be able to check it there.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.87,"step_count":73,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:02.459875"},
+{"query_index":54,"query":"What portion of the total outstanding amount comes from our top 10 customers?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"66c9255f-d03d-4069-88a3-be8047945b0b","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_size": 10, "page_no": 1}}],"response":"The top 10 customers by outstanding together account for **₹1,89,39,448.98**. I couldn’t reliably compute their exact share of the workspace total because the workspace-wide outstanding response did not return the full totalOutstandingValue in the data shown, so I cannot state the portion with confidence.\n\nTop 10 customers:\n1. Radha Traders & Co 980 — **₹20,48,183.14**\n2. Om Wholesalers Traders 219 — **₹20,23,636.95**\n3. Ganesh Wholesalers Traders 506 — **₹19,61,251.19**\n4. Sri Distributors LLP 717 — **₹19,29,328.66**\n5. Om Agencies LLP 640 — **₹18,37,692.35**\n6. Jai Retail Pvt Ltd 740 — **₹18,21,357.69**\n7. Shree Distributors Pvt Ltd 424 — **₹17,57,437.40**\n8. Ganesh Traders & Co 206 — **₹16,96,887.60**\n9. Om Enterprises LLP 262 — **₹16,80,597.97**\n10. Ganesh Retail Pvt Ltd 704 — **₹16,48,074.03**","info_leak":true,"leak_indicators":["workspace_ref"],"response_quality":"success","response_time_seconds":17.51,"step_count":293,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "status", "status", "todo", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:21.134103"},
+{"query_index":55,"query":"If we exclude invoices overdue by less than 30 days, how much is seriously overdue?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"NO_TOOL","thread_id":"3b930b19-937b-4e18-810b-a3206e114f4a","tool_calls":[],"response":"The requested ageing bucket is unavailable, so I cannot reliably answer how much is \"seriously overdue\" by excluding invoices overdue by less than 30 days. I can provide the current outstanding balance instead, but that is not an ageing amount.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.72,"step_count":54,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:25.996138"},
+{"query_index":56,"query":"Which customers account for most of our overdue receivables?","copilot_response":"","remarks":"","category":"Calculation & Reasoning","expected_tool":"NO_TOOL","thread_id":"8da08ba0-11c4-4cbb-b33c-b94ef619cf19","tool_calls":[],"response":"I cannot reliably identify which customers account for the most overdue receivables because overdue/ageing status is not currently available here. If you need, I can help with current outstanding balances instead, but that is not the same as overdue receivables.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.82,"step_count":58,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:33.950980"},
+{"query_index":57,"query":"Find customers who have outstanding balances despite making recent payments.","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"NO_TOOL","thread_id":"2aa5b77e-2812-44f6-955c-acf71380f860","tool_calls":[],"response":"The requested data is not currently available in a way I can reliably verify. I cannot determine which customers have outstanding balances \"despite recent payments\" because payment transactions do not prove invoice settlement, allocation, or reconciliation, and I do not have a supported way to link recent payments to outstanding balances for that condition. You can check your accounting system such as Tally for reconciliation details. If you want, I can still help with current outstanding customers.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.34,"step_count":95,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:40.607018"},
+{"query_index":58,"query":"Show invoices where a payment was received but some amount is still outstanding.","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"NO_TOOL","thread_id":"1980720d-841f-4bfe-a04d-670478007800","tool_calls":[],"response":"That specific paid-and-partially-outstanding invoice view is not currently available. I cannot reliably tell which invoices had a payment received and still have some outstanding amount from the supported records alone. You may want to check your external accounting system such as Tally for that reconciliation view.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.53,"step_count":61,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:46.268591"},
+{"query_index":59,"query":"Are there customers with unusually large increases in outstanding balances?","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"99850ec1-e348-40be-85c2-f5279a6beca9","tool_calls":[],"response":"I cannot reliably identify customers with unusually large **increases** in outstanding balances from the currently available data. The current tools can show **current outstanding** and rankings, but not change-over-time outstanding deltas or trend comparisons. If you want, I can help with current outstanding customers instead, or you can check your accounting system such as Tally for balance movement.","info_leak":true,"leak_indicators":["tool_capability"],"response_quality":"marginal","response_time_seconds":6.13,"step_count":80,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:54.164287"},
+{"query_index":60,"query":"Find invoices where the payment appears to be significantly delayed.","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"NO_TOOL","thread_id":"cb96bad3-2392-4654-bd89-dabcf28a8354","tool_calls":[],"response":"The requested payment-delay or ageing analysis is not currently available, so I cannot reliably identify invoices that appear significantly delayed. If you want, I can still help with current outstanding balances or invoice records from an external accounting system such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.66,"step_count":54,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:30:59.948595"},
+{"query_index":61,"query":"Are there customers with multiple old invoices but very few recent payments?","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"NO_TOOL","thread_id":"8506587d-727d-4867-8fae-6f98d61a00c5","tool_calls":[],"response":"I cannot reliably answer that. The requested ageing pattern—multiple old invoices with very few recent payments—is not currently available from the supported data, and I cannot derive or verify it from the available records. If you want, I can still help with a supported fallback such as current outstanding customers or recent invoice/payment records separately.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.92,"step_count":71,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:31:06.985830"},
+{"query_index":62,"query":"Show accounts where the outstanding amount is high despite a small number of invoices.","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"bd7c4caa-5bd1-41a9-a103-5e18617eb305","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"order_metrics": ["totalOutstandingValue", "totalInvoices"], "sort_metric": "totalOutstandingValue", "sort_order": "DESC", "page_no": 1, "page_size": 20}}],"response":"I can show customers with **high outstanding** and their **invoice counts**, but I **cannot reliably identify “small number of invoices”** as a filtered condition from the available data. The current analytics response only shows a top outstanding list, and the preview does not include the full invoice-count values needed to confirm that pattern. Visible top outstanding customers are: **Radha Traders & Co 980**, **Om Wholesalers Traders 219**, **Ganesh Wholesalers Traders 506**, **Sri Distributors LLP 717**, and **Om Agencies LLP 640**.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":12.74,"step_count":126,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:31:20.878907"},
+{"query_index":63,"query":"Identify customers whose current outstanding balance is significantly higher than their historical average.","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"0161018f-9b6d-4341-addc-2e1ec53d1ebc","tool_calls":[],"response":"This data is not currently available, so I cannot reliably identify customers whose current outstanding balance is significantly higher than their historical average. I can, however, show customers with the highest current outstanding balance if you want a supported fallback.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.8,"step_count":52,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:31:28.800802"},
+{"query_index":64,"query":"Are there any unusual receivable patterns that management should know about?","copilot_response":"","remarks":"","category":"Exception & Anomaly","expected_tool":"NO_TOOL","thread_id":"fa825463-e94a-4557-a0ed-55370cfc4df7","tool_calls":[],"response":"I cannot reliably answer that from the available data. The supported tools expose current outstanding totals and customer rankings, but not pattern analysis for unusual receivable behavior or ageing breakdowns. If you want, I can still share current outstanding by customer or top outstanding accounts from the available data, or you can check your accounting system such as Tally for ageing and pattern review.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.08,"step_count":79,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:31:34.015961"},
+{"query_index":65,"query":"Who owes us the most right now?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"d240205f-7a95-4702-8ef2-ad74ef59b308","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_no": 1, "page_size": 1}}],"response":"Right now, **Radha Traders & Co 980** owes the most: **₹20,48,183.14** in total outstanding value.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":11.67,"step_count":42,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:31:46.813507"},
+{"query_index":66,"query":"Who do we need to chase for payment?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"4f698ab9-5b05-479b-a827-efd280c80b0e","tool_calls":[{"tool": "getCustomerAccountData", "input": {"page_no": 1, "page_size": 20, "sort_by": "outstanding", "sort_direction": "DESC"}}],"response":"I couldn’t complete that request. Please try again shortly.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":7.12,"step_count":22,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:31:55.058258"},
+{"query_index":67,"query":"Any big payments stuck?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"6885b50c-9f95-48e8-90aa-20e91a2f2f9b","tool_calls":[],"response":"The requested data is not currently available, so I cannot reliably answer which payments are \"stuck.\" Payment transaction records alone do not prove collection, reconciliation, overdue, or outstanding status. If you want, I can help with current outstanding balances instead, or you can check your accounting system such as Tally for payment follow-up status.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.58,"step_count":73,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:01.758651"},
+{"query_index":68,"query":"Which customers are seriously overdue?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"ee2ae7f8-dab4-4f59-8760-048ad3853c3b","tool_calls":[],"response":"I cannot reliably identify \"seriously overdue\" customers because overdue/ageing buckets are not currently available. I can, if you want, show the **current outstanding** customers instead.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.38,"step_count":44,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:08.286934"},
+{"query_index":69,"query":"Show me the customers we should call today.","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"7fd4cf14-528e-4901-89de-2776169d0682","tool_calls":[{"tool": "get_thread_messages", "input": {"channel_id": "__invalid__"}}],"response":"I couldn’t complete that request. Please try again shortly.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":9.21,"step_count":24,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "todo", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:18.617205"},
+{"query_index":70,"query":"Are our collections getting better?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"b4e5f3a9-f292-40e9-8c59-d783ac68b087","tool_calls":[],"response":"I cannot reliably answer that from the available data, because collection improvement requires collection or payment-status history that isn’t currently available. If you want, I can still check **current outstanding** or **customer rankings by outstanding** as an unaged fallback, but that would not show collections getting better.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.0,"step_count":65,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:23.733042"},
+{"query_index":71,"query":"Who keeps paying late?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"a2fecd36-f720-4bf9-8a8d-3e47e2043bf0","tool_calls":[],"response":"The requested late-payment / ageing information is not currently available from the available data tools, so I cannot reliably answer who keeps paying late. If you want, I can help with current outstanding balances or you can check an external accounting system such as Tally for late-payment tracking.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":5.03,"step_count":61,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:29.884427"},
+{"query_index":72,"query":"Where is most of our money stuck?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"7248f3be-acbe-4c26-8eb4-fcd8aa90b6a6","tool_calls":[{"tool": "getCustomerAnalytics", "input": {"sort_by_outstanding": "DESC", "page_no": 1, "page_size": 20}}],"response":"I can see the top customer names, but this response does not include the **outstanding amounts**, so I cannot reliably say where most of your money is stuck. The returned customers are **Radha Traders & Co 980**, **Om Wholesalers Traders 219**, **Ganesh Wholesalers Traders 506**, **Sri Distributors LLP 717**, and **Om Agencies LLP 640**.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":10.04,"step_count":92,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "ui", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:41.057094"},
+{"query_index":73,"query":"Which old invoices are still not cleared?","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"60785c83-be8a-4847-9d66-b7a783f05bd9","tool_calls":[],"response":"I cannot reliably tell which invoices are still not cleared because payment, collection, overdue, and unpaid status are not currently available from the supported data tools. If you want, I can help with an external accounting system check such as Tally.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.63,"step_count":54,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:46.810083"},
+{"query_index":74,"query":"Tell me where our biggest collection problems are.","copilot_response":"","remarks":"","category":"Natural / Human-Like (WhatsApp B2B)","expected_tool":"NO_TOOL","thread_id":"42d11bde-f491-44b0-858b-b7961e1f0039","tool_calls":[],"response":"I cannot reliably tell where your biggest collection problems are with the current tools, because collection status, ageing buckets, and overdue verification are not available. If you want, I can still show the current top outstanding customers as a fallback, but that would not be a collections or ageing analysis.","info_leak":true,"leak_indicators":["tool_capability"],"response_quality":"marginal","response_time_seconds":6.31,"step_count":64,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:32:54.251307"},
+{"query_index":75,"query":"Show me customers with more than 10 lakh outstanding and payments overdue by more than 60 days.","copilot_response":"","remarks":"","category":"Multi-Condition","expected_tool":"NO_TOOL","thread_id":"2f11f3b6-2522-415e-8b1d-4a8ec01ef1a8","tool_calls":[],"response":"The requested **overdue-by-more-than-60-days** ageing bucket is unavailable, so I **cannot** reliably list customers on that basis. I can, however, share customers with **current outstanding above ₹10 lakh** as an unaged fallback if you want.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":5.94,"step_count":59,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "done"],"suggestions":[],"timestamp":"2026-09-06T07:33:01.311034"},
+{"query_index":76,"query":"Which customers have at least three overdue invoices?","copilot_response":"","remarks":"","category":"Multi-Condition","expected_tool":"NO_TOOL","thread_id":"05da4b9f-dcec-484a-adbd-d93975feb889","tool_calls":[],"response":"The requested overdue-invoice status is not currently available, so I cannot reliably answer which customers have at least three overdue invoices. You may want to check an external accounting system such as Tally for overdue tracking.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.19,"step_count":48,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:33:06.784065"},
+{"query_index":77,"query":"Show me invoices above 5 lakh that are overdue by more than 30 days.","copilot_response":"","remarks":"","category":"Multi-Condition","expected_tool":"NO_TOOL","thread_id":"9014830c-6afc-4f4c-afd3-f477ec5eee97","tool_calls":[],"response":"The requested overdue-ageing view is not currently available, so I cannot reliably answer which invoices are more than 30 days overdue. I can help with a current outstanding summary instead, or you can check your accounting system such as Tally for ageing.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":3.98,"step_count":56,"error":null,"status_sequence":["connected", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:33:11.884464"},
+{"query_index":78,"query":"Which customers have outstanding balances above their average monthly purchase value?","copilot_response":"","remarks":"","category":"Multi-Condition","expected_tool":"TOOL:getCustomerAnalytics","thread_id":"3ca897f8-ec99-498f-a1a4-7b6fcd3c538d","tool_calls":[],"response":"I cannot reliably answer this as asked because **average monthly purchase value per customer** is not currently available from the supported data. I can’t compare outstanding balances against that metric.\n\nIf you want, I can instead show:\n- customers with the **highest outstanding balances**\n- customers with the **highest realized sales**","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.68,"step_count":73,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:33:19.677354"},
+{"query_index":79,"query":"Show me customers with high outstanding amounts and no payment in the last 30 days.","copilot_response":"","remarks":"","category":"Multi-Condition","expected_tool":"NO_TOOL","thread_id":"4ff6c209-8f28-4431-8f60-8dccd584ac57","tool_calls":[],"response":"I cannot reliably answer customers with **high outstanding** and **no payment in the last 30 days** because the no-payment-in-period condition is not currently available. I can show **current outstanding** customers instead if you want.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":6.34,"step_count":53,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:33:27.149240"},
+{"query_index":80,"query":"Which customers have more than 20 lakh outstanding, with at least one invoice older than 90 days?","copilot_response":"","remarks":"","category":"Multi-Condition","expected_tool":"NO_TOOL","thread_id":"f47876e8-adbd-4f64-b747-83f7df657903","tool_calls":[],"response":"I cannot reliably answer the **\"at least one invoice older than 90 days\"** part because that ageing bucket is unavailable. I can’t calculate or verify it from the available data. If you want, I can still help with **current outstanding** customers, unaged, using the available balance data.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":7.19,"step_count":69,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "token", "suggestions", "done"],"suggestions":[],"timestamp":"2026-09-06T07:33:35.462743"}
+];
+
+
+// === STATS REPLACE ===
+const stats = {"success": 6, "marginal": 70, "no_data": 4, "fail": 0, "leak": 3};
+
+// === QUALITY BUCKETS ===
+// Already replaced via template strings above
+
+// === INFO LEAK TYPES ===
+const leakTypes = {"tool_capability": 2, "workspace_ref": 1};
+const leakTypeLabels = {
+  "ui_component": "UI Component Leak ('card', 'result preview')",
+  "tool_capability": "Tool Capability Leak ('available tools', 'current tools')",
+  "workspace_ref": "Workspace Reference Leak ('workspace')",
+  "auth_session": "Auth Session Leak ('log out and log back in')",
+  "internal_data_model": "Internal Data Model Leak ('lifecycle groups', 'debtor groups')",
+  "analytics_categorization": "Internal Processing Leak ('I'll treat this as...')"
+};
+const leakTypesContainer = document.getElementById("leak-types");
+Object.entries(leakTypes).sort((a,b) => b[1] - a[1]).forEach(([type, count]) => {
+  leakTypesContainer.innerHTML += `<span class="leak-type-badge">${leakTypeLabels[type] || type}: <strong>${count}</strong></span>`;
+});
+
+// === LEAK TABLE ===
+const leakTbody = document.getElementById("leak-tbody");
+records.filter(r => r.info_leak).forEach(r => {
+  const types = r.leak_indicators.map(t => leakTypeLabels[t] || t).join(", ");
+  leakTbody.innerHTML += `<tr>
+    <td class="q-num">${r.query_index}</td>
+    <td style="font-size:12px">${r.category}</td>
+    <td style="font-size:13px">${r.query.substring(0, 80)}${r.query.length > 80 ? "..." : ""}</td>
+    <td style="font-size:12px">${types}</td>
+  </tr>`;
+});
+
+// === QUALITY BY CATEGORY ===
+const catQuality = {"Basic Retrieval": {"success": 1, "marginal": 6, "no_data": 1, "fail": 0, "avg": 7.3, "n": 8}, "Overdue & Aging": {"success": 0, "marginal": 8, "no_data": 0, "fail": 0, "avg": 5.0, "n": 8}, "Customer-Specific": {"success": 0, "marginal": 8, "no_data": 0, "fail": 0, "avg": 9.0, "n": 8}, "High-Value / Priority": {"success": 2, "marginal": 5, "no_data": 1, "fail": 0, "avg": 7.7, "n": 8}, "Payment Behavior Analysis": {"success": 0, "marginal": 8, "no_data": 0, "fail": 0, "avg": 5.3, "n": 8}, "Trend & Comparison": {"success": 0, "marginal": 8, "no_data": 0, "fail": 0, "avg": 5.6, "n": 8}, "Calculation & Reasoning": {"success": 1, "marginal": 7, "no_data": 0, "fail": 0, "avg": 7.1, "n": 8}, "Exception & Anomaly": {"success": 0, "marginal": 8, "no_data": 0, "fail": 0, "avg": 6.3, "n": 8}, "Natural / Human-Like (WhatsApp B2B)": {"success": 1, "marginal": 7, "no_data": 2, "fail": 0, "avg": 6.9, "n": 10}, "Multi-Condition": {"success": 1, "marginal": 5, "no_data": 0, "fail": 0, "avg": 5.7, "n": 6}};
+const qualCatTbody = document.getElementById("qual-cat-tbody");
+Object.entries(catQuality).forEach(([cat, q]) => {
+  const total = q.success + q.marginal + q.fail;
+  const sp = Math.round(q.success / total * 100);
+  const mp = Math.round(q.marginal / total * 100);
+  const fp = Math.round(q.fail / total * 100);
+  qualCatTbody.innerHTML += `<tr>
+    <td style="font-weight:500">${cat}</td>
+    <td style="color:var(--green);font-weight:600">${q.success}</td>
+    <td style="color:var(--amber);font-weight:600">${q.marginal}</td>
+    <td style="color:var(--red);font-weight:600">${q.fail}</td>
+    <td style="width:180px">
+      <div class="qbar">
+        <div class="seg seg-success" style="width:${sp}%">${q.success > 0 ? q.success : ""}</div>
+        <div class="seg seg-marginal" style="width:${mp}%">${q.marginal > 0 ? q.marginal : ""}</div>
+        <div class="seg seg-fail" style="width:${fp}%">${q.fail > 0 ? q.fail : ""}</div>
+      </div>
+    </td>
+    <td style="font-weight:600">${q.avg}s</td>
+  </tr>`;
+});
+
+// === CATEGORY TIME TABLE ===
+const catData = {"Basic Retrieval": {"avg": 7.3, "min": 4.03, "max": 12.85, "n": 8, "total": 58.25}, "Overdue & Aging": {"avg": 5.0, "min": 3.93, "max": 5.89, "n": 8, "total": 39.62}, "Customer-Specific": {"avg": 9.0, "min": 5.89, "max": 11.81, "n": 8, "total": 72.32}, "High-Value / Priority": {"avg": 7.7, "min": 4.73, "max": 11.96, "n": 8, "total": 61.95}, "Payment Behavior Analysis": {"avg": 5.3, "min": 3.86, "max": 7.36, "n": 8, "total": 42.07}, "Trend & Comparison": {"avg": 5.6, "min": 3.72, "max": 8.83, "n": 8, "total": 45.08}, "Calculation & Reasoning": {"avg": 7.1, "min": 3.58, "max": 17.51, "n": 8, "total": 56.63}, "Exception & Anomaly": {"avg": 6.3, "min": 4.08, "max": 12.74, "n": 8, "total": 50.2}, "Natural / Human-Like (WhatsApp B2B)": {"avg": 6.9, "min": 4.0, "max": 11.67, "n": 10, "total": 68.97}, "Multi-Condition": {"avg": 5.7, "min": 3.98, "max": 7.19, "n": 6, "total": 34.32}};
+const maxCatAvg = Math.max(...Object.values(catData).map(c => c.avg));
+const catColors = {"Basic Retrieval": "green", "Calculation & Reasoning": "amber", "Customer-Specific": "red", "Exception & Anomaly": "blue", "High-Value / Priority": "purple", "Multi-Condition": "teal", "Natural / Human-Like (WhatsApp B2B)": "orange", "Overdue & Aging": "pink", "Payment Behavior Analysis": "indigo", "Trend & Comparison": "cyan"};
+const toolAccuracy = {"correct": 0, "total_with_expected": 80, "pct": 0.0};
+const catToolAccuracy = {"Basic Retrieval": {"total": 8, "correct": 0, "pct": 0.0}, "Overdue & Aging": {"total": 8, "correct": 0, "pct": 0.0}, "Customer-Specific": {"total": 8, "correct": 0, "pct": 0.0}, "High-Value / Priority": {"total": 8, "correct": 0, "pct": 0.0}, "Payment Behavior Analysis": {"total": 8, "correct": 0, "pct": 0.0}, "Trend & Comparison": {"total": 8, "correct": 0, "pct": 0.0}, "Calculation & Reasoning": {"total": 8, "correct": 0, "pct": 0.0}, "Exception & Anomaly": {"total": 8, "correct": 0, "pct": 0.0}, "Natural / Human-Like (WhatsApp B2B)": {"total": 10, "correct": 0, "pct": 0.0}, "Multi-Condition": {"total": 6, "correct": 0, "pct": 0.0}};
+const stepStats = {"avg": 62.9, "min": 22, "max": 293, "median": 57};
+const catStepData = {"Basic Retrieval": {"avg": 63.0, "min": 31, "max": 120, "n": 8}, "Overdue & Aging": {"avg": 55.8, "min": 44, "max": 65, "n": 8}, "Customer-Specific": {"avg": 52.8, "min": 37, "max": 71, "n": 8}, "High-Value / Priority": {"avg": 64.2, "min": 27, "max": 146, "n": 8}, "Payment Behavior Analysis": {"avg": 60.6, "min": 49, "max": 78, "n": 8}, "Trend & Comparison": {"avg": 54.8, "min": 44, "max": 68, "n": 8}, "Calculation & Reasoning": {"avg": 88.0, "min": 45, "max": 293, "n": 8}, "Exception & Anomaly": {"avg": 77.2, "min": 52, "max": 126, "n": 8}, "Natural / Human-Like (WhatsApp B2B)": {"avg": 54.1, "min": 22, "max": 92, "n": 10}, "Multi-Condition": {"avg": 59.7, "min": 48, "max": 73, "n": 6}};
+
+const catTbody = document.getElementById("cat-tbody");
+Object.entries(catData).sort((a,b) => b[1].avg - a[1].avg).forEach(([cat, s]) => {
+  const pct = (s.avg / maxCatAvg * 100).toFixed(0);
+  const color = catColors[cat] || "blue";
+  const fillMap = { red: "background:linear-gradient(90deg,#f87171,#dc2626)", amber: "background:linear-gradient(90deg,#fbbf24,#d97706)", blue: "background:linear-gradient(90deg,#3b82f6,#2563eb)", green: "background:linear-gradient(90deg,#22c55e,#16a34a)", purple: "background:linear-gradient(90deg,#a78bfa,#7c3aed)" };
+  catTbody.innerHTML += `<tr>
+    <td style="font-weight:500">${cat}</td>
+    <td style="font-weight:600">${s.avg}s</td>
+    <td>${s.min}s</td>
+    <td>${s.max}s</td>
+    <td>${s.n}</td>
+    <td style="width:200px"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;${fillMap[color]}">${s.avg}s</div></div></td>
+  </tr>`;
+});
+
+// === TOOL GRID ===
+const toolCounts = {"getCustomerAnalytics": 11, "search_customers_master": 4, "get_channel_data": 1, "getCustomerAccountData": 1, "get_thread_messages": 1};
+const maxToolCount = Math.max(...Object.values(toolCounts));
+const toolGrid = document.getElementById("tool-grid");
+Object.entries(toolCounts).sort((a,b) => b[1] - a[1]).forEach(([tool, count]) => {
+  const pct = (count / maxToolCount * 100).toFixed(0);
+  toolGrid.innerHTML += `<div class="tool-card">
+    <div class="tool-name">${tool}</div>
+    <div class="tool-count">${count}x</div>
+    <div class="tool-bar"><div class="tool-bar-fill" style="width:${pct}%"></div></div>
+  </div>`;
+});
+
+// === FILTER TABS ===
+const filterTabs = document.getElementById("filter-tabs");
+const categories = [...new Set(records.map(r => r.category))];
+categories.forEach(cat => {
+  const count = records.filter(r => r.category === cat).length;
+  const tab = document.createElement("div");
+  tab.className = "filter-tab";
+  tab.dataset.cat = cat;
+  tab.textContent = `${cat} (${count})`;
+  filterTabs.appendChild(tab);
+});
+filterTabs.addEventListener("click", e => {
+  if (!e.target.classList.contains("filter-tab")) return;
+  document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+  e.target.classList.add("active");
+  renderQueries();
+});
+
+// === SEARCH ===
+let searchTerm = "";
+document.getElementById("search").addEventListener("input", e => {
+  searchTerm = e.target.value.toLowerCase();
+  renderQueries();
+});
+
+// === SORTING ===
+let sortCol = "query_index";
+let sortDir = 1;
+document.querySelectorAll(".sortable").forEach(th => {
+  th.addEventListener("click", () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = 1; }
+    document.querySelectorAll(".sortable").forEach(t => { t.classList.remove("sorted"); t.querySelector(".sort-arrow").textContent = ""; });
+    th.classList.add("sorted");
+    th.querySelector(".sort-arrow").textContent = sortDir === 1 ? "\u25BC" : "\u25B2";
+    renderQueries();
+  });
+});
+
+// === QUERY TABLE ===
+function timeClass(t) { if (t > 60) return "color:var(--red);font-weight:600"; if (t > 20) return "color:var(--amber);font-weight:600"; return "color:var(--green);font-weight:600"; }
+
+function renderQueries() {
+  const activeCat = document.querySelector(".filter-tab.active").dataset.cat;
+  const tbody = document.getElementById("query-tbody");
+  let filtered = records.filter(r => activeCat === "all" || r.category === activeCat);
+  if (searchTerm) {
+    filtered = filtered.filter(r =>
+      r.query.toLowerCase().includes(searchTerm) ||
+      (r.response || "").toLowerCase().includes(searchTerm) ||
+      JSON.stringify(r.tool_calls || []).toLowerCase().includes(searchTerm) ||
+      (r.error || "").toLowerCase().includes(searchTerm)
+    );
+  }
+  filtered.sort((a, b) => {
+    let va, vb;
+    if (sortCol === "query_index") { va = a.query_index; vb = b.query_index; }
+    else if (sortCol === "response_time_seconds") { va = a.response_time_seconds; vb = b.response_time_seconds; }
+    else if (sortCol === "response_quality") { va = a.response_quality === "success" ? 2 : a.response_quality === "marginal" ? 1 : 0; vb = b.response_quality === "success" ? 2 : b.response_quality === "marginal" ? 1 : 0; }
+    else if (sortCol === "info_leak") { va = a.info_leak ? 1 : 0; vb = b.info_leak ? 1 : 0; }
+    return (va - vb) * sortDir;
+  });
+
+  tbody.innerHTML = "";
+  filtered.forEach(r => {
+    const tools = (r.tool_calls || []).map(t => `<span class="tool-tag">${t.tool || "?"}</span>`).join("");
+    const toolsHtml = tools || `<span class="no-tool">no tool</span>`;
+    const time = r.response_time_seconds || 0;
+    const q = r.response_quality || "fail";
+    const respPreview = (r.response || "").substring(0, 100) || (r.error ? "[error: " + r.error.substring(0, 80) + "]" : "[empty]");
+    const expandId = `expand-${r.query_index}`;
+    const leakDot = r.info_leak ? `<span class="leak-dot" title="${r.leak_indicators.join(", ")}"></span>` : `<span class="leak-dot clean"></span>`;
+
+    tbody.innerHTML += `<tr class="clickable" onclick="toggleRow('${expandId}')">
+      <td class="q-num">${r.query_index}</td>
+      <td style="font-size:12px">${r.category}</td>
+      <td style="font-size:13px;max-width:220px">${r.query.substring(0, 80)}${r.query.length > 80 ? "..." : ""}</td>
+      <td><span class="q-badge ${q}">${q}</span></td>
+      <td class="q-tools">${toolsHtml}</td>
+      <td style="${timeClass(time)}">${time.toFixed(1)}s</td>
+      <td style="font-size:12px;color:var(--text-muted);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${respPreview}</td>
+      <td>${leakDot}</td>
+      <td><span class="q-badge ${q}">${q === "success" ? "OK" : q === "marginal" ? "MARG" : "FAIL"}</span></td>
+    </tr>
+    <tr class="expand-row" id="${expandId}">
+      <td colspan="9" class="expand-content">
+        <div class="section-label">Full Query</div>
+        <pre>${r.query}</pre>
+        <div class="section-label">Quality: ${r.response_quality || "unknown"} ${r.info_leak ? "| Info Leak: " + r.leak_indicators.join(", ") : "| No leak"}</div>
+        <div class="section-label">Tools Called (${(r.tool_calls || []).length})</div>
+        <pre>${JSON.stringify(r.tool_calls || [], null, 2)}</pre>
+        <div class="section-label">SSE Status Sequence</div>
+        <pre>${(r.status_sequence || []).join(" → ") || "[none]"}</pre>
+        <div class="section-label">Response (${(r.response || "").length} chars)</div>
+        <pre>${(r.response || "[empty]")}${r.error ? "\n\nERROR: " + r.error : ""}</pre>
+        <div class="section-label">Suggestions</div>
+        <pre>${JSON.stringify(r.suggestions || [], null, 2)}</pre>
+        <div class="section-label">Timing</div>
+        <pre>Response time: ${time.toFixed(2)}s | Timestamp: ${r.timestamp}</pre>
+      </td>
+    </tr>`;
+  });
+}
+
+function toggleRow(id) { document.getElementById(id).classList.toggle("show"); }
+renderQueries();
+
+    // === NEW: Tool Accuracy by Category Table ===
+    (function() {
+      const tbody = document.getElementById('tool-acc-tbody');
+      if (!tbody) return;
+      const cats = Object.keys(catToolAccuracy).sort();
+      cats.forEach(cat => {
+        const d = catToolAccuracy[cat];
+        const pct = d.pct !== null ? d.pct + '%' : 'N/A';
+        const pctNum = d.pct !== null ? d.pct : 0;
+        const color = catColors[cat] || 'blue';
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td><span class="cat-badge ' + color + '">' + cat + '</span></td>' +
+          '<td>' + d.total + '</td>' +
+          '<td>' + d.correct + '</td>' +
+          '<td><strong>' + pct + '</strong></td>' +
+          '<td><div class="mini-bar"><div class="mini-bar-fill ' + color + '" style="width:' + pctNum + '%"></div></div></td>';
+        tbody.appendChild(tr);
+      });
+    })();
+
+    // === NEW: Step Count by Category Table ===
+    (function() {
+      const tbody = document.getElementById('step-tbody');
+      if (!tbody) return;
+      const cats = Object.keys(catStepData).sort();
+      const maxAvg = Math.max(...cats.map(c => catStepData[c].avg), 1);
+      cats.forEach(cat => {
+        const d = catStepData[cat];
+        const color = catColors[cat] || 'blue';
+        const barPct = (d.avg / maxAvg * 100);
+        const tr = document.createElement('tr');
+        tr.innerHTML = '<td><span class="cat-badge ' + color + '">' + cat + '</span></td>' +
+          '<td>' + d.n + '</td>' +
+          '<td><strong>' + d.avg + '</strong></td>' +
+          '<td>' + d.min + '</td>' +
+          '<td>' + d.max + '</td>' +
+          '<td><div class="mini-bar"><div class="mini-bar-fill ' + color + '" style="width:' + barPct + '%"></div></div></td>';
+        tbody.appendChild(tr);
+      });
+    })();
+
+    // === Update per-query table columns for expected_tool + step_count ===
+    // (the existing table render loop in the template already iterates records —
+    //  the new fields will appear if the template references them)
+
+</script>
+
+</body>
+</html>

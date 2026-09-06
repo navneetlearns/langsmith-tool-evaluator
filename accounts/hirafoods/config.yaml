@@ -10,3 +10,7 @@ llm_provider: "gpt-5.4-mini"
 base_url: "https://api.zotok.ai"
 sse_timeout: 300
 sse_read_timeout: 120
+# Required since 2026-09 backend change: /hub/copilot/threads/init rejects requests
+# without chatTemplateCode (422). Empty string ("") is the reliably-200 value for
+# this workspace. The loader no longer mangles "" to {} (patched copilot_query_pipeline.py).
+chatTemplateCode: ""

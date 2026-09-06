@@ -593,8 +593,8 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
     if len(all_versions) >= 2:
         prev = all_versions[-2]
         curr = all_versions[-1]
-        avg_diff = ((curr["avg_response_time_seconds"] - prev["avg_response_time_seconds"]) /
-                     prev["avg_response_time_seconds"]) * 100
+        prev_avg = prev["avg_response_time_seconds"] or 0
+        avg_diff = ((curr["avg_response_time_seconds"] - prev_avg) / prev_avg) * 100 if prev_avg else 0
 
         parts = []
         if curr["failed"] == 0 and prev["failed"] > 0:

@@ -1,0 +1,17 @@
+# Collections & Account Receivables Agent — Copilot Eval Account Config
+# Real deployed template confirmed via /deployed-chat-templates?code=collection_and_account_receivables
+# (workspace c331ac11-..., same workspace as HiraFoods). Read-only data assistant, 4 tools.
+account_name: "Collections Receivables Agent"
+phone: "4040505050"                 # same WA number as HiraFoods deployment (per token subject 4040505050)
+workspace_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c"
+seller_details:
+  firstName: "CollectionsAgent"
+  mobile: "4040505050"
+wa_config_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c_914040505050"   # {workspace}_{cc+phone}
+llm_provider: "gpt-5.4-mini"
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+# Required since 2026-09 backend change: /hub/copilot/threads/init rejects requests
+# without chatTemplateCode (422). Real deployed code (confirmed via API):
+chatTemplateCode: "collection_and_account_receivables"

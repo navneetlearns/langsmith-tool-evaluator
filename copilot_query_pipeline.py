@@ -88,8 +88,10 @@ def load_account_config(account_name: str) -> dict:
             if indent == 0:
                 current_section = cfg
                 section_stack = []
-                if value == "":
-                    # Start of a nested section
+                if value == "" and key != "chatTemplateCode":
+                    # Start of a nested section (e.g. seller_details:).
+                    # NOTE: chatTemplateCode: "" is an EXPLICIT empty STRING value,
+                    # not a section — keep it as "" so the API receives "" not {}.
                     current_section[key] = {}
                     current_section = current_section[key]
                     section_stack.append(key)
@@ -329,11 +331,25 @@ class CopilotClient:
             return 0, str(e)
 
     def init_thread(self, thread_id: str) -> bool:
-        status, _ = self._request("POST", "/hub/copilot/threads/init", {
-            "thread_id": thread_id,
-            "sellerWorkspaceId": self.cfg["workspace_id"],
-        })
-        return status in (200, 201)
+        # chatTemplateCode became REQUIRED on the backend (2026-09 interface change).
+        # Empty string ("") is accepted by the API and is the reliably-200 value for
+        # the HiraFoods workspace; the real deployed code (e.g.
+        # "collection_and_account_receivables") is accepted but intermittently 404s,
+        # so we RETRY to absorb that flakiness.
+        code = self.cfg.get("chatTemplateCode", "")
+        last_status = None
+        for attempt in range(3):
+            status, _ = self._request("POST", "/hub/copilot/threads/init", {
+                "thread_id": thread_id,
+                "sellerWorkspaceId": self.cfg["workspace_id"],
+                "chatTemplateCode": code,
+            })
+            last_status = status
+            if status in (200, 201):
+                return True
+            time.sleep(0.5 * (attempt + 1))
+        log_msg(f"         [init] all retries failed (last HTTP {last_status})")
+        return False
 
     def stream_query(self, thread_id: str, message: str) -> dict:
         """Send a query via /stream and parse SSE response. NO RETRY."""
@@ -399,36 +415,52 @@ class CopilotClient:
                         if event_type and event_data:
                             result["status_sequence"].append(event_type)
 
+                            parsed = {}
                             try:
                                 parsed = json.loads(event_data)
                             except json.JSONDecodeError:
                                 parsed = {}
 
-                            if event_type == "tool_start":
+                        # Tool calls may arrive EITHER as top-level SSE events
+                        # (Surana agentic protocol: event: tool_start) OR nested
+                        # inside status events (HiraFoods 2026-09 change:
+                        # event: status, data.phase == "tool_start"). Handle both.
+                        if event_type == "tool_start":
+                            tool_name = parsed.get("tool") or parsed.get("tool_name") or parsed.get("name", "?")
+                            tool_input = parsed.get("input") or parsed.get("arguments") or {}
+                            result["tool_calls"].append({"tool": tool_name, "input": tool_input})
+
+                        elif event_type == "status":
+                            # HiraFoods 2026-09 change: tool calls arrive nested in
+                            # status events as data.phase == "tool_start"/"tool_done".
+                            phase = parsed.get("phase")
+                            if phase in ("tool_start", "tool_done"):
                                 tool_name = parsed.get("tool") or parsed.get("tool_name") or parsed.get("name", "?")
                                 tool_input = parsed.get("input") or parsed.get("arguments") or {}
-                                result["tool_calls"].append({"tool": tool_name, "input": tool_input})
+                                # Avoid duplicate appends for the tool_start/tool_done pair
+                                if not any(tc.get("tool") == tool_name for tc in result["tool_calls"]):
+                                    result["tool_calls"].append({"tool": tool_name, "input": tool_input})
 
-                            elif event_type == "message":
-                                if not result["response"]:
-                                    result["response"] = parsed.get("content", "")
+                        elif event_type == "message":
+                            if not result["response"]:
+                                result["response"] = parsed.get("content", "")
 
-                            elif event_type == "token":
-                                # Streaming token — accumulate into response
-                                token_text = parsed.get("content") or parsed.get("token") or ""
-                                if isinstance(token_text, str):
-                                    result["response"] += token_text
+                        elif event_type == "token":
+                            # Streaming token — accumulate into response
+                            token_text = parsed.get("content") or parsed.get("token") or ""
+                            if isinstance(token_text, str):
+                                result["response"] += token_text
 
-                            elif event_type == "ui":
-                                # UI rendering event — may contain structured output
-                                ui_content = parsed.get("content") or parsed.get("data")
-                                if ui_content and isinstance(ui_content, str):
-                                    result["response"] += ui_content
+                        elif event_type == "ui":
+                            # UI rendering event — may contain structured output
+                            ui_content = parsed.get("content") or parsed.get("data")
+                            if ui_content and isinstance(ui_content, str):
+                                result["response"] += ui_content
 
-                            elif event_type == "suggestions":
-                                s = parsed.get("suggestions") or parsed.get("data") or []
-                                if isinstance(s, list):
-                                    result["suggestions"] = s
+                        elif event_type == "suggestions":
+                            s = parsed.get("suggestions") or parsed.get("data") or []
+                            if isinstance(s, list):
+                                result["suggestions"] = s
 
         except urllib.error.HTTPError as e:
             body_text = e.read().decode(errors="replace")[:300]
