@@ -8,6 +8,15 @@
       "success": 80,
       "failed": 0,
       "avg_response_time_seconds": 6.62
+    },
+    {
+      "version": 2,
+      "file": "query_results_v2.jsonl",
+      "timestamp": "2026-09-09T09:53:42.387113",
+      "total_queries": 80,
+      "success": 80,
+      "failed": 0,
+      "avg_response_time_seconds": 16.89
     }
   ]
 }

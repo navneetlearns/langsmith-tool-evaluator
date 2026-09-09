@@ -44,14 +44,14 @@ SECTIONS = {
         ("Are there any invoices that have been overdue for more than 6 months?", "NO_TOOL"),
     ],
     "Customer-Specific": [
-        ("Show me all outstanding invoices for ABC Industries.", "TOOL:getCustomerAnalytics"),     # resolve + analytics
-        ("How much does ABC Industries currently owe us?", "TOOL:getCustomerAnalytics"),
-        ("When was the last payment received from ABC Industries?", "TOOL:getCustomerAccountData"),# PYMNT
-        ("Show me the payment history of ABC Industries.", "TOOL:getCustomerAccountData"),          # PYMNT
-        ("Does ABC Industries have any invoices overdue by more than 60 days?", "NO_TOOL"),
-        ("What is the total invoiced amount versus the amount paid by ABC Industries?", "TOOL:getCustomerAccountData"), # INV + PYMNT
-        ("Has ABC Industries been consistently paying late?", "NO_TOOL"),                          # late/overdue = unsupported
-        ("Which invoices from ABC Industries are still pending?", "TOOL:getCustomerAccountData"),   # INV records (pending≈unpaid, but INV txns supported)
+        ("Show me all outstanding invoices for Radha Agencies Pvt Ltd 787.", "TOOL:getCustomerAnalytics"),     # resolve + analytics
+        ("How much does Radha Agencies Pvt Ltd 787 currently owe us?", "TOOL:getCustomerAnalytics"),
+        ("When was the last payment received from Radha Agencies Pvt Ltd 787?", "TOOL:getCustomerAccountData"),# PYMNT
+        ("Show me the payment history of Radha Agencies Pvt Ltd 787.", "TOOL:getCustomerAccountData"),          # PYMNT
+        ("Does Radha Agencies Pvt Ltd 787 have any invoices overdue by more than 60 days?", "NO_TOOL"),
+        ("What is the total invoiced amount versus the amount paid by Radha Agencies Pvt Ltd 787?", "TOOL:getCustomerAccountData"), # INV + PYMNT
+        ("Has Radha Agencies Pvt Ltd 787 been consistently paying late?", "NO_TOOL"),                          # late/overdue = unsupported
+        ("Which invoices from Radha Agencies Pvt Ltd 787 are still pending?", "TOOL:getCustomerAccountData"),   # INV records (pending≈unpaid, but INV txns supported)
     ],
     "High-Value / Priority": [
         ("Which customers owe us the most money?", "TOOL:getCustomerAnalytics"),
