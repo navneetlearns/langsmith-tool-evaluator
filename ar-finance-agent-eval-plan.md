@@ -1,12 +1,12 @@
 # AR + Finance Agent Evals — Plan (2026-09-18)
 
 **Status:** Proposed — NOT approved. Executes only after the user confirms the decision gates in §0.
-**UPDATE 2026-09-18 (blocked):** finance eval run attempted — backend returns **402
-`topup_required` (Usage limit reached. Top up Zops to continue.)** on the finance, general, and AR
-agent templates on the hirafoods workspace; legacy surana still answers. The run is BLOCKED on a
-billing/meter top-up (or daily-reset). Parser fixes landed meanwhile (full-answer ui-markdown
-capture; SSE error-event capture — 402s were previously misread as empty/no_data). Clarify wire
-shape still unverified (the early "empty" responses were 402s, not clarify parks).
+**UPDATE 2026-09-18 (finance v1 DONE):** after the Zops top-up, the 30-query finance run completed
+(commit 6c938ad): 20 data answers / 9 clarify-parks (interrupt event) / 1 tech fail; quality 16
+success + 4 hedged-refusal marginals (judge-pass); refusals clean with 0 fabrication; reconcile
+guard fired on ~16 answers; classify gate is STOCHASTIC (q3 parked in-run, answered on re-probe).
+Full: accounts/finance/EVAL_READOUT_v1.md. Remaining: AR agent run (accounts/ar-agent, 70 queries),
+clarify-resume contract (interrupt payload not on the wire), push on user's go.
 Deferred: the order_to_dispatch plan (order-to-dispatch-agent-eval-plan.md) stays shelved until this
 is done — user scoped this session to AR + Finance on the **hirafoods account**
 (phone 4040505050, workspace c331ac11-c3e8-4d42-a8d6-b8b04127354c).
