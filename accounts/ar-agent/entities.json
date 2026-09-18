@@ -1,0 +1,19 @@
+{
+  "workspace": "hirafoods (c331ac11-c3e8-4d42-a8d6-b8b04127354c, phone 4040505050)",
+  "harvested": "2026-09-18 live discovery probes",
+  "source_notes": "10 customer accounts + 9 products from HiraFoods_Synthetic_WhatsApp_Groups_Report.md v1.1 (grounded in Tally sales view + product master); Silver Body Lotion Classic + Golden Shampoo Premium from live finance top_products probe; invoices 12851-12859 from live order_to_dispatch list_invoices probe (239 invoices total in workspace); GST-0 zero-rate slab dominant (live finance gst_by_rate: Rs.0 GST on Rs.16,01,31,807 taxable value).",
+  "customers": [
+    "Om Enterprises Traders 421", "Sai Agencies & Co 1051", "Ganesh Wholesalers Pvt Ltd 955",
+    "Krishna Traders LLP 125", "Durga Traders Traders 811", "Sri Retail & Co 196",
+    "Lakshmi Distributors LLP 20", "Jai Wholesalers & Co 918", "Radha Agencies LLP 552",
+    "Shree Retail Pvt Ltd 581", "Radha Agencies Pvt Ltd 787"
+  ],
+  "products": [
+    "Silver Body Lotion Classic", "Golden Shampoo Premium", "Golden Biscuits Lite",
+    "Fresh Shampoo Fresh", "Classic Toothpaste Strong", "Sunrise Juice Max",
+    "Diamond Pasta Regular", "Diamond Namkeen Classic", "Ultra Biscuits Regular",
+    "Diamond Juice Strong", "Power Soap Strong"
+  ],
+  "invoices": [12851, 12852, 12853, 12854, 12855, 12856, 12857, 12858, 12859],
+  "gst": {"dominant_slab": "GST-0 (zero rate)", "zero_rate_taxable_value": 160131807}
+}
