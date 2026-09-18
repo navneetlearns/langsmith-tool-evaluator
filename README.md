@@ -12,9 +12,11 @@ Tests the ZoTok Seller Copilot via the SSE streaming API. Auto-OTP auth, JWT ref
 python3 copilot_query_pipeline.py --account surana     # 80 Tally/ERP queries
 python3 copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
 python3 copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
+python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
 python3 build_dashboard.py --account surana            # Rebuild dashboard
 python3 build_dashboard.py --account unifoods
 python3 build_dashboard.py --account hirafoods
+python3 build_dashboard.py --account finance
 ```
 
 **Accounts:**
@@ -23,7 +25,20 @@ python3 build_dashboard.py --account hirafoods
 |---------|---------|------------|-------|-------------|
 | Surana Polycot | 80 | 9 | Tally, ERP, ledger, sales | v4 (79/80, 16.9s) |
 | Unifoods | 60 | 10 | WhatsApp groups, orders, dispatch | v2 (59/60, 17.4s) |
-| HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v3 (79/80, 13.2s) |
+| HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v4 rerun (79/80, 13.5s) |
+| Collections (AR agent) | 80 | 10 | Receivables + WhatsApp confirmation (get_receivables) | v2 (80/80, 16.9s) |
+| Finance Agent | 30 | 1 | CFO insight questions, ERP-only, clarify gate | v1 (2026-09-18): 20 answered / 9 clarify-parks / 1 fail |
+
+**Agent-template evals (2026-09-18):** deployed `chatTemplateCode` agents (finance,
+collection_and_account_receivables, order_to_dispatch, general) run through
+`scripts/run_agent_evals.py` (two-turn-aware: interrupt parks flagged, JSONL schema carries
+expected_behavior + expected_tool). Parser fixes landed this session: full answers arrive as
+`ui` > payload > data.markdown (were dropped); SSE `error` + `interrupt` events now captured
+(402 quota hits no longer misread as no_data). build_dashboard.py is clarify-aware: parks render
+as a CLARIFY bucket (not fail), plus an expected-vs-observed behavior matrix and a refusal-trust
+banner when records carry expected_behavior. Live: https://navneetlearns.github.io/langsmith-tool-evaluator/finance/
+Queries are generator-owned (scripts/gen_finance_queries.py, scripts/gen_ar_agent_queries.py —
+AR set of 70 real-entity queries ready, not yet run).
 
 **HiraFoods v2 (items-only subset, 2026-08-08):** 17 queries (Products & Items + Items categories only). 16/17 API success, 1 fail (SSE IncompleteRead). Response quality breakdown: 1 success, 3 marginal, **12 no-data**, 1 fail. Original finding: the HiraFoods workspace appeared to have no product-level data.
 
