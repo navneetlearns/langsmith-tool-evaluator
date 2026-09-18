@@ -1,0 +1,16 @@
+# Finance Agent — Copilot Eval Account Config (hirafoods workspace)
+account_name: "Finance"
+phone: "4040505050"
+workspace_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c"
+seller_details:
+  firstName: "HiraFoods"
+  mobile: "914040505050"
+wa_config_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c_914040505050"
+llm_provider: "gpt-5.4-mini"
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+# Finance agent workflow: chatTemplateCode "finance" (trace-verified 2026-09-17 metadata;
+# not listed by deployed-chat-templates endpoint, but accepted by /threads/init - same as
+# collection_and_account_receivables).
+chatTemplateCode: "finance"

@@ -452,10 +452,42 @@ class CopilotClient:
                                 result["response"] += token_text
 
                         elif event_type == "ui":
-                            # UI rendering event — may contain structured output
-                            ui_content = parsed.get("content") or parsed.get("data")
-                            if ui_content and isinstance(ui_content, str):
-                                result["response"] += ui_content
+                            # UI rendering event — usually the FULL answer. Two shapes:
+                            # (1) legacy: {"content": "<text>"} string — append to response;
+                            # (2) current (2026-09-18, finance + AR): nested
+                            #     {"payload": {"subType": "card", "data": {"type": "answer",
+                            #      "markdown": "<full answer>"}}}. The old code only handled
+                            #     the string form, so the full answer was DROPPED (only the
+                            #     banner `message` event survived). Capture the nested
+                            #     markdown; skip if response already set (banner-first order).
+                            payload = parsed.get("payload")
+                            if isinstance(payload, dict):
+                                data = payload.get("data")
+                                if isinstance(data, dict):
+                                    md = data.get("markdown") or data.get("text") or data.get("content")
+                                    if isinstance(md, str) and md and not result["response"]:
+                                        result["response"] = md
+                                    if data.get("type"):
+                                        result["ui_payload_type"] = data.get("type")
+                                else:
+                                    ui_content = payload.get("content") or payload.get("markdown")
+                                    if isinstance(ui_content, str) and ui_content and not result["response"]:
+                                        result["response"] = ui_content
+                            else:
+                                ui_content = parsed.get("content") or parsed.get("data")
+                                if ui_content and isinstance(ui_content, str):
+                                    if not result["response"]:
+                                        result["response"] = ui_content
+
+                        elif event_type == "error":
+                            # SSE-level error event (e.g. 402 topup_required quota hits).
+                            # OLD CODE SILENTLY DROPPED these -> stream ended with an
+                            # EMPTY response and NO error field, misreading quota/backend
+                            # fails as "no_data". Capture the message so runs distinguish
+                            # technical failures from graceful empties.
+                            msg = parsed.get("message") or parsed.get("error") or "SSE error event"
+                            if isinstance(msg, str):
+                                result["error"] = msg[:300]
 
                         elif event_type == "suggestions":
                             s = parsed.get("suggestions") or parsed.get("data") or []
