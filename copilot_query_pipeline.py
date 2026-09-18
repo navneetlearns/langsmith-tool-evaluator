@@ -479,6 +479,13 @@ class CopilotClient:
                                     if not result["response"]:
                                         result["response"] = ui_content
 
+                        elif event_type == "interrupt":
+                            # finance_clarification / identity-selection parks surface as an
+                            # 'interrupt' event (2026-09-18). Keep the raw payload so the
+                            # clarify question + options (when carried) reach the record.
+                            if parsed:
+                                result["interrupt"] = parsed
+
                         elif event_type == "error":
                             # SSE-level error event (e.g. 402 topup_required quota hits).
                             # OLD CODE SILENTLY DROPPED these -> stream ended with an
