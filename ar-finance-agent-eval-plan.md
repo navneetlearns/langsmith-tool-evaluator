@@ -63,6 +63,31 @@ chatTemplateCode picks the workflow (deterministic router, no LLM).
 regression. Latency: ledger/data-heavy 40-300s in evals; simple lookups 7-15s; SSE pauses between
 tool events. Interrupts show in LangSmith as error=True with a stack trace — normal control flow.
 
+**AGENT DIFFERENTIATION (user-confirmed 2026-09-18 — the two agents are NOT the same thing):**
+
+| | AR agent (collections) | Finance agent |
+|---|---|---|
+| Data sources | **ERP + WhatsApp groups** (the groups are an ADDED source — user confirms latest payment/receivables updates from conversations: claims, commitments, acknowledgements, disputes) | **ERP only** (ledger, invoices, stock, GST, orders) |
+| Core user | **Anyone in upper management** (owner/GM/ops head — not necessarily accounting-literate) — plain business language, "what's the latest on X", "who said what" | **CFO and accountants** — metric-accurate report language (DSO, ageing buckets, reconciled ledger, GST by rate) |
+| Shared theme | Both answer receivables/outstanding — but AR = position snapshot + WhatsApp-confirmable facts; Finance = reconciled-PAB ledger numbers | same, other side |
+| Refusal style | hedges on confirmability ("evidence doesn't confirm"), never claims settlement/bank-verification | names the data boundary (COGS/cash/supplier payables absent), never guesses |
+
+Eval consequence: a query like "what's the latest on Om Enterprises' payment?" belongs to the AR
+account (WhatsApp-groundable), while "what is my DSO?" belongs to finance (ERP metric). The same
+customer names appear in both sets, but framing, expected tools, and expected answers differ.
+
+**REAL-ENTITY RULE (user-confirmed 2026-09-18):** every named entity in the query sets MUST be a
+real HiraFoods entity — no ABC/XYZ/test placeholders. Known real material: the 10 customer accounts
+(Om Enterprises Traders 421 · Sai Agencies & Co 1051 · Ganesh Wholesalers Pvt Ltd 955 · Krishna
+Traders LLP 125 · Durga Traders Traders 811 · Sri Retail & Co 196 · Lakshmi Distributors LLP 20 ·
+Jai Wholesalers & Co 918 · Radha Agencies LLP 552 · Shree Retail Pvt Ltd 581 — plus
+"Radha Agencies Pvt Ltd 787" already proven resolvable in collections v2) and the 9 real products
+(Golden Biscuits Lite 500ml ₹460.58 · Fresh Shampoo Fresh 100ml ₹95.98 · Classic Toothpaste Strong
+1Kg ₹296.31 · Sunrise Juice Max 200ml ₹247.29 · Diamond Pasta Regular 500g ₹32.53 · Diamond Namkeen
+Classic 200g ₹47.08 · Ultra Biscuits Regular 100g ₹121.74 · Diamond Juice Strong 1L ₹156.19 · Power
+Soap Strong 1Kg ₹24.49). Real invoice numbers + GST rates must be harvested live (Phase 1 discovery)
+before any invoice-numbered query is written.
+
 ## §0 Decision gates (need user answers before execution)
 
 1. **Query counts:** finance 72 (34 metrics × ~1-2 forms + 8 refusals + 6 clarify + 6 chat/mixed)
@@ -100,6 +125,12 @@ Verify and RECORD (block on any unknown; evidence before claims):
       (AR: one sentence; finance: narrative/tables; ₹ not paise).
 - [ ] Data presence: do direct finance metric queries return rows on this workspace, or no_data?
       (No-data = workspace finding, not eval failure; flag for owners.)
+- [ ] **ENTITY DISCOVERY (mandatory — real-entity rule):** harvest the workspace's real entities
+      into `accounts/<name>/entities.json`: confirm the 10 customer accounts + 9 products resolve
+      (AR: query_ar customer_balances / worklist rows; finance: gold-SQL list queries via the
+      copilot, e.g. top customers by outstanding, top products by sales), harvest REAL invoice /
+      document numbers (AR query_ar_financials invoices; finance list_invoices path), and GST rates
+      (finance gst_by_rate metric). Every entity used in a query MUST appear in this file.
 
 Deliverable: probe report (protocols + clarify wire shape + resume contract), committed as
 references/ar-finance-protocols.md once verified.
@@ -109,26 +140,39 @@ references/ar-finance-protocols.md once verified.
 - Create `scripts/gen_finance_queries.py` — SECTIONS dict; writes
   `accounts/finance/queries.xlsx`. Columns: query | reference | remarks | expected_tool
   (`TOOL:<metric>` | `NO_TOOL`) | **expected_behavior** (`ANSWER | CLARIFY | REFUSE | CHAT | MIXED`).
-  Categories (~72): receivables, aging, dso, concentration, collection, dormant, sales_trend,
-  top_products, top_customers, total_sales, invoice_count/unpaid_count/avg_invoice, top_outstanding,
-  collected_total, customers_to_call, collection_priority, next_action, big_old_debtors, credit_notes,
-  purchases / purchase_by_month, customers_with_dues, stock_on_hand, dead_stock,
-  stock_value_at_list_price, gst_collected / gst_by_rate, order_pipeline / orders_by_source /
-  order_to_invoice_conversion, beat_coverage, balance_movement, customers_by_segment | REFUSE
-  (profit/cash/supplier-payables/stock-at-cost) | CLARIFY (vague terms from the classify prompt:
-  "looks wrong", "healthy", "risky", "best customer", "late payer") | CHAT (what customers
-  said/asked/claimed) | MIXED (who asked about X and what do they owe). Seed from
-  finance-agent-sql-pairs.json + catalogue forms/test_forms. NO placeholder customer names.
-- Create `scripts/gen_ar_agent_queries.py` — ~64: position (outstanding, ageing snapshots, stale),
-  worklist (priority, chase list, holds), objects (commitments, payment claims, disputes, cheque,
-  document requests), financials (invoices, customer balances), evidence (exact wording of a claim),
-  paid collections (period totals), identity CLARIFY (ambiguous named customer — resolve → select),
-  UNSUPPORTED refusals (settlement proof from unconfirmed claims, bank verification, forecasts,
-  "repeat follow-up" confirmation). `expected_tool` = query_ar | query_ar_financials |
-  get_ar_evidence | get_paid_collections | resolve_ar_identity | NO_TOOL; real customer names from
-  the workspace (Radha-class rule, probe-resolved BEFORE the run).
+  **Persona: CFO / accountant. Domain: ERP ONLY** (no WhatsApp facts). Categories (~72):
+  metric set — receivables, aging, dso, concentration, collection, dormant, sales_trend, top_products,
+  top_customers, total_sales, invoice_count/unpaid_count/avg_invoice, top_outstanding, collected_total,
+  customers_to_call, collection_priority, next_action, big_old_debtors, credit_notes, purchases /
+  purchase_by_month, customers_with_dues, stock_on_hand, dead_stock, stock_value_at_list_price,
+  gst_collected / gst_by_rate, order_pipeline / orders_by_source / order_to_invoice_conversion,
+  beat_coverage, balance_movement, customers_by_segment | customer- and product-ANCHORED variants
+  with REAL names ("sales for Om Enterprises Traders 421 last quarter", "closing balance of Sai
+  Agencies & Co 1051", "dead stock of Golden Biscuits Lite", "invoice <real-number> status") —
+  every name from entities.json | REFUSE (profit/cash/supplier-payables/stock-at-cost) | CLARIFY
+  (vague CFO terms: "looks wrong", "healthy", "risky", "best customer", "late payer") | CHAT (what
+  customers said/asked/claimed — note: finance can ALSO answer chat via OpenSearch, but its answers
+  have no ERP grounding; label CHAT) | MIXED (who asked about X AND what do they owe). Seed from
+  finance-agent-sql-pairs.json + catalogue forms/test_forms, rewritten with real entities.
+- Create `scripts/gen_ar_agent_queries.py` — ~64. **Persona: upper management. Domain: ERP +
+  WhatsApp groups (the groups confirm the LATEST updates on payments/receivables).** Categories:
+  position (outstanding, ageing snapshots, stale-snapshot honesty — "the latest list is from <date>"),
+  worklist (priority, chase list, holds — "who do we chase first today"), objects (payment claims,
+  commitments, acknowledgements, disputes, cheque, document requests — WhatsApp-grounded:
+  "Om Enterprises Traders 421 said the payment is done — does the group confirm it?",
+  "who acknowledged their dues in the group recently?"), financials (invoices, customer balances —
+  "balance for Radha Agencies LLP 552"), evidence (exact wording of a claim from the group),
+  paid collections (period totals), conversation snapshot ("what's the latest update in the
+  HiraFoods–Om Enterprises Traders 421 group?"), identity CLARIFY (ambiguous named customer —
+  resolve → select), UNSUPPORTED refusals (settlement proof from unconfirmed claims, bank
+  verification, forecasts, "repeated follow-up" confirmation). `expected_tool` = query_ar |
+  query_ar_financials | get_ar_evidence | get_paid_collections | resolve_ar_identity | NO_TOOL;
+  every named customer from entities.json (the 10 accounts + Radha Agencies Pvt Ltd 787 — proven
+  resolvable in collections v2).
 - Both: print `queries=N TOOL-expected=X CLARIFY=Y REFUSE=Z` on run; verify xlsx row counts
-  excluding header + category rows (assert exact N).
+  excluding header + category rows (assert exact N). **HARD GATE on generation: every named entity
+  in a query text must token-match entities.json; zero placeholder tokens (ABC|XYZ|TEST|PLACEHOLDER|
+  EXAMPLE); invoice numbers must come from the live harvest.**
 
 ## Phase 3 — Two-turn runner (new capability, no changes to the sacred single-turn pipeline)
 
@@ -191,7 +235,9 @@ Create `scripts/run_agent_evals.py` (reuses CopilotClient / load_account_config)
 
 1. Probe report: both init codes 200; clarify wire shape + resume contract documented with raw
    event samples; parser compatibility verdict per agent.
-2. Generators print expected counts; xlsx data-row counts == N; zero placeholder names.
+2. Generators print expected counts; xlsx data-row counts == N; every named customer/product/
+   invoice token-matches entities.json (zero ABC/XYZ/test tokens); invoice numbers from the live
+   harvest; finance has no WhatsApp-grounded queries, AR has no metric-jargon-only queries.
 3. verify_account_config exits 0 for both accounts.
 4. Each run completes: N records in jsonl, manifest v1 row (success/failed/avg), clarify queries
    have turn1 + turn2 where resumed, no retried failures.
