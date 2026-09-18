@@ -90,9 +90,9 @@ before any invoice-numbered query is written.
 
 ## §0 Decision gates (need user answers before execution)
 
-1. **Query counts:** finance 72 (34 metrics × ~1-2 forms + 8 refusals + 6 clarify + 6 chat/mixed)
-   vs AR 64 (dataset-mapped + identity-clarify + unsupported) — or barrel to 80 each for parity?
-   (Recommended: the above; smaller keeps the first pass ~1.5h per agent given 40-300s latencies.)
+1. **Query counts:** finance = **30 (user-provided CFO insight set, 2026-09-18, verbatim + ordered)**;
+   AR = 70 (datasets + identity-clarify + unsupported). Ten-question query sets replace the
+   generated 72/80 drafts — the user's 30 ARE the finance eval set.
 2. **Two-turn clarify runs:** include (recommended — it is the only way to test the clarifying
    behavior) vs first pass single-turn-only, clarify queries recorded as "clarified, not resumed".
 3. **Account dirs:** new `accounts/finance/` + `accounts/ar-agent/` (collections dir untouched —
@@ -140,20 +140,13 @@ references/ar-finance-protocols.md once verified.
 - Create `scripts/gen_finance_queries.py` — SECTIONS dict; writes
   `accounts/finance/queries.xlsx`. Columns: query | reference | remarks | expected_tool
   (`TOOL:<metric>` | `NO_TOOL`) | **expected_behavior** (`ANSWER | CLARIFY | REFUSE | CHAT | MIXED`).
-  **Persona: CFO / accountant. Domain: ERP ONLY** (no WhatsApp facts). Categories (~72):
-  metric set — receivables, aging, dso, concentration, collection, dormant, sales_trend, top_products,
-  top_customers, total_sales, invoice_count/unpaid_count/avg_invoice, top_outstanding, collected_total,
-  customers_to_call, collection_priority, next_action, big_old_debtors, credit_notes, purchases /
-  purchase_by_month, customers_with_dues, stock_on_hand, dead_stock, stock_value_at_list_price,
-  gst_collected / gst_by_rate, order_pipeline / orders_by_source / order_to_invoice_conversion,
-  beat_coverage, balance_movement, customers_by_segment | customer- and product-ANCHORED variants
-  with REAL names ("sales for Om Enterprises Traders 421 last quarter", "closing balance of Sai
-  Agencies & Co 1051", "dead stock of Golden Biscuits Lite", "invoice <real-number> status") —
-  every name from entities.json | REFUSE (profit/cash/supplier-payables/stock-at-cost) | CLARIFY
-  (vague CFO terms: "looks wrong", "healthy", "risky", "best customer", "late payer") | CHAT (what
-  customers said/asked/claimed — note: finance can ALSO answer chat via OpenSearch, but its answers
-  have no ERP grounding; label CHAT) | MIXED (who asked about X AND what do they owe). Seed from
-  finance-agent-sql-pairs.json + catalogue forms/test_forms, rewritten with real entities.
+  **Persona: CFO / accountant. Domain: ERP ONLY** (no WhatsApp facts). Query set = the
+  USER-PROVIDED 30 CFO insight questions (2026-09-18), VERBATIM and in the user's order; labeled per
+  the classify-gate rules (9 ANSWER / 12 CLARIFY / 9 REFUSE — profitability/cash/payables/expenses =
+  REFUSE; vague/open-review = CLARIFY). The earlier ~72 metric-set draft was replaced by the user's
+  set. Generator owns the labels (scripts/gen_finance_queries.py prints 30; hard-gates order +
+  placeholders). NOTE: finance metric answers have no observable SSE tool events (backend SQL) —
+  expected_tool is the review intent label; grade finance on behavior + answer quality.
 - Create `scripts/gen_ar_agent_queries.py` — ~64. **Persona: upper management. Domain: ERP +
   WhatsApp groups (the groups confirm the LATEST updates on payments/receivables).** Categories:
   position (outstanding, ageing snapshots, stale-snapshot honesty — "the latest list is from <date>"),
