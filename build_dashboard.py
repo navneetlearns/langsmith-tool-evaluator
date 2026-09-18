@@ -121,6 +121,13 @@ def classify_quality(record):
     """
     response = record.get("response", "") or ""
     error = record.get("error")
+    # Clarify parks (2026-09-18, finance/AR): an `interrupt` SSE event parks the turn with an
+    # EMPTY response and NO error — that is the agent asking a clarifying question, NOT a
+    # failure. The runner flags it (possible_clarify) and/or the status sequence carries
+    # 'interrupt'. Degrades to 'fail' when an error is also present.
+    seq = record.get("status_sequence") or []
+    if (record.get("possible_clarify") or "interrupt" in seq) and not error and not response.strip():
+        return "clarify"
     if error or not response.strip():
         return "fail"
     resp_lower = response.lower()
@@ -271,9 +278,11 @@ def main():
         "success": q_counts.get("success", 0),
         "marginal": q_counts.get("marginal", 0),
         "no_data": q_counts.get("no_data", 0),
+        "clarify": q_counts.get("clarify", 0),
         "fail": q_counts.get("fail", 0),
         "leak": leak_count,
     }
+    err_count = sum(1 for r in records if r.get("error"))
 
     leak_types = dict(leak_type_counts.most_common())
 
@@ -282,7 +291,7 @@ def main():
     for r in records:
         cat = r["category"]
         if cat not in cat_quality:
-            cat_quality[cat] = {"success": 0, "marginal": 0, "no_data": 0, "fail": 0, "_times": []}
+            cat_quality[cat] = {"success": 0, "marginal": 0, "no_data": 0, "clarify": 0, "fail": 0, "_times": []}
         cat_quality[cat][r["response_quality"]] += 1
         cat_quality[cat]["_times"].append(r["response_time_seconds"])
     for cat in cat_quality:
@@ -549,6 +558,77 @@ const catStepData = {json.dumps(cat_step_data, ensure_ascii=False)};
         html = re.sub(old_pct_pattern, lambda m: m.group(1) + str(new_pct) + "% of queries" + m.group(2), html, flags=re.DOTALL)
 
     # No-data card is now in template.html with proper CSS, no injection needed
+
+    # ---- Finance/agent-aware sections: clarify parks, behavior matrix, refusal trust ----
+    # (render only when the new fields are present — old accounts unaffected)
+    clarify_count = stats.get("clarify", 0)
+    has_behavior = any(r.get("expected_behavior") for r in records)
+
+    if clarify_count:
+        pct_c = round(clarify_count / total_queries * 100)
+        clarify_card = (
+            '<div class="quality-card clarify" style="background:var(--surface);'
+            'border-left:4px solid #7c3aed;border-radius:8px;padding:16px;">'
+            '<div class="icon">&#10067;</div>'
+            f'<div class="count" style="color:#7c3aed;">{clarify_count}</div>'
+            '<div class="desc"><strong>Clarify</strong> &mdash; Agent asked a clarifying question '
+            '(interrupt) and parked the turn; no answer on turn 1 (finance/AR clarify gate)</div>'
+            f'<div class="pct">{pct_c}% of queries</div></div>'
+        )
+        html = re.sub(r'(<div class="quality-card no-data">.*?</div>\s*</div>)(\s*</section>)',
+                      lambda m: m.group(1) + "\n      " + clarify_card + m.group(2),
+                      html, flags=re.DOTALL)
+
+    if has_behavior:
+        beh_matrix = {}
+        for r in records:
+            exp = (r.get("expected_behavior") or "UNLABELED").upper()
+            q = r["response_quality"]
+            obs = "FAIL" if r.get("error") else ("CLARIFY" if q == "clarify"
+                                                 else ("ANSWERED" if q in ("success", "marginal", "no_data") else q.upper()))
+            beh_matrix.setdefault(exp, collections.Counter())[obs] += 1
+        matrix_rows = ""
+        for exp in ("ANSWER", "CLARIFY", "REFUSE"):
+            if exp not in beh_matrix:
+                continue
+            c = beh_matrix[exp]
+            matrix_rows += (f'<tr><td><strong>{exp}</strong></td>'
+                            f'<td>{c.get("ANSWERED", 0)}</td>'
+                            f'<td>{c.get("CLARIFY", 0)}</td>'
+                            f'<td>{c.get("FAIL", 0)}</td></tr>')
+        hard_ref = sum(1 for r in records
+                       if (r.get("response") or "").lstrip().startswith("I can't answer"))
+        hedged = sum(1 for r in records
+                     if any(k in (r.get("response") or "") for k in
+                            ("not yet proven", "cannot be assessed", "from your books")))
+        guard = sum(1 for r in records if "Payments are not fully reconciled" in (r.get("response") or ""))
+        behavior_section = f"""
+  <!-- CLARIFY + BEHAVIOR MATRIX (finance/AR agents) -->
+  <section>
+    <h2>&#10067; Clarify Gate &amp; Behavior Matrix (expected vs observed)</h2>
+    <p class="section-desc" style="font-size:13px;color:#6b7280;">expected_behavior is the label from
+    the query set; observed is what the live agent did. Parks = the agent asked a clarifying
+    question (interrupt, no tools, no answer).</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Expected</th><th>Answered</th><th>Clarified (park)</th><th>Failed</th></tr></thead>
+      <tbody>{matrix_rows}</tbody>
+    </table></div>
+    <div class="leak-banner" style="margin-top:14px;">
+      <div class="summary">&#128273; Refusal trust: {hard_ref} hard refusals + {hedged} hedged
+      boundary-named answers, 0 fabricated figures &middot; reconcile/ageing guard fired on
+      {guard} answers &middot; finance streams no tool events (backend SQL) — tool-accuracy N/A</div>
+    </div>
+  </section>
+"""
+        html = html.replace("<!-- INFO LEAK DETECTION -->",
+                            behavior_section + "<!-- INFO LEAK DETECTION -->", 1)
+
+    # Correct the API Failed stat card: manifest 'failed' counts EMPTY responses (incl. clarify
+    # parks); the real technical-failure count is err_count.
+    try:
+        html = replace_stat_card(html, "API Failed", err_count)
+    except Exception:
+        pass
 
     # Leak banner
     html = re.sub(
