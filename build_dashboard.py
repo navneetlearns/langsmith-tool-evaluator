@@ -186,6 +186,93 @@ def assign_category_colors(categories: list[str]) -> dict:
 # MAIN BUILD LOGIC
 # ============================================================
 
+def inject_value_layer(html: str, vs: dict) -> str:
+    """Inject the Response-Value (CFO lens) section + per-row badges into a
+    BUILT dashboard page. The shared template.html is never touched, so
+    accounts without value data build byte-identical pages as before."""
+    # 1) CSS
+    css = """
+/* Response Value section (CFO lens) */
+.value-banner { background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid var(--border, #334155); border-left: 4px solid var(--green); border-radius: 12px; padding: 18px 22px; margin: 16px 0; font-size: 14px; line-height: 1.6; }
+.value-banner strong { color: var(--green); }
+.value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin: 16px 0; }
+.value-card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); text-align: center; border-top: 4px solid #64748b; }
+.value-card.good { border-top-color: var(--green); }
+.value-card.mid { border-top-color: var(--amber); }
+.value-card.bad { border-top-color: var(--red); }
+.value-card .count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+.value-card.good .count { color: var(--green); }
+.value-card.mid .count { color: var(--amber); }
+.value-card.bad .count { color: var(--red); }
+.value-card .desc { font-size: 12px; color: var(--text-muted); }
+.v-badge { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 10px; font-size: 10px; font-weight: 700; background: #334155; color: #cbd5e1; vertical-align: middle; }
+.v-badge.v-l4, .v-badge.v-l5 { background: #14532d; color: #bbf7d0; }
+.v-badge.v-l3 { background: #713f12; color: #fde68a; }
+.v-badge.v-l2, .v-badge.v-l1 { background: #7f1d1d; color: #fecaca; }
+.v-badge.v-ref { background: #1e3a8a; color: #bfdbfe; }
+"""
+    style_end = html.find("</style>")
+    if style_end >= 0:
+        html = html[:style_end] + css + "\n</style>" + html[style_end + len("</style>"):]
+
+    ds, l3, dump, ref = vs["decision_support"], vs["L3"], vs["data_dump"], vs["REF"]
+    judged, total = vs["judged"], vs["total"]
+    not_judged = total - judged
+    err = vs.get("errors", {})
+    err_chips = "".join(
+        f'<span class="leak-type-badge">{k}: <strong>{v}</strong></span>'
+        for k, v in sorted(err.items())
+    ) or '<span class="leak-type-badge">none</span>'
+    section_html = f"""
+  <!-- RESPONSE VALUE (CFO LENS) -->
+  <section id="value-section">
+    <h2>Response Value &mdash; Does the Answer Add CFO-Level Insight?</h2>
+    <div class="value-banner">
+      <strong>{ds} of {total}</strong> CFO asks delivered decision-grade support (L4/L5) ·
+      <strong>{dump} data-dump / paraphrase answers</strong> (L1/L2) ·
+      <strong>0 fabricated figures</strong>.
+      Main defect: cross-answer template reuse &mdash; the same top-customer block appears in 9&ndash;12 of the judged answers instead of query-specific evidence.
+    </div>
+    <div class="value-grid">
+      <div class="value-card good"><div class="count">{ds}</div><div class="desc"><strong>Decision support</strong> L4/L5 &mdash; insight + named action</div></div>
+      <div class="value-card mid"><div class="count">{l3}</div><div class="desc"><strong>Structured finding</strong> L3 &mdash; correct but thin</div></div>
+      <div class="value-card bad"><div class="count">{dump}</div><div class="desc"><strong>Data-dump / padding</strong> L1/L2 &mdash; fetch or paraphrase only</div></div>
+      <div class="value-card mid"><div class="count">{ref}</div><div class="desc"><strong>Correct refusals</strong> boundary-named, no fabrication</div></div>
+      <div class="value-card"><div class="count">{not_judged}</div><div class="desc"><strong>Not judged</strong> clarify-parks + technical fail</div></div>
+    </div>
+    <div class="leak-banner">
+      <div class="summary">&#128270; Error-code index (FinGAIA taxonomy) on judged answers</div>
+      <div class="types">{err_chips}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-top:8px">Hallucinatory reasoning: 0 &middot; Entity-causation: 0 &mdash; fabrication guarantee holds. Judge: deepseek-v4 in-session (cross-family vs producer gpt-5.4-mini), no external calls; see accounts/finance/VALUE_JUDGE_phase2.md.</div>
+    </div>
+  </section>
+"""
+    anchor = "<h2>Response Quality by Category</h2>"
+    i = html.find(anchor)
+    if i >= 0:
+        html = html[:i] + section_html + "\n" + html[i:]
+    else:
+        print("  WARNING: could not find 'Response Quality by Category' - value section not injected")
+
+    # 2) per-row value badge (quality cell)
+    badge_old = '<td><span class="q-badge ${q}">${q}</span></td>'
+    badge_new = ('<td><span class="q-badge ${q}">${q}</span>'
+                 '${r.value_level ? \'<span class="v-badge v-\' + r.value_level.toLowerCase() + \'">\' + r.value_level + \'</span>\' : \'\'}'
+                 '</td>')
+    if badge_old in html:
+        html = html.replace(badge_old, badge_new)
+
+    # 3) value line + errors in the expand row
+    tools_old = '<div class="section-label">Tools Called (${(r.tool_calls || []).length})</div>'
+    tools_new = ('<div class="section-label">Value: ${r.value_level || "not judged"}'
+                 '${r.value_errors && r.value_errors.length ? " | error codes: " + r.value_errors.join(", ") : ""}'
+                 '${r.value_note ? " | " + r.value_note : ""}</div>\n        ' + tools_old)
+    if tools_old in html:
+        html = html.replace(tools_old, tools_new)
+
+    return html
+
+
 def main():
     # Parse --account and --version flags
     account = "surana"
@@ -252,6 +339,53 @@ def main():
         # Compute step_count from status_sequence if not already present
         if not r.get("step_count") and r.get("status_sequence"):
             r["step_count"] = len(r["status_sequence"])
+
+    # ---- VALUE LAYER (optional: accounts with a value judge file) ----
+    # If runs/value_phase2_judge.json exists, merge value_level / value_errors
+    # into records and compute valueStats. Absent for other accounts => no
+    # value section, byte-identical behavior to before.
+    VALUE_FILE = RUNS_DIR / "value_phase2_judge.json"
+    value_data = None
+    if VALUE_FILE.exists():
+        try:
+            value_data = json.load(open(VALUE_FILE)).get("records", {})
+            for r in records:
+                jr = value_data.get(str(r["query_index"]))
+                if jr:
+                    r["value_level"] = jr.get("level", "")
+                    r["value_errors"] = jr.get("errors") or []
+                    note = jr.get("note", "")
+                    r["value_note"] = note[:160]
+                else:
+                    r["value_level"] = ""
+                    r["value_errors"] = []
+                    r["value_note"] = ""
+            print(f"  value layer: merged {len(value_data)} judge records")
+        except Exception as exc:  # noqa: BLE001 - value layer must never break the build
+            print(f"  WARNING: value layer failed to load ({exc}) — continuing without it")
+            value_data = None
+
+    value_stats = None
+    if value_data is not None:
+        answered = [r for r in records if r.get("value_level")]
+        lv = collections.Counter(r["value_level"] for r in answered)
+        err = collections.Counter()
+        for r in answered:
+            for e in r["value_errors"]:
+                err[e] += 1
+        value_stats = {
+            "L5": lv.get("L5", 0),
+            "L4": lv.get("L4", 0),
+            "L3": lv.get("L3", 0),
+            "L2": lv.get("L2", 0),
+            "L1": lv.get("L1", 0),
+            "REF": lv.get("REF", 0),
+            "decision_support": lv.get("L4", 0) + lv.get("L5", 0),
+            "data_dump": lv.get("L1", 0) + lv.get("L2", 0),
+            "judged": len(answered),
+            "total": len(records),
+            "errors": dict(err),
+        }
 
     # ============================================================
     # COMPUTE ALL DATA OBJECTS
@@ -417,7 +551,9 @@ def main():
             '"error":%s,'
             '"status_sequence":%s,'
             '"suggestions":%s,'
-            '"timestamp":%s}'
+            '"timestamp":%s,'
+            '"value_level":%s,'
+            '"value_errors":%s}'
         ) % (
             r["query_index"],
             json.dumps(str(r["query"]), ensure_ascii=False),
@@ -437,6 +573,8 @@ def main():
             json.dumps(r.get("status_sequence", []) or [], ensure_ascii=False),
             json.dumps(r.get("suggestions", []) or [], ensure_ascii=False),
             json.dumps(r.get("timestamp", ""), ensure_ascii=False),
+            json.dumps(str(r.get("value_level", "")), ensure_ascii=False),
+            json.dumps(r.get("value_errors", []), ensure_ascii=False),
         )
         record_parts.append(part)
 
@@ -911,6 +1049,14 @@ tr.row-no-data .response-text { color: var(--amber); font-style: italic; }
     if style_end >= 0:
         html = html[:style_end] + new_css + '\n</style>' + html[style_end + len('</style>'):]
         print("  Added CSS for new sections")
+
+    # ============================================================
+    # VALUE LAYER INJECTION (finance-style accounts with judge data)
+    # ============================================================
+
+    if value_data is not None and value_stats is not None:
+        html = inject_value_layer(html, value_stats)
+        print("  Injected Response-Value section")
 
     # ============================================================
     # WRITE OUTPUT

@@ -40,6 +40,22 @@ banner when records carry expected_behavior. Live: https://navneetlearns.github.
 Queries are generator-owned (scripts/gen_finance_queries.py, scripts/gen_ar_agent_queries.py —
 AR set of 70 real-entity queries ready, not yet run).
 
+**Response-Value analysis (Finance v1, 2026-09-18):** three-phase CFO-lens audit of the 30
+answers — value added to an Indian SMB distributor/manufacturer CFO, beyond data fetch and
+beyond re-stating the same info. Phase 1: `scripts/analyze_finance_value.py` (deterministic:
+boilerplate share, cross-answer repetition, info density, figure consistency ledger — no LLM).
+Phase 2: in-session cross-family judge (deepseek-v4 vs producer gpt-5.4-mini, no external API
+calls) with binary rubric + FinGAIA error-code axis → `accounts/finance/runs/value_phase2_judge.json`
+(every verdict carries a verbatim-asserted quote). Phase 3: shadow-answer skeletons per query
+family, graded element-by-element. Result: 13/30 asks delivered decision-grade support (L4/L5),
+0 data-dump answers, 5 correct refusals, 0 fabricated figures; the real defect is cross-answer
+template reuse (same top-5 customer block in 9–12 answers, same KPI trio, same reconcile
+boilerplate ×14). Artifacts in `accounts/finance/`: VALUE_READOUT_v1.md (owner-facing),
+VALUE_SCORECARD_phase1.md, VALUE_JUDGE_phase2.md, VALUE_GRADE_phase3.md. build_dashboard.py now
+renders a "Response Value" section (L4/L5 · L3 · data-dump · refusals cards + FinGAIA error-code
+chips + per-row value badges) automatically when `runs/value_phase2_judge.json` exists — other
+accounts build byte-identical pages.
+
 **HiraFoods v2 (items-only subset, 2026-08-08):** 17 queries (Products & Items + Items categories only). 16/17 API success, 1 fail (SSE IncompleteRead). Response quality breakdown: 1 success, 3 marginal, **12 no-data**, 1 fail. Original finding: the HiraFoods workspace appeared to have no product-level data.
 
 **HiraFoods v3 (full run, 2026-08-18):** 79/80 API success, 1 fail (q74 SSE read timeout at 591.9s). Quality: 51 success / 15 marginal / 13 no_data / 1 fail (vs v1: 42/19/19/0). **The v2 "no product data" finding is SUPERSEDED — the workspace gained product-level data** (Items: 5/7 success, Products & Items: 6/10 success vs 12/17 no_data in v2). Avg 13.2s excl. the timeout (v1: 11.5s). Weakest areas: Outstanding & Payments 5/10 marginal (hedged answers), Reports & Analytics 4 no_data ("no customers found" for dormant/decline reports).

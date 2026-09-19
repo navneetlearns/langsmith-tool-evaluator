@@ -1,0 +1,249 @@
+{
+  "account": "finance",
+  "judge": "in-session deepseek-v4 (no external call)",
+  "rubric_version": "v1",
+  "records": {
+    "1": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "issue",
+      "note": "Actions + priorities good; literal '[unverified]' x2 is a grounding-guard artifact; no portfolio outstanding (honest).",
+      "errors": [
+        "DataTypeHandling"
+      ],
+      "quote": "Call the listed priority customers today, starting with the largest outstanding amounts and longest payment gaps."
+    },
+    "2": {
+      "level": "L4",
+      "answered": "partial",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Correct boundary: cannot prove profitability, uses purchases as cost-base indicator only. Top-5 receivables block copied from template.",
+      "errors": [],
+      "quote": "Treat purchases as a cost-base indicator only; do not label the business profitable until cost of goods sold and operating expenses are available."
+    },
+    "4": {
+      "level": "L5",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "issue",
+      "note": "Portfolio sizing + fastest-worsening tracked separately + credit-hold decision link. 'days days' x2.",
+      "errors": [
+        "FinancialTerminologicalBias"
+      ],
+      "quote": "Escalate accounts with both high outstanding balances and long gaps since the last payment to senior commercial owners."
+    },
+    "9": {
+      "level": "L5",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "issue",
+      "note": "Operational plan: first wave / second wave / escalation track. 'days days' present; escalation-growth figures correctly flagged as signals, not balances.",
+      "errors": [
+        "FinancialTerminologicalBias"
+      ],
+      "quote": "Launch the first-wave calls immediately and record a firm payment commitment for each account."
+    },
+    "10": {
+      "level": "L3",
+      "answered": "partial",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Honest quantification refusal with substitute guidance. Correct given the data gap; thin (1 figure / 1777 chars).",
+      "errors": [],
+      "quote": "No reliable overdue amount or recoverability estimate is provided."
+    },
+    "11": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "issue",
+      "note": "Verdict + honest no-external-benchmark caveat + control actions. 'days days' present.",
+      "errors": [
+        "FinancialTerminologicalBias"
+      ],
+      "quote": "Review credit limits, payment terms, and order release controls for customers with persistently high outstanding balances."
+    },
+    "12": {
+      "level": "REF",
+      "answered": "yes",
+      "interpretation": "y-refusal",
+      "decision": "no",
+      "restatement": "none",
+      "hygiene": "issue",
+      "note": "Boundary precise (payables under-recorded) + alternative offer. '.. I can' double-period glitch.",
+      "errors": [
+        "Craft"
+      ],
+      "quote": "I can't answer that from your books \u2014 Supplier payables / amount owed to suppliers is not reliably available in the dataset."
+    },
+    "13": {
+      "level": "REF",
+      "answered": "yes",
+      "interpretation": "y-refusal",
+      "decision": "no",
+      "restatement": "none",
+      "hygiene": "issue",
+      "note": "Names exactly which pieces are missing. '.. I can' glitch.",
+      "errors": [
+        "Craft"
+      ],
+      "quote": "it does not reliably contain supplier payables, cash/bank balances, or actual supplier payment timing."
+    },
+    "15": {
+      "level": "L4",
+      "answered": "partial",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Real comparative insight (invoices 5,642->117; revenue fall) + honest margin boundary.",
+      "errors": [],
+      "quote": "Sales fell from \u20b91,59,48,487 in the prior month to \u20b911,97,739 in the latest month, while invoices declined from 5,642 to 117; the latest result reflects both lower volume and lower revenue."
+    },
+    "16": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Cross-metric linkage (Ganesh sales vs outstanding) + concentrations 50.3%/49.6%. No boilerplate.",
+      "errors": [],
+      "quote": "Ganesh Retail Traders combines sales of \u20b93,62,161 with the largest reported outstanding amount of \u20b94,94,550; this is the clearest customer-level area where revenue may be tying up cash."
+    },
+    "17": {
+      "level": "REF",
+      "answered": "yes",
+      "interpretation": "y-refusal",
+      "decision": "no",
+      "restatement": "none",
+      "hygiene": "issue",
+      "note": "Structured refusal. '0 figures verified' process footer reads odd on a refusal.",
+      "errors": [
+        "Craft"
+      ],
+      "quote": "Expense accounts and a general ledger are not tracked in your books, so no expense account can be prioritised for questioning."
+    },
+    "18": {
+      "level": "REF",
+      "answered": "yes",
+      "interpretation": "y-refusal",
+      "decision": "no",
+      "restatement": "none",
+      "hygiene": "issue",
+      "note": "Clean + fast. '.. I can' glitch.",
+      "errors": [
+        "Craft"
+      ],
+      "quote": "No expense table or P&L/COGS data is available, so expenses and their growth cannot be measured or compared to business growth from the provided sources."
+    },
+    "19": {
+      "level": "L5",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Period-matching challenge, concentration review, forecasting caution with invoice-count evidence (1,640->5,642->117).",
+      "errors": [],
+      "quote": "Invoice counts moved from 1,640 in the earliest reported month to 5,642 at the peak and 117 in the latest reported month."
+    },
+    "21": {
+      "level": "L5",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Standout: cross-view inconsistency caught (movement vs ranking), negative starting balances, hypotheses (cut-off/duplicates), verification path.",
+      "errors": [],
+      "quote": "Ganesh Retail Traders appears at \u20b98,01,148 in the latest movement view but \u20b94,94,550 in the outstanding ranking."
+    },
+    "22": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "issue",
+      "note": "Off-P&L framing + payment-to-sales ratio (new metric). 'days days' present.",
+      "errors": [
+        "FinancialTerminologicalBias"
+      ],
+      "quote": "Track receivables conversion and collections separately from reported P&L; cash and receivables risk are not the same as booked profitability."
+    },
+    "25": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Multi-area (receivables + inventory sell-through gate). Actions specific.",
+      "errors": [],
+      "quote": "Pause or tightly gate replenishment for the listed products with no recorded last sale; run a product-level sell-through and liquidation review before committing to more purchases."
+    },
+    "26": {
+      "level": "L3",
+      "answered": "partial",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "issue",
+      "note": "Forward-look is one line + standard chase block; honest 'not a complete liquidity forecast'. 'days days' present.",
+      "errors": [
+        "FinancialTerminologicalBias"
+      ],
+      "quote": "Cash and bank balances are not tracked in your books, so this indicates receivables-driven cash-flow pressure rather than a complete liquidity forecast."
+    },
+    "27": {
+      "level": "REF",
+      "answered": "yes",
+      "interpretation": "y-refusal",
+      "decision": "no",
+      "restatement": "none",
+      "hygiene": "issue",
+      "note": "Precise on required inputs. '.. I can' glitch.",
+      "errors": [
+        "Craft"
+      ],
+      "quote": "Accounting profit and cash situation require profit & loss data, cost/COGS, and cash/bank balances, which are not available in the dataset."
+    },
+    "28": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "DSO 120.8d vs 167d window = 72% of period in receivables: sharpest ratio insight; volatility caution.",
+      "errors": [],
+      "quote": "DSO is 120.8 days against a measured period of 167.0 days, indicating slow conversion of sales into cash."
+    },
+    "30": {
+      "level": "L4",
+      "answered": "yes",
+      "interpretation": "yes",
+      "decision": "yes",
+      "restatement": "none-internal",
+      "hygiene": "ok",
+      "note": "Surfaced a 6th entity (Jai Enterprises 151 days) beyond the standard top-5; priority plan concrete.",
+      "errors": [],
+      "quote": "Jai Enterprises Traders is also notable for 151.0 days since its last payment, despite its listed outstanding balance being lower than the largest exposure."
+    }
+  }
+}
