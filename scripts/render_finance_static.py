@@ -73,7 +73,10 @@ def build(version: int):
                   f'<div class="desc"><strong>{label}</strong></div>'
                   f'<div class="pct">{round(o.get(key,0)/summary["queries"]*100)}% of queries</div></div>')
 
-    # ---- expected-vs-observed matrix (static) ----
+    # ---- behavior matrix + cross-source consistency assertions ----
+    # The matrix is built from per-query derived rows; its column sums MUST equal the
+    # summary outcome distribution (this caught the "all-zeros" bug: raw records were
+    # read instead of derived rows, dumping every query into the error column).
     exp_labels = {"ANSWER": "Answer", "CLARIFY": "Clarify (park)", "REFUSE": "Refuse"}
     beh = {k: {"answered": 0, "hard_refusal": 0, "parked": 0, "error": 0} for k in exp_labels}
     for r in rows:
@@ -81,6 +84,21 @@ def build(version: int):
         if e not in beh:
             continue
         beh[e][r.get("outcome") or "error"] += 1
+    for e in exp_labels:
+        col_sum = beh[e]["answered"] + beh[e]["hard_refusal"] + beh[e]["parked"] + beh[e]["error"]
+        exp_count = sum(1 for r in rows if (r.get("expected_behavior") or "ANSWER").upper() == e)
+        assert col_sum == exp_count, (
+            f"matrix row {e}: {col_sum} != {exp_count} expected labels — per-query rows "
+            f"missing outcomes (raw-vs-derived bug?)")
+    total = sum(sum(beh[e].values()) for e in exp_labels)
+    assert total == len(rows), f"matrix total {total} != {len(rows)} rows"
+    assert o == {k: sum(beh[e].get(k, 0) for e in exp_labels) for k in
+                 ("answered", "hard_refusal", "parked", "error")}, (
+        "matrix column sums != summary.outcomes — page numbers disagree with derived artifacts")
+    # per-query rows must carry real derived values, never the empty fallbacks
+    empties = [r["query_index"] for r in rows if not r.get("outcome") or not r.get("verdict")]
+    assert not empties, f"per-query rows missing outcome/verdict: q{','.join(map(str, empties))}"
+
     matrix_rows = ""
     for e in exp_labels:
         c = beh[e]

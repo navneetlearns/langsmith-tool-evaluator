@@ -290,6 +290,12 @@ def verify_finance_static(page: str) -> list:
     n_tables = page.count("<table>")
     if n_tables < 5:
         errors.append(f"expected >=5 tables, found {n_tables}")
+    # Relative ../../ links break on GitHub Pages (only docs/ is published) — all
+    # data links must be absolute raw.githubusercontent.com URLs. This caught the
+    # banner JSON 404 bug.
+    rel = sorted(set(re.findall(r'href="(\.\./\.\./[^"]+)"', page)))
+    if rel:
+        errors.append(f"relative ../ links that 404 on Pages: {rel}")
     return errors
 
 
