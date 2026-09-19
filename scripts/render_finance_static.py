@@ -50,7 +50,12 @@ def build(version: int):
     summary = json.loads((d / "summary.json").read_text())
     findings = json.loads((d / "findings.json").read_text())
     leaks = [json.loads(l) for l in (d / "leaks.jsonl").read_text().splitlines() if l.strip()]
-    rows = [json.loads(l) for l in (d / "results.jsonl").read_text().splitlines() if l.strip()]
+    # Per-query derived rows (outcome/verdict/value_level) come from the PIPELINE, not the
+    # raw results.jsonl — raw records carry no derived fields. Recompute via derive()
+    # (single source of truth; identical to eval_cli.load).
+    sys.path.insert(0, str(SCRIPT_DIR / "scripts"))
+    from finance_pipeline import derive
+    _, rows, _, _ = derive(int(version))
     judge_rows = {json.loads(l)["query_index"]: json.loads(l)
                   for l in (d / "judgments.jsonl").read_text().splitlines() if l.strip()}
 
@@ -137,6 +142,13 @@ def build(version: int):
     md = summary["date"]
     err_chips = "".join(f'<code>{esc(k)} x{vv}</code> ' for k, vv in sorted(val["errors"].items())) or "none"
 
+    # Live links must be ABSOLUTE raw.githubusercontent.com URLs — GitHub Pages only
+    # publishes docs/, so relative ../../accounts/... resolves outside the site and 404s.
+    RAW = "https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main"
+    json_links = " ".join(
+        f'<a href="{RAW}/accounts/finance/runs/v{version}/{f}">{f}</a>'
+        for f in ("summary.json", "findings.json", "judgments.jsonl", "leaks.jsonl", "results.jsonl"))
+
     page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,11 +178,7 @@ code {{ background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px;
     · human-reviewed {j["human_reviewed"]}/{j["judged"]} · invariants {"OK &#10003;" if summary.get("invariant_ok") else "VIOLATION"}</div>
     <div class="json-links" style="margin-top:10px;">
       <strong>Machine-readable (for agents):</strong>
-      <a href="../../accounts/finance/runs/v{version}/summary.json">summary.json</a>
-      <a href="../../accounts/finance/runs/v{version}/findings.json">findings.json</a>
-      <a href="../../accounts/finance/runs/v{version}/judgments.jsonl">judgments.jsonl</a>
-      <a href="../../accounts/finance/runs/v{version}/leaks.jsonl">leaks.jsonl</a>
-      <a href="../../accounts/finance/runs/v{version}/results.jsonl">results.jsonl</a>
+      {json_links}
     </div>
   </header>
 
@@ -254,7 +262,7 @@ code {{ background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px;
 
   <footer style="margin-top:32px;color:#64748b;font-size:12px;">
     Static page rendered from derived artifacts (accounts/finance/runs/v{version}/) — no JavaScript tables.
-    Raw traces: <a href="../../accounts/finance/runs/query_results_v{version}.jsonl">query_results_v{version}.jsonl</a> ·
+    Raw traces: <a href="{RAW}/accounts/finance/runs/query_results_v{version}.jsonl">query_results_v{version}.jsonl</a> ·
     Run v{version} &middot; {md}
   </footer>
 </div>
