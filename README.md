@@ -48,19 +48,32 @@ banner when records carry expected_behavior. Live: https://navneetlearns.github.
 Queries are generator-owned (scripts/gen_finance_queries.py, scripts/gen_ar_agent_queries.py —
 AR set of 70 real-entity queries ready, not yet run).
 
-**Derived-artifact pipeline + eval CLI (2026-09-19):** `scripts/finance_pipeline.py` derives a
-single source of truth from the raw JSONL (outcome taxonomy answered/hard_refusal/parked/error,
-expected-vs-observed verdicts, value mix, latency by outcome, deterministic content checks, leaks
-with matched strings + judge provenance) into `accounts/finance/runs/v<N>/{summary.json,
-findings.json, judgments.jsonl, leaks.jsonl, results.jsonl}` — invariants asserted at build (e.g.
-outcomes sum == queries; this is what catches "10 failed" vs "1 failed" conflicts). `eval_cli.py`
-is the agent-facing surface: `summary / findings --open / show qN / diff / rerun --failed / gate
---min-match 0.6`, all with `--json`; rerun passes `--only` to run_agent_evals.py which pre-seeds
-untouched rows from the prior run so v2 stays diffable. Finance dashboards now render a fully
-STATIC page (server-rendered tables, no JS, no embedded records blob) — tool-selection/step
-framing dropped because finance streams no tool events (backend SQL); stale raw-data text gone;
-leaks show matched strings. Other accounts build byte-identical pages (verified head-vs-head).
-See `accounts/finance/runs/v1/summary.json`.
+**Derived-artifact pipeline + eval CLI + story-first static page (2026-09-19):**
+`scripts/finance_pipeline.py` derives a single source of truth from the raw JSONL
+(outcome taxonomy answered/hard_refusal/parked/error, expected-vs-observed verdicts, value mix,
+latency by outcome, deterministic content checks, leaks with matched strings + judge provenance)
+into `accounts/finance/runs/v<N>/{summary.json, findings.json, judgments.jsonl, leaks.jsonl,
+results.jsonl}` — invariants asserted at build (outcomes/verdicts sum == queries; judged+parked+error
+== 30; this is what catches "10 failed" vs "1 failed" conflicts). `eval_cli.py` is the agent-facing
+surface: `summary / findings --open / show qN / diff / rerun --failed / gate --min-match 0.6`, all
+with `--json`; rerun passes `--only` to run_agent_evals.py which pre-seeds untouched rows from the
+prior run so v2 stays diffable. Finance dashboards render a fully STATIC story-first page (headline
++ outcome cards + "How This Run Was Done" + "Sources & Reference" above the fold; all 7 detail
+tables behind native `<details>` collapse — zero JS, opens on click; links are absolute
+raw.githubusercontent.com URLs styled light so they're identifiable on dark surfaces). Tool-selection/
+step framing dropped because finance streams no tool events (backend SQL); leaks show matched strings.
+Other accounts build byte-identical pages (verified head-vs-head). See
+`accounts/finance/runs/v1/summary.json`.
+
+**QA lesson (2026-09-19, user-caught bugs):** structural checks (row counts, section markers, zero
+console errors) do NOT catch wrong cell values or dead links — they passed while the behavior matrix
+showed all-zeros and the banner JSON links 404'd. Hard build failures now: (1) cross-source
+consistency — behavior-matrix column sums must equal summary.outcomes and every per-query row must
+carry non-empty outcome/verdict (regression-tested); (2) no relative `../../` hrefs (Pages publishes
+only docs/). When verifying a rebuilt page visually: assert VALUES against the derived JSONs and
+resolve every data link against the live site; use Playwright `is_visible()` for collapse checks —
+`getComputedStyle`/`getBoundingClientRect` on children of a closed `<details>` return phantom
+display:block/stale boxes (the UA hides the content slot, not the child style).
 
 **Response-Value analysis (Finance v1, 2026-09-18):** three-phase CFO-lens audit of the 30
 answers — value added to an Indian SMB distributor/manufacturer CFO, beyond data fetch and
