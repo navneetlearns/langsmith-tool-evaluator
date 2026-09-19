@@ -91,6 +91,16 @@ Leak section: every hit labeled likely-false-positive with matched strings; new 
 cookie-cutter data-availability phrasing in q1 q15 q19 q25. Deep links now open the target
 `<details>` row on load (tiny inline hash-opener, verified by QA). QA suite now 25 checks, all pass.
 
+**Light minimal redesign + TL;DR (2026-09-19, pass 4):** the finance page no longer inherits the
+shared dark template palette (dark-on-dark was unreadable). New self-contained light theme: page bg
+#f8fafc, cards white, ink #0f172a, muted #475569 (~7:1 contrast), dark 700-800 outcome/verdict
+shades for text and bar segments with white labels, blue links #1d4ed8, subtle tinted flags/scaffolds.
+A TL;DR strip sits at the very top (id="tldr", also in the side nav): one-line verdict, chip stats
+(L4/L5, behavior match, wrongly parked, fabrication, leak hits), priority-finding chips linking to
+F1-F9 anchors, and jump links to all 7 sections — the "short version" above the full summary.
+Zero dark hexes remain in the rendered page (asserted); QA 25/25 pass; surana byte-identical
+modulo date-stamp.
+
 **QA lesson (2026-09-19, user-caught bugs):** structural checks (row counts, section markers, zero
 console errors) do NOT catch wrong cell values or dead links — they passed while the behavior matrix
 showed all-zeros and the banner JSON links 404'd. Hard build failures now: (1) cross-source

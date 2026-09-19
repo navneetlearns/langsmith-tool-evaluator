@@ -31,17 +31,19 @@ OUT_DIR = SCRIPT_DIR / "langsmith-tool-evaluator" / "docs" / "finance"
 LEGACY_DIR = OUT_DIR / "legacy"
 RAW = "https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main"
 
-SEV_COLOR = {"high": "#dc2626", "medium": "#d97706", "low": "#64748b"}
+SEV_COLOR = {"high": "#b91c1c", "medium": "#b45309", "low": "#64748b"}
 OUTCOME_LABEL = {
     "answered": "Answered", "hard_refusal": "Hard refusal",
     "parked": "Clarify park", "error": "Technical error",
 }
-OUTCOME_COLOR = {"answered": "#16a34a", "hard_refusal": "#2563eb",
-                 "parked": "#7c3aed", "error": "#dc2626"}
+# Dark 700-800 shades: readable as TEXT on white, and as BAR backgrounds with
+# white text. (Light 500-shades were invisible on both.)
+OUTCOME_COLOR = {"answered": "#166534", "hard_refusal": "#1e40af",
+                 "parked": "#5b21b6", "error": "#991b1b"}
 VERDICT_LABEL = {"match": "Match", "partial": "Partial",
                  "mismatch": "Mismatch", "error": "Error"}
-VERDICT_COLOR = {"match": "#16a34a", "partial": "#d97706",
-                 "mismatch": "#dc2626", "error": "#dc2626"}
+VERDICT_COLOR = {"match": "#15803d", "partial": "#b45309",
+                 "mismatch": "#b91c1c", "error": "#b91c1c"}
 
 # ---- Tier tags. Authoritative source: VALUE_JUDGE_phase2.md + VALUE_GRADE_phase3.md
 # (user-approved 2026-09-18). VALUE_SCORECARD_phase1.md originally tagged the four
@@ -395,98 +397,158 @@ def error_chips(b):
 # ============================================================
 # CSS (compact; keeps the shared template's dark tokens)
 # ============================================================
-def page_css(base_css):
-    return base_css + """
-:root{--green:#22c55e;--blue:#3b82f6;--violet:#7c3aed;--red:#dc2626;--amber:#d97706;}
-*{box-sizing:border-box;} body{margin:0;}
-.layout{display:grid;grid-template-columns:230px 1fr;max-width:1400px;margin:0 auto;gap:28px;padding:0 20px;}
-.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;padding:22px 10px 40px;border-right:1px solid var(--border,#334155);}
+def page_css():
+    # Self-contained LIGHT theme — does NOT inherit the shared template's dark
+    # palette (dark-on-dark was unreadable). Readable text/background pairs only.
+    return """
+:root{
+  --bg:#f8fafc; --card:#ffffff; --surface:#ffffff;
+  --border:#e2e8f0; --ink:#0f172a; --muted:#475569;
+  --green:#166534; --blue:#1d4ed8; --violet:#5b21b6; --red:#b91c1c; --amber:#b45309;
+  --out-answered:#166534; --out-refusal:#1e40af; --out-parked:#5b21b6; --out-error:#991b1b;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:14px;line-height:1.6;}
+h1,h2,h3{line-height:1.3;color:var(--ink);}
+a{color:var(--blue);text-underline-offset:2px;}
+a:visited{color:var(--violet);}
+.layout{display:grid;grid-template-columns:230px 1fr;max-width:1440px;margin:0 auto;gap:28px;padding:0 20px;}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;padding:22px 10px 40px;border-right:1px solid var(--border);}
 .sidebar h1{font-size:15px;margin:0 0 4px;line-height:1.35;}
-.sidebar .src{font-size:11px;color:var(--text-muted,#94a3b8);margin-bottom:14px;}
+.sidebar .src{font-size:11px;color:var(--muted);margin-bottom:14px;}
 .sidebar nav{display:flex;flex-direction:column;gap:2px;}
-.sidebar nav a{color:var(--text-muted,#94a3b8);text-decoration:none;font-size:12.5px;padding:6px 10px;border-radius:6px;}
-.sidebar nav a:hover{background:rgba(148,163,184,.1);color:var(--text,#e2e8f0);}
-.sidebar nav a.act{color:#c7d2fe;background:rgba(99,102,241,.14);font-weight:600;}
+.sidebar nav a{color:var(--ink);text-decoration:none;font-size:12.5px;padding:6px 10px;border-radius:6px;}
+.sidebar nav a:hover{background:#eef2ff;color:var(--blue);}
+.sidebar nav a.act{color:var(--blue);background:#eef2ff;font-weight:600;}
 main{min-width:0;padding:22px 8px 80px;}
 section{margin:0 0 44px;scroll-margin-top:14px;}
-h2{font-size:19px;margin:0 0 6px;border-bottom:1px solid var(--border,#334155);padding-bottom:8px;}
+h2{font-size:19px;margin:0 0 6px;border-bottom:1px solid var(--border);padding-bottom:8px;}
 h3{font-size:14.5px;margin:16px 0 6px;}
-.desc{color:var(--text-muted,#94a3b8);font-size:12.5px;line-height:1.6;margin:6px 0;}
-.verdict{background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid var(--border,#334155);border-left:4px solid var(--green,#22c55e);border-radius:12px;padding:16px 20px;margin:14px 0;font-size:14px;line-height:1.75;}
-.verdict .s{color:#86efac;font-weight:700;}
+.desc{color:var(--muted);font-size:12.5px;line-height:1.6;margin:6px 0;}
+.verdict{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--green);border-radius:12px;padding:16px 20px;margin:14px 0;font-size:14px;line-height:1.75;}
+.verdict .s{color:var(--green);font-weight:700;}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0;}
-.kpi{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-left:4px solid var(--blue,#3b82f6);border-radius:10px;padding:12px 14px;}
-.kpi-v{font-size:22px;font-weight:800;color:var(--blue,#93c5fd);}
-.kpi-d{font-size:11.5px;color:var(--text-muted,#94a3b8);line-height:1.5;margin-top:4px;}
-.obar{display:flex;height:64px;border-radius:10px;overflow:hidden;border:1px solid var(--border,#334155);margin:12px 0 4px;}
-.obar-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#04121d;font-weight:800;text-decoration:none;min-width:44px;transition:filter .12s;}
-.obar-seg:hover{filter:brightness(1.15);}
-.obar-n{font-size:17px;} .obar-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
-.obar-total{font-size:11px;color:var(--text-muted,#94a3b8);}
+.kpi{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:10px;padding:12px 14px;}
+.kpi-v{font-size:22px;font-weight:800;color:var(--blue);}
+.kpi-l strong{color:var(--ink);}
+.kpi-d{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:4px;}
+.obar{display:flex;height:64px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:12px 0 4px;}
+.obar-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:800;text-decoration:none;min-width:44px;transition:filter .12s;}
+.obar-seg:hover{filter:brightness(1.12);}
+.obar-n{font-size:17px;} .obar-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;opacity:.92;}
+.obar-total{font-size:11px;color:var(--muted);}
 .psteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0;}
-.pstep{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-top:3px solid var(--blue,#3b82f6);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text,#e2e8f0);}
-.pstep-t{font-weight:700;font-size:13px;} .pstep-d{font-size:11.5px;color:var(--text-muted,#94a3b8);line-height:1.5;margin:6px 0;}
+.pstep{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--blue);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink);}
+.pstep-t{font-weight:700;font-size:13px;} .pstep-d{font-size:11.5px;color:var(--muted);line-height:1.5;margin:6px 0;}
 .table-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:12.5px;}
-th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#94a3b8);padding:8px 10px;border-bottom:2px solid var(--border,#334155);}
-td{padding:8px 10px;border-bottom:1px solid var(--border,#334155);vertical-align:top;}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;}
 table.heat td,table.heat th{text-align:center;}
 table.heat td{font-weight:800;font-size:16px;}
-.heat-0{color:#475569;} .heat-1{color:#93c5fd;} .heat-2{color:#fbbf24;} .heat-3{color:#f87171;} .heat-4,.heat-5,.heat-6,.heat-7{color:#fff;background:rgba(220,38,38,.25);}
+.heat-0{color:#94a3b8;} .heat-1{color:var(--blue);} .heat-2{color:var(--amber);} .heat-3{color:var(--red);} .heat-4,.heat-5,.heat-6,.heat-7{color:var(--red);background:rgba(185,28,28,.08);}
 .heat-q{font-weight:400;font-size:11px;line-height:1.7;} .heat-q a{color:inherit;}
-.heat-note{font-size:10px;font-weight:400;color:var(--amber,#fbbf24);max-width:180px;margin:4px auto;}
-code{background:rgba(148,163,184,.12);padding:1px 5px;border-radius:4px;font-size:11px;}
-a{color:#93c5fd;text-underline-offset:2px;}
-a:visited{color:#a5b4fc;}
-details{margin:8px 0;border:1px solid var(--border,#334155);border-radius:10px;background:var(--surface,#0b1220);overflow:hidden;}
-details>summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:baseline;}
+.heat-note{font-size:10px;font-weight:400;color:var(--amber);max-width:180px;margin:4px auto;}
+code{background:#eef2ff;color:#1e3a8a;padding:1px 5px;border-radius:4px;font-size:11px;}
+details{margin:8px 0;border:1px solid var(--border);border-radius:10px;background:var(--card);overflow:hidden;}
+details>summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:baseline;color:var(--ink);}
 details>summary::-webkit-details-marker,details>summary::marker{display:none;content:"";}
-details>summary::before{content:"\\25B8";display:inline-block;color:var(--green,#22c55e);transition:transform .15s;}
+details>summary::before{content:"\25B8";display:inline-block;color:var(--green);transition:transform .15s;}
 details[open]>summary::before{transform:rotate(90deg);}
 details .details-body{padding:2px 16px 14px;}
-.finding{border-left:4px solid var(--blue,#3b82f6);}
-.finding.sev-high{border-left-color:var(--red,#dc2626);}
-.finding.sev-medium{border-left-color:var(--amber,#d97706);}
+.finding{border-left:4px solid var(--blue);}
+.finding.sev-high{border-left-color:var(--red);}
+.finding.sev-medium{border-left-color:var(--amber);}
 .finding.sev-low{border-left-color:#64748b;}
 .flag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:1px 7px;border-radius:99px;margin-left:6px;white-space:nowrap;}
-.flag.auto{color:#86efac;background:rgba(34,197,94,.12);} .flag.manual{color:#93c5fd;background:rgba(59,130,246,.12);}
-.flag.disp{color:#fbbf24;background:rgba(217,119,6,.14);} .flag.open{color:#f87171;background:rgba(220,38,38,.12);}
-.qrow{border-left:4px solid #334155;margin:10px 0;}
-.qrow.out-answered{border-left-color:#16a34a;} .qrow.out-hard_refusal{border-left-color:#2563eb;}
-.qrow.out-parked{border-left-color:#7c3aed;} .qrow.out-error{border-left-color:#dc2626;}
-.qrow summary .qmeta{color:var(--text-muted,#94a3b8);font-size:11px;font-weight:400;}
-.qrow pre{white-space:pre-wrap;font-size:11.5px;line-height:1.6;color:#dbe4f0;background:#0a0f1c;border:1px solid var(--border,#334155);border-radius:8px;padding:12px;max-height:420px;overflow-y:auto;}
+.flag.auto{color:#166534;background:rgba(22,101,52,.1);} .flag.manual{color:var(--blue);background:rgba(29,78,216,.1);}
+.flag.disp{color:var(--amber);background:rgba(180,83,9,.1);} .flag.open{color:var(--red);background:rgba(185,28,28,.1);}
+.qrow{border-left:4px solid #cbd5e1;margin:10px 0;}
+.qrow.out-answered{border-left-color:var(--out-answered);} .qrow.out-hard_refusal{border-left-color:var(--out-refusal);}
+.qrow.out-parked{border-left-color:var(--out-parked);} .qrow.out-error{border-left-color:var(--out-error);}
+.qrow summary .qmeta{color:var(--muted);font-size:11px;font-weight:400;}
+.qrow pre{white-space:pre-wrap;font-size:11.5px;line-height:1.6;color:var(--ink);background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px;max-height:420px;overflow-y:auto;}
 .filters{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;font-size:12px;}
-.filters label{color:var(--text-muted,#94a3b8);}
-.filters select{background:var(--surface,#0b1220);color:var(--text,#e2e8f0);border:1px solid var(--border,#334155);border-radius:6px;padding:4px 8px;}
-.dotplot{display:flex;gap:0;align-items:flex-end;height:150px;padding:10px 8px 0;border-bottom:1px solid var(--border,#334155);position:relative;}
-.dotplot .bar{width:9px;background:var(--blue,#3b82f6);border-radius:3px 3px 0 0;margin:0 2px;}
-.dotplot .bar.error{background:var(--red,#dc2626);} .dotplot .bar.parked{background:var(--violet,#7c3aed);} .dotplot .bar.hard_refusal{background:#2563eb;}
-.dotplot .t300{position:absolute;right:0;bottom:0;height:0;border-right:2px dashed #f87171;}
-.latlabel{font-size:10px;color:var(--text-muted,#94a3b8);}
+.filters label{color:var(--muted);}
+.filters select{background:var(--card);color:var(--ink);border:1px solid var(--border);border-radius:6px;padding:4px 8px;}
+.dotplot{display:flex;gap:0;align-items:flex-end;height:150px;padding:10px 8px 0;border-bottom:1px solid var(--border);position:relative;}
+.dotplot .bar{width:9px;background:var(--blue);border-radius:3px 3px 0 0;margin:0 2px;}
+.dotplot .bar.error{background:var(--red);} .dotplot .bar.parked{background:var(--violet);} .dotplot .bar.hard_refusal{background:var(--out-refusal);}
+.dotplot .t300{position:absolute;right:0;bottom:0;height:0;border-right:2px dashed var(--red);}
+.latlabel{font-size:10px;color:var(--muted);}
 .latgrid{display:flex;flex-direction:column;gap:10px;}
 .latrow{display:grid;grid-template-columns:130px 1fr 60px;gap:8px;align-items:center;font-size:11.5px;}
-.latbar{background:linear-gradient(90deg,#1e3a5f,#3b82f6);height:14px;border-radius:4px;min-width:4px;}
-.latbar.error{background:linear-gradient(90deg,#450a0a,#dc2626);}
-.latbar.parked{background:linear-gradient(90deg,#2a1a4a,#7c3aed);}
-.latbar.hard_refusal{background:linear-gradient(90deg,#172554,#2563eb);}
+.latbar{background:linear-gradient(90deg,#1d4ed8,#3b82f6);height:14px;border-radius:4px;min-width:4px;}
+.latbar.error{background:linear-gradient(90deg,#991b1b,#b91c1c);}
+.latbar.parked{background:linear-gradient(90deg,#5b21b6,#7c3aed);}
+.latbar.hard_refusal{background:linear-gradient(90deg,#1e40af,#2563eb);}
 .latmark{position:relative;height:14px;}
-.latmark::after{content:"300s client timeout";position:absolute;right:0;top:-2px;font-size:10px;color:#f87171;border-right:2px dashed #f87171;padding-right:4px;}
-.info-card{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-left:4px solid var(--blue,#3b82f6);border-radius:10px;padding:12px 16px;margin:10px 0;font-size:12.5px;line-height:1.75;}
+.latmark::after{content:"300s client timeout";position:absolute;right:0;top:-2px;font-size:10px;color:var(--red);border-right:2px dashed var(--red);padding-right:4px;}
+.info-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:10px;padding:12px 16px;margin:10px 0;font-size:12.5px;line-height:1.75;}
 .labels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
-.lcard{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.6;}
+.lcard{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.6;}
 .lcard .q{font-weight:800;}
-.note-box{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.35);border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin:12px 0;}
-.todo-box{background:rgba(148,163,184,.07);border:1px dashed #64748b;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin:12px 0;}
-.foot{color:#64748b;font-size:11.5px;margin-top:40px;border-top:1px solid var(--border,#334155);padding-top:14px;line-height:1.8;}
+.note-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin:12px 0;}
+.todo-box{background:#f1f5f9;border:1px dashed #94a3b8;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin:12px 0;}
+/* TL;DR strip — the short version at the top */
+.tldr{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--blue);border-radius:12px;padding:16px 20px;margin:0 0 30px;}
+.tldr h2{font-size:15px;margin:0 0 8px;border:none;padding:0;}
+.tldr-line{font-size:13.5px;line-height:1.7;color:var(--ink);margin:4px 0;}
+.tldr-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center;}
+.tldr-chip{background:#eef2ff;border:1px solid #dbe4ff;color:var(--blue);border-radius:8px;padding:5px 11px;font-size:12.5px;text-decoration:none;font-weight:600;}
+.tldr-chip b{font-size:14px;}
+.tldr-chip.nolink{background:#f8fafc;border-color:var(--border);color:var(--ink);font-weight:500;}
+.tldr-jump{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.tldr-jump a{font-size:12px;color:var(--muted);text-decoration:none;}
+.tldr-jump a:hover{color:var(--blue);text-decoration:underline;}
+.foot{color:var(--muted);font-size:11.5px;margin-top:40px;border-top:1px solid var(--border);padding-top:14px;line-height:1.8;}
 @media (max-width:900px){.layout{grid-template-columns:1fr;padding:0 12px;}
-.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border,#334155);}
+.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
 .sidebar nav{flex-direction:row;flex-wrap:wrap;gap:6px;}}
 """
 
 # ============================================================
 # SECTIONS
 # ============================================================
+def section_tldr(b, findings):
+    """Short version at the top: one-line verdict + key chips + jumps."""
+    s = b["summary"]; o = s["outcomes"]; v = s["vs_expected"]; val = s["value"]
+    wrongly_parked = sum(1 for r in b["rows"] if r["outcome"] == "parked"
+                         and r["expected_behavior"] in ("ANSWER", "REFUSE"))
+    chip = lambda lbl, val_txt, href=None: (
+        f'<a class="tldr-chip" href="{href}">{lbl} <b>{val_txt}</b></a>' if href
+        else f'<span class="tldr-chip nolink">{lbl} <b>{val_txt}</b></span>')
+    chips = [
+        chip("L4/L5 (skeleton coverage)", f"{val['L4_L5']}/30", "#results"),
+        chip("Behavior matched", f"{v['match']}/30", "#results"),
+        chip("Wrongly parked", f"{wrongly_parked}/30", "#means"),
+        chip("Fabricated figures", "none detected (1 judge, 20 answers)", "#limits"),
+        chip("Leak hits (all likely FP)", f"{s['leaks']['flagged']}", "#evaluated"),
+    ]
+    # fix-first: high+medium findings, linked to their anchors
+    first = [f2 for f2 in findings if f2["severity"] in ("high", "medium")]
+    fix = " · ".join(f'<a class="tldr-chip" href="#{f2["id"].lower()}">{f2["id"]} — {esc(f2["title"][:58])}</a>'
+                     for f2 in sorted(first, key=lambda x: x["severity"] != "high"))
+    jumps = " ".join(
+        f'<a href="#{a}">{t}</a>' for a, t in [
+            ("summary", "Summary & run build"), ("means", "Fix-first findings"),
+            ("results", "Query-by-query results"), ("evaluated", "How we evaluated"),
+            ("labels", "How queries were labeled"), ("limits", "Limits & trust"),
+            ("reproduce", "Reproduce as v2")])
+    return f"""<div class="tldr" id="tldr">
+<h2>TL;DR — the short version</h2>
+<div class="tldr-line">{o["answered"]} of 30 CFO questions got substantive answers; <strong>{val["L4_L5"]}/30
+L4/L5</strong> on the value ladder (skeleton coverage, element presence), <strong>no fabricated figures
+detected</strong> (1 judge, 20 answers). Main defect: cross-answer template reuse. Refusals on payables /
+expenses / P&amp;L / cash reflect workspace data gaps, not agent bugs.</div>
+<div class="tldr-chips">{"".join(chips)}</div>
+<div class="tldr-chips">{fix}</div>
+<div class="tldr-jump">{jumps}</div>
+</div>"""
+
 def section_summary(b, findings):
     s = b["summary"]; o = s["outcomes"]; v = s["vs_expected"]; val = s["value"]
     verdict = (f'<div class="verdict"><span class="s">One-sentence verdict:</span> '
@@ -688,7 +750,7 @@ def explorer(b):
 <label>outcome <select data-f="out"><option value="">all</option><option>answered</option><option>hard_refusal</option><option>parked</option><option>error</option></select></label>
 <label>verdict <select data-f="ver"><option value="">all</option><option>match</option><option>partial</option><option>mismatch</option><option>error</option></select></label>
 <label>error code <select data-f="err"><option value="">all</option><option>Craft</option><option>DataTypeHandling</option><option>FinancialTerminologicalBias</option><option>none</option></select></label>
-<label><button type="button" id="qreset" style="background:transparent;color:#93c5fd;border:1px solid #334155;border-radius:6px;padding:3px 10px;cursor:pointer;">reset</button></label>
+<label><button type="button" id="qreset" style="background:var(--card);color:var(--blue);border:1px solid var(--border);border-radius:6px;padding:3px 10px;cursor:pointer;">reset</button></label>
 </div>"""
     js = """<script>
 (function(){
@@ -966,7 +1028,7 @@ def section_reproduce(b):
   <h2>7 · Reproduce — rerun as v2</h2>
   <div class="info-card">
     <h3>Commands</h3>
-    <pre style="font-size:11.5px;line-height:1.7;background:#0a0f1c;border:1px solid var(--border,#334155);border-radius:8px;padding:10px 12px;"># rerun only mismatches/errors as v2 (pre-seeds untouched rows — stays diffable)
+    <pre style="font-size:11.5px;line-height:1.7;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:#0f172a;"># rerun only mismatches/errors as v2 (pre-seeds untouched rows — stays diffable)
 python3 scripts/eval_cli.py rerun --failed --account finance
 # derive + print the summary block (invariants asserted; exits 1 on violation)
 python3 scripts/finance_pipeline.py --run 2 --print
@@ -1004,7 +1066,8 @@ python3 scripts/eval_cli.py diff 1 2 --account finance</pre>
 def shell(b, sections_html):
     v = b["version"]; md = b["summary"]["date"]
     nav = [
-        ("summary", "1 · Summary"), ("means", "2 · What this means for you"),
+        ("tldr", "TL;DR · at a glance"), ("summary", "1 · Summary"),
+        ("means", "2 · What this means for you"),
         ("results", "3 · Results"), ("evaluated", "4 · How we evaluated"),
         ("labels", "5 · How we labeled"), ("limits", "6 · Limits & trust"),
         ("reproduce", "7 · Reproduce"),
@@ -1026,7 +1089,7 @@ def shell(b, sections_html):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finance Agent Eval — Run v{v} ({md})</title>
-<style>{page_css(extract_template_css())}</style>
+<style>{page_css()}</style>
 </head>
 <body>
 <div class="layout">
@@ -1058,6 +1121,7 @@ def build(version: int):
     b = load(version)
     findings = seed_findings(b)
     sections = "".join([
+        section_tldr(b, findings),
         section_summary(b, findings),
         section_findings(b, findings),
         section_results(b),
