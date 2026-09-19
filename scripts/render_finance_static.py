@@ -163,9 +163,25 @@ def build(version: int):
     # Live links must be ABSOLUTE raw.githubusercontent.com URLs — GitHub Pages only
     # publishes docs/, so relative ../../accounts/... resolves outside the site and 404s.
     RAW = "https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main"
-    json_links = " ".join(
+    json_links = "<br>".join(
         f'<a href="{RAW}/accounts/finance/runs/v{version}/{f}">{f}</a>'
         for f in ("summary.json", "findings.json", "judgments.jsonl", "leaks.jsonl", "results.jsonl"))
+    doc_links = "<br>".join(
+        f'<a href="{RAW}/accounts/finance/{f}">{f}</a>'
+        for f in ("EVAL_READOUT_v1.md", "VALUE_READOUT_v1.md"))
+
+    rep_check = next((c for c in summary["content_checks"] if c["name"] == "repetition"), None)
+    rep_share = rep_check["evidence"] if rep_check else "same top-5 block reused"
+
+    def dl(label, desc, body):
+        return f"""<details>
+  <summary>{esc(label)}</summary>
+  <div class="details-body"><div class="desc" style="margin-bottom:8px;">{desc}</div>{body}</div>
+</details>"""
+
+    lat_rows = ''.join(
+        f'<tr><td>{esc(OUTCOME_LABEL.get(k, k))}</td><td>{d["n"]}</td><td>{d["median"]}s</td>'
+        f'<td>{d["p95"]}s</td><td>{d["max"]}s</td></tr>' for k, d in lat.items())
 
     page = f"""<!DOCTYPE html>
 <html lang="en">
@@ -181,9 +197,21 @@ table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
 th {{ text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted, #94a3b8); padding: 8px 10px; border-bottom: 2px solid var(--border, #334155); }}
 td {{ padding: 9px 10px; border-bottom: 1px solid var(--border, #334155); vertical-align: top; }}
 code {{ background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px; font-size: 11px; }}
+a {{ color: #93c5fd; text-decoration: underline; text-underline-offset: 2px; }}
+a:visited {{ color: #a5b4fc; }}
 .stat-banner {{ background: linear-gradient(135deg,#0f172a,#1e293b); border:1px solid var(--border,#334155); border-left:4px solid var(--green,#22c55e); border-radius:12px; padding:18px 22px; margin:16px 0; font-size:14px; line-height:1.7; }}
 .quality-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin:14px 0; }}
-.json-links a {{ margin-right: 14px; font-size: 12px; }}
+.info-card {{ background:var(--surface, #0b1220); border:1px solid var(--border,#334155); border-left:4px solid var(--primary,#3b82f6); border-radius:10px; padding:14px 18px; margin:12px 0; font-size:13.5px; line-height:1.75; }}
+.info-card h3 {{ margin:0 0 8px; font-size:14px; color:var(--text,#e2e8f0); }}
+.ref-box {{ background:var(--surface, #0b1220); border:1px solid var(--border,#334155); border-radius:10px; padding:14px 18px; margin:12px 0; font-size:13px; line-height:2; }}
+details {{ margin: 12px 0; border: 1px solid var(--border,#334155); border-radius: 10px; background: var(--surface, #0b1220); overflow: hidden; }}
+details > summary {{ cursor: pointer; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--text,#e2e8f0); list-style: none; display: flex; align-items: center; gap: 10px; user-select: none; position: relative; }}
+details > summary::-webkit-details-marker, details > summary::marker {{ display: none; content: ""; }}
+details > summary::before {{ content: "\\25B8"; display:inline-block; color: var(--green,#22c55e); font-size: 13px; transition: transform .15s ease; }}
+details[open] > summary::before {{ transform: rotate(90deg); }}
+details > summary:hover {{ background: rgba(148,163,184,.07); }}
+details .details-body {{ padding: 4px 16px 14px; }}
+details .desc {{ color: var(--text-muted, #94a3b8); font-size: 12.5px; }}
 </style>
 </head>
 <body>
@@ -194,18 +222,15 @@ code {{ background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px;
     <div class="desc">Run {md} · {summary["queries"]} user-provided CFO queries · hirafoods workspace (phone 4040505050)
     · producer {esc(summary["producer_model"])} · judge {esc(j["model"])} · rubric {esc(j.get("rubric_version","v1"))}
     · human-reviewed {j["human_reviewed"]}/{j["judged"]} · invariants {"OK &#10003;" if summary.get("invariant_ok") else "VIOLATION"}</div>
-    <div class="json-links" style="margin-top:10px;">
-      <strong>Machine-readable (for agents):</strong>
-      {json_links}
-    </div>
   </header>
 
+  <!-- WHAT THE OUTPUT IS — always visible -->
   <div class="stat-banner">
     <strong>{o.get("answered",0)} answered</strong> · <strong>{o.get("hard_refusal",0)} hard refusals</strong> ·
     <strong>{o.get("parked",0)} clarify-parks</strong> · <strong>{o.get("error",0)} technical error</strong> —
     <strong>{val["L4_L5"]}/{summary["queries"]}</strong> CFO asks delivered decision-grade support (L4/L5),
     <strong>{val["data_dump"] if "data_dump" in val else 0} data-dumps</strong>, <strong>0 fabricated figures</strong>.
-    Main defect: cross-answer template reuse (same top-5 block in {summary["content_checks"][3]["evidence"].split("(")[0].strip() if len(summary["content_checks"])>3 else "9"}).
+    Main defect: cross-answer template reuse ({esc(rep_share)}).
   </div>
 
   <section>
@@ -213,73 +238,85 @@ code {{ background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px;
     <div class="quality-grid">{cards}</div>
   </section>
 
+  <!-- HOW IT WAS DONE — always visible -->
   <section>
-    <h2>Expected vs Observed (behavior matrix)</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Expected label</th><th>Answered</th><th>Hard refusal</th><th>Clarify park</th><th>Error</th></tr></thead>
-      <tbody>{matrix_rows}</tbody>
-    </table></div>
-    <div class="desc" style="margin-top:8px;">Verdicts: <strong>{v["match"]} match</strong> · {v["partial"]} partial ·
-    <strong style="color:#dc2626;">{v["mismatch"]} mismatch</strong> · {v["error"]} error.
-    Mismatch detail: {esc(" · ".join(f"{k} x{c}" for k, c in v.get("mismatch_details", {}).items()))}</div>
+    <h2>How This Run Was Done</h2>
+    <div class="info-card">
+      <h3>Setup</h3>
+      30 user-provided CFO insight questions run live against the <code>finance</code> agent template
+      (hirafoods workspace) via <code>scripts/run_agent_evals.py</code> — a two-turn-aware SSE runner that
+      captures full answers, interrupt/clarify parks, errors and timing into versioned JSONL. No retries
+      (HEART #5): a drop is recorded as-is. Every query carries an <code>expected_behavior</code> label
+      (ANSWER 9 / CLARIFY 12 / REFUSE 9) assigned per the classify-gate rules.
+    </div>
+    <div class="info-card">
+      <h3>Derivation &amp; checks (single source of truth)</h3>
+      <code>scripts/finance_pipeline.py</code> derives the outcome taxonomy (answered / hard_refusal / parked /
+      error — mutually exclusive per query), the expected-vs-observed verdict, the judge-value mix, latency by
+      outcome, deterministic content checks and leak hits with matched strings. Invariants are asserted at
+      build: outcome/verdict sums must equal the query count, judged+parked+error must equal 30 — the build
+      fails on any disagreement.
+    </div>
+    <div class="info-card">
+      <h3>Judge &amp; provenance</h3>
+      {esc(j["model"])} · rubric {esc(j.get("rubric_version","v1"))} · <strong>{j["judged"]} judged</strong> ·
+      human-reviewed {j["human_reviewed"]}/{j["judged"]} (open item: 10-answer human calibration spot-check) ·
+      L-levels are judge self-consistency, not human calibration. Tools: {esc(summary["tools"]["reason"])}
+    </div>
   </section>
 
+  <!-- SOURCES OF REFERENCE — always visible -->
   <section>
-    <h2>Response Value (judge)</h2>
-    <div class="desc">L4/L5 <strong>{val["L4_L5"]}</strong> · L3 {val["L3"]} · correct refusals {val["correct_refusals"]} ·
-    not judged {val["not_judged"]} · FinGAIA errors: {err_chips}.</div>
-    <div class="desc" style="font-size:12px;color:#6b7280;">{esc(j.get("note",""))}</div>
+    <h2>Sources &amp; Reference</h2>
+    <div class="ref-box">
+      <strong>Machine-readable (for agents / deeper review):</strong><br>
+      {json_links}<br><br>
+      <strong>Owner-facing readouts:</strong><br>
+      {doc_links}
+    </div>
   </section>
 
-  <section>
-    <h2>Latency by Outcome</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Outcome</th><th>n</th><th>Median</th><th>p95</th><th>Max</th></tr></thead>
-      <tbody>{''.join(f'<tr><td>{esc(OUTCOME_LABEL.get(k,k))}</td><td>{d["n"]}</td><td>{d["median"]}s</td><td>{d["p95"]}s</td><td>{d["max"]}s</td></tr>' for k, d in lat.items())}</tbody>
-    </table></div>
-  </section>
+  <!-- DETAIL TABLES — collapsed by default -->
+  {dl("Expected vs Observed — behavior matrix",
+      f"Verdicts: <strong>{v['match']} match</strong> · {v['partial']} partial · "
+      f"<strong style='color:#dc2626;'>{v['mismatch']} mismatch</strong> · {v['error']} error. "
+      f"Mismatch detail: {esc(' · '.join(f'{k} x{c}' for k, c in v.get('mismatch_details', {}).items()))}",
+      '<div class="table-wrap"><table><thead><tr><th>Expected label</th><th>Answered</th><th>Hard refusal</th>'
+      f'<th>Clarify park</th><th>Error</th></tr></thead><tbody>{matrix_rows}</tbody></table></div>')}
 
-  <section>
-    <h2>Tools &amp; Steps</h2>
-    <div class="desc">{esc(summary["tools"]["reason"])}</div>
-  </section>
+  {dl("Response Value (judge)",
+      f"L4/L5 <strong>{val['L4_L5']}</strong> · L3 {val['L3']} · correct refusals {val['correct_refusals']} · "
+      f"not judged {val['not_judged']} · FinGAIA errors: {err_chips}",
+      f"<div class='desc'>{esc(j.get('note',''))}</div>")}
 
-  <section>
-    <h2>Content Checks</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Check</th><th>Status</th><th>Queries</th><th>Evidence</th></tr></thead>
-      <tbody>{check_rows}</tbody>
-    </table></div>
-  </section>
+  {dl("Latency by Outcome",
+      "Client timeout is 300s per HEART #2; a 244.7s IncompleteRead = upstream drop, not timeout.",
+      '<div class="table-wrap"><table><thead><tr><th>Outcome</th><th>n</th><th>Median</th><th>p95</th>'
+      f'<th>Max</th></tr></thead><tbody>{lat_rows}</tbody></table></div>')}
 
-  <section>
-    <h2>Findings (ranked, actionable)</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Severity</th><th>Type</th><th>Queries</th><th>Evidence</th><th>Suggested fix</th><th>Status</th></tr></thead>
-      <tbody>{finding_rows}</tbody>
-    </table></div>
-  </section>
+  {dl("Content Checks",
+      "Deterministic checks over the answers — the defects owners must fix.",
+      '<div class="table-wrap"><table><thead><tr><th>ID</th><th>Check</th><th>Status</th><th>Queries</th>'
+      f'<th>Evidence</th></tr></thead><tbody>{check_rows}</tbody></table></div>')}
 
-  <section>
-    <h2>Leak Hits (with matched strings)</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Query</th><th>Rule</th><th>Matched text</th><th>Note</th></tr></thead>
-      <tbody>{leak_rows}</tbody>
-    </table></div>
-    <div class="desc" style="margin-top:8px;">Total {summary["leaks"]["flagged"]} flagged — counts are per-response regex hits,
-    not real secrets; the workspace banner is intentional user-facing warning text (review the allowlist, don't treat as PII).</div>
-  </section>
+  {dl("Findings (ranked, actionable)",
+      "Stable IDs — fixes can be confirmed closed on the next run.",
+      '<div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>Type</th><th>Queries</th>'
+      f'<th>Evidence</th><th>Suggested fix</th><th>Status</th></tr></thead><tbody>{finding_rows}</tbody></table></div>')}
 
-  <section>
-    <h2>Per-Query (static table — no JS)</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Query</th><th>Expected</th><th>Outcome</th><th>Verdict</th><th>Value</th><th>Latency</th><th>Response (excerpt)</th></tr></thead>
-      <tbody>{q_rows}</tbody>
-    </table></div>
-  </section>
+  {dl("Leak Hits (with matched strings)",
+      f"Total {summary['leaks']['flagged']} flagged — counts are per-response regex hits, not real secrets; "
+      f"the workspace banner is intentional user-facing warning text (review the allowlist, don't treat as PII).",
+      '<div class="table-wrap"><table><thead><tr><th>Query</th><th>Rule</th><th>Matched text</th>'
+      f'<th>Note</th></tr></thead><tbody>{leak_rows}</tbody></table></div>')}
+
+  {dl("Per-Query — all 30",
+      "Full row-level view: expected label, observed outcome, verdict, value level, latency, response excerpt.",
+      '<div class="table-wrap"><table><thead><tr><th>#</th><th>Query</th><th>Expected</th><th>Outcome</th>'
+      f'<th>Verdict</th><th>Value</th><th>Latency</th><th>Response (excerpt)</th></tr></thead><tbody>{q_rows}</tbody></table></div>')}
 
   <footer style="margin-top:32px;color:#64748b;font-size:12px;">
-    Static page rendered from derived artifacts (accounts/finance/runs/v{version}/) — no JavaScript tables.
+    Static page rendered from derived artifacts (accounts/finance/runs/v{version}/) — no JavaScript.
     Raw traces: <a href="{RAW}/accounts/finance/runs/query_results_v{version}.jsonl">query_results_v{version}.jsonl</a> ·
     Run v{version} &middot; {md}
   </footer>
