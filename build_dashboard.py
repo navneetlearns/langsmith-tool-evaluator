@@ -273,6 +273,26 @@ def inject_value_layer(html: str, vs: dict) -> str:
     return html
 
 
+def verify_finance_static(page: str) -> list:
+    """Verify the static finance page: server-rendered tables present, no JS table
+    rendering, no embedded raw JSON blob, no stale seller-copilot framing."""
+    errors = []
+    if "const records = [" in page:
+        errors.append("embedded records JS array still present (design: serve JSON, not JS)")
+    for marker in ["<tbody>", "<table>", "Content Checks", "Findings", "Leak Hits",
+                   "Per-Query", "Expected vs Observed", "Response Value"]:
+        if marker not in page:
+            errors.append(f"section '{marker}' missing")
+    for stale in ["tool-acc-tbody", "step-tbody", "Tool Selection Accuracy",
+                  "80 query traces", "50 query traces", "July 23, 2026", "July 11, 2026"]:
+        if stale in page:
+            errors.append(f"stale seller-copilot/tool framing still present: '{stale}'")
+    n_tables = page.count("<table>")
+    if n_tables < 5:
+        errors.append(f"expected >=5 tables, found {n_tables}")
+    return errors
+
+
 def main():
     # Parse --account and --version flags
     account = "surana"
@@ -290,6 +310,41 @@ def main():
 
     cfg = load_account_config(account)
     account_name = cfg["account_name"]
+
+    # ---- FINANCE STATIC PAGE BRANCH ----
+    # The finance agent template streams no tool events (backend SQL) and steps are the
+    # SSE status depth, not agent steps — the JS template's tool-selection/step framing
+    # does not apply. When derived artifacts exist (runs/v<N>/summary.json), render a
+    # fully static page (server-rendered tables, no JS) from them. Other accounts never
+    # enter this branch and build byte-identical pages.
+    imports_ok = True
+    try:
+        import importlib.util  # noqa: PLC0415
+        _mod_path = SCRIPT_DIR / "scripts" / "render_finance_static.py"
+        _spec = importlib.util.spec_from_file_location("render_finance_static", _mod_path)
+        _mod = importlib.util.module_from_spec(_spec)
+        _spec.loader.exec_module(_mod)
+        build_finance_static = _mod.build
+    except Exception as exc:  # noqa: BLE001
+        print(f"  WARNING: finance static renderer unavailable ({exc})")
+        imports_ok = False
+    if account == "finance" and imports_ok:
+        manifest_fin = json.load(open(cfg["manifest_file"]))
+        fin_versions = sorted(v["version"] for v in manifest_fin.get("runs", []))
+        fin_version = version_arg or (fin_versions[-1] if fin_versions else 1)
+        derived_dir = cfg["runs_dir"] / f"v{fin_version}"
+        if (derived_dir / "summary.json").exists():
+            print(f"Account: {account} ({account_name}) — FINANCE STATIC PAGE (v{fin_version})")
+            errors = verify_finance_static(build_finance_static(fin_version))
+            if errors:
+                for e in errors:
+                    print(f"  [FAIL] {e}")
+                sys.exit(1)
+            print("  [OK] finance static page verified")
+            return 0
+        print(f"  WARNING: {account} has no derived artifacts at {derived_dir} — "
+              f"run `python3 scripts/finance_pipeline.py --run {fin_version}` first; "
+              f"falling back to the generic template path.")
 
     DASHBOARD_DIR = SCRIPT_DIR / "langsmith-tool-evaluator" / "docs" / account
     DASHBOARD_FILE = DASHBOARD_DIR / "index.html"

@@ -1,0 +1,178 @@
+{
+ "account": "finance",
+ "run": "v1",
+ "run_file": "accounts/finance/runs/query_results_v1.jsonl",
+ "date": "2026-09-18",
+ "queries": 30,
+ "producer_model": "gpt-5.4-mini (classify gate + answer fm)",
+ "judge": {
+  "model": "in-session deepseek-v4 (no external call)",
+  "rubric_version": "v1",
+  "human_reviewed": 0,
+  "judged": 20,
+  "note": "L-levels are model self-consistency (judge same family as grader); 10-answer human calibration spot-check is the open item"
+ },
+ "outcomes": {
+  "answered": 16,
+  "parked": 9,
+  "hard_refusal": 4,
+  "error": 1
+ },
+ "vs_expected": {
+  "match": 13,
+  "partial": 4,
+  "mismatch": 12,
+  "error": 1,
+  "mismatch_details": {
+   "CLARIFY→answered": 7,
+   "ANSWER→parked": 4,
+   "REFUSE→parked": 1
+  }
+ },
+ "value": {
+  "L4_L5": 13,
+  "L3": 2,
+  "correct_refusals": 5,
+  "not_judged": 10,
+  "errors": {
+   "DataTypeHandling": 1,
+   "FinancialTerminologicalBias": 5,
+   "Craft": 5
+  }
+ },
+ "latency_by_outcome": {
+  "answered": {
+   "median": 48.5,
+   "p95": 211.9,
+   "min": 35.9,
+   "max": 211.9,
+   "n": 16
+  },
+  "parked": {
+   "median": 2.5,
+   "p95": 3.4,
+   "min": 2.1,
+   "max": 3.4,
+   "n": 9
+  },
+  "hard_refusal": {
+   "median": 2.2,
+   "p95": 2.3,
+   "min": 1.8,
+   "max": 2.3,
+   "n": 4
+  },
+  "error": {
+   "median": 244.7,
+   "p95": 244.7,
+   "min": 244.7,
+   "max": 244.7,
+   "n": 1
+  }
+ },
+ "tools": {
+  "tool_events": 0,
+  "accuracy_pct": null,
+  "reason": "no tool events in finance stream (backend SQL) — tool accuracy N/A; step count is the SSE status depth, not agent steps"
+ },
+ "content_checks": [
+  {
+   "id": "C-01",
+   "name": "ratio_reconcile",
+   "status": "FAIL",
+   "queries": [
+    16
+   ],
+   "evidence": "q16 ₹162,137,760 as 50.3% => implied 32.2cr vs sales 24.18cr; q16 ₹239,495,748 as 49.6% => implied 48.3cr vs sales 24.18cr",
+   "suggested_fix": "reconcile segment/product aggregation (likely double count); percentage denominators must match the sales total"
+  },
+  {
+   "id": "C-02",
+   "name": "topN_coverage",
+   "status": "WARN",
+   "queries": [
+    4,
+    11,
+    26,
+    28
+   ],
+   "evidence": "top-5 block ₹2,240,723 = 1.3% of outstanding ₹174,830,219 in q4,11,26,28",
+   "suggested_fix": "when naming top accounts, quantify their share of the portfolio so the coverage limit is visible"
+  },
+  {
+   "id": "C-03",
+   "name": "cross_view",
+   "status": "FAIL",
+   "queries": [
+    21
+   ],
+   "evidence": "q21 movement-view ₹1,453,793 > ranking \"largest\" ₹905,018 (>1.2x)",
+   "suggested_fix": "label the view/source per figure (movement vs ranking vs outstanding) so contradictory 'largest' claims are impossible"
+  },
+  {
+   "id": "C-04",
+   "name": "repetition",
+   "status": "WARN",
+   "queries": [
+    1,
+    2,
+    4,
+    9,
+    11,
+    25,
+    26,
+    28,
+    30
+   ],
+   "evidence": "top-5 block reused in 9/16 answered answers (56%)",
+   "suggested_fix": "per-intent evidence selection: same KPI trio + top-5 block must not be the 'insight' for 8 different questions"
+  },
+  {
+   "id": "C-05",
+   "name": "data_recency",
+   "status": "UNKNOWN",
+   "queries": [],
+   "evidence": "answers cite latest-month drop 9.77cr→11.98L; max invoice date not checked (no invoice-date column in the run) — manual verification required",
+   "suggested_fix": "add invoice_date to the query set so recency is checkable"
+  },
+  {
+   "id": "C-06",
+   "name": "unit_duplication",
+   "status": "WARN",
+   "queries": [
+    1,
+    4,
+    9,
+    11,
+    22,
+    26
+   ],
+   "evidence": "'days days' in 6 answers: q1,4,9,11,22,26",
+   "suggested_fix": "deduplicate unit tokens in the format node"
+  },
+  {
+   "id": "C-07",
+   "name": "grounding_artifact",
+   "status": "WARN",
+   "queries": [
+    1
+   ],
+   "evidence": "literal '[unverified]' emitted in q1",
+   "suggested_fix": "re-probe or drop the sentence; never emit the placeholder token to the user"
+  }
+ ],
+ "leaks": {
+  "flagged": 14,
+  "by_rule": {
+   "workspace_ref": 14
+  }
+ },
+ "invariants": [
+  "outcomes sum == queries ✓",
+  "verdicts sum == queries ✓",
+  "judged + parked + error == queries ✓ (20+9+1=30)",
+  "expected_behavior labels sum == queries ✓"
+ ],
+ "invariant_ok": true,
+ "row_count": 30
+}

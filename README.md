@@ -13,7 +13,15 @@ python3 copilot_query_pipeline.py --account surana     # 80 Tally/ERP queries
 python3 copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
 python3 copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
-python3 build_dashboard.py --account surana            # Rebuild dashboard
+python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes runs/v1/)
+python3 scripts/eval_cli.py summary finance v1          # <=60-line summary (or: eval summary finance v1)
+python3 scripts/eval_cli.py findings --open             # ranked actionable findings (or: eval findings)
+python3 scripts/eval_cli.py show q21 [--full]           # one query: response, labels, judge, flags
+python3 scripts/eval_cli.py diff v1 v2                  # per-query verdict changes + metric deltas
+python3 scripts/eval_cli.py rerun --failed              # creates v2 (subset re-run, never overwrites)
+python3 scripts/eval_cli.py gate --min-match 0.6        # CI gate: nonzero exit on pass rate < min
+python3 build_dashboard.py --account finance            # FINANCE builds a STATIC page (no JS tables)
+python3 build_dashboard.py --account surana             # Rebuild dashboard
 python3 build_dashboard.py --account unifoods
 python3 build_dashboard.py --account hirafoods
 python3 build_dashboard.py --account finance
@@ -39,6 +47,20 @@ as a CLARIFY bucket (not fail), plus an expected-vs-observed behavior matrix and
 banner when records carry expected_behavior. Live: https://navneetlearns.github.io/langsmith-tool-evaluator/finance/
 Queries are generator-owned (scripts/gen_finance_queries.py, scripts/gen_ar_agent_queries.py —
 AR set of 70 real-entity queries ready, not yet run).
+
+**Derived-artifact pipeline + eval CLI (2026-09-19):** `scripts/finance_pipeline.py` derives a
+single source of truth from the raw JSONL (outcome taxonomy answered/hard_refusal/parked/error,
+expected-vs-observed verdicts, value mix, latency by outcome, deterministic content checks, leaks
+with matched strings + judge provenance) into `accounts/finance/runs/v<N>/{summary.json,
+findings.json, judgments.jsonl, leaks.jsonl, results.jsonl}` — invariants asserted at build (e.g.
+outcomes sum == queries; this is what catches "10 failed" vs "1 failed" conflicts). `eval_cli.py`
+is the agent-facing surface: `summary / findings --open / show qN / diff / rerun --failed / gate
+--min-match 0.6`, all with `--json`; rerun passes `--only` to run_agent_evals.py which pre-seeds
+untouched rows from the prior run so v2 stays diffable. Finance dashboards now render a fully
+STATIC page (server-rendered tables, no JS, no embedded records blob) — tool-selection/step
+framing dropped because finance streams no tool events (backend SQL); stale raw-data text gone;
+leaks show matched strings. Other accounts build byte-identical pages (verified head-vs-head).
+See `accounts/finance/runs/v1/summary.json`.
 
 **Response-Value analysis (Finance v1, 2026-09-18):** three-phase CFO-lens audit of the 30
 answers — value added to an Indian SMB distributor/manufacturer CFO, beyond data fetch and

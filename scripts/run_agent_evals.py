@@ -46,16 +46,41 @@ def main():
     ap.add_argument("--account", required=True)
     ap.add_argument("--run", type=int, default=None)
     ap.add_argument("--resume", type=int, default=None)
+    ap.add_argument("--only", default=None,
+                    help="comma list of 1-based query indices to run (subset e.g. --only 7,8,14)")
     args = ap.parse_args()
     account = args.account
-    queries = parse_xlsx(account)
-    print(f"[{account}] parsed {len(queries)} queries from xlsx")
+    indexed = list(enumerate(parse_xlsx(account), 1))  # (original 1-based idx, query)
+    if args.only:
+        wanted = {int(x) for x in args.only.split(",") if x.strip()}
+        indexed = [(i, q) for i, q in indexed if i in wanted]
+        print(f"[{account}] --only: re-running {len(indexed)} queries "
+              f"(q{' '.join(map(str, sorted(wanted)))})")
 
     cfg = load_account_config(account)
     runs_dir = Path("accounts") / account / "runs"
     manifest_file = runs_dir / "manifest.json"
     version = args.run or get_next_version(runs_dir)
     out_file = runs_dir / f"query_results_v{version}.jsonl"
+
+    # Carry-over: when re-running a subset (--only) the new file must still contain the
+    # untouched rows so v2 stays a complete 30-row set that `eval diff v1 v2` can compare.
+    carried = {}
+    if args.only:
+        prev_files = sorted(runs_dir.glob("query_results_v*.jsonl"))
+        if prev_files:
+            for line in prev_files[-1].read_text().splitlines():
+                try:
+                    r = json.loads(line)
+                    carried[r["query_index"]] = r
+                except Exception:
+                    pass
+        # rows to carry = all rows from the previous run EXCEPT the ones being re-run
+        keep = {i: r for i, r in carried.items() if i not in {i2 for i2, _ in indexed}}
+        if keep:
+            out_file.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in keep.values()) + "\n")
+            print(f"[{account}] carry-over: {len(keep)} untouched rows pre-seeded into v{version} "
+                  f"(re-run rows append on top)")
 
     completed = {}
     if args.resume:
@@ -72,11 +97,10 @@ def main():
     client = CopilotClient(auth, cfg)
 
     results, t0_all = [], time.time()
-    for i, q in enumerate(queries, 1):
-        qidx = i
+    for qidx, q in indexed:
         if qidx in completed:
             results.append(completed[qidx])
-            print(f"[{account}] q{qidx}/{len(queries)} skipped (resume)")
+            print(f"[{account}] q{qidx}/{len(indexed)} skipped (resume)")
             continue
         tid = str(uuid.uuid4())
         t0 = time.time()
@@ -106,7 +130,7 @@ def main():
         with open(out_file, "a") as f:
             f.write(json.dumps(rec, ensure_ascii=False) + "\n")
         tools = [t.get("tool") for t in rec["tool_calls"]]
-        print(f"[{account}] q{qidx}/{len(queries)} {rec.get('response_time_seconds',0):6.1f}s "
+        print(f"[{account}] q{qidx}/{len(indexed)} {rec.get('response_time_seconds',0):6.1f}s "
               f"err={str(rec['error'])[:60]} tools={tools} clarify={rec.get('possible_clarify', False)}")
 
     success = sum(1 for r in results if not r.get("error") and (r.get("response") or "").strip())
