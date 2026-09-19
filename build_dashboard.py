@@ -274,25 +274,35 @@ def inject_value_layer(html: str, vs: dict) -> str:
 
 
 def verify_finance_static(page: str) -> list:
-    """Verify the static finance page: server-rendered tables present, no JS table
-    rendering, no embedded raw JSON blob, no stale seller-copilot framing."""
+    """Verify the REDESIGNED static finance page (2026-09-19): server-rendered content,
+    sticky-nav 7 sections, deep links for all 30 queries, no stale tool-selection framing,
+    no old mislabeled headline numbers, no relative hrefs (Pages publishes only docs/)."""
     errors = []
-    if "const records = [" in page:
-        errors.append("embedded records JS array still present (design: serve JSON, not JS)")
-    for marker in ["<tbody>", "<table>", "Content Checks", "Findings", "Leak Hits",
-                   "Per-Query", "Expected vs Observed", "Response Value"]:
+    for marker in ["<tbody>", "<table>", "Deterministic content checks", "Findings", "Leak hits",
+                   "Expected-vs-observed", "Query explorer", "Per-query label cards",
+                   "no fabricated figures detected"]:
         if marker not in page:
             errors.append(f"section '{marker}' missing")
-    for stale in ["tool-acc-tbody", "step-tbody", "Tool Selection Accuracy",
-                  "80 query traces", "50 query traces", "July 23, 2026", "July 11, 2026"]:
+    # every displayed count derived: outcome bar must state the sum and the verdict line
+    for must in ["mutually exclusive outcomes", "sum <strong>30</strong>", "id=\"summary\"",
+                 "id=\"means\"", "id=\"results\"", "id=\"evaluated\"", "id=\"labels\"",
+                 "id=\"limits\"", "id=\"reproduce\"", "legacy/"]:
+        if must not in page:
+            errors.append(f"redesign element '{must}' missing")
+    # all 30 deep links (#q1..#q30) must exist
+    missing_q = [q for q in range(1, 31) if f'id="q{q}"' not in page]
+    if missing_q:
+        errors.append(f"deep links missing for q{','.join(map(str, missing_q))}")
+    # old mislabeled headline numbers must NOT appear; stronger fabrication claim must not
+    for stale in ["Failed 10", "API Failed", "0.0% tool accuracy", "Tool accuracy 0.0%",
+                  "30 No Tool Called", "fabrication guarantee", "80 query traces",
+                  "50 query traces", "July 23, 2026", "July 11, 2026"]:
         if stale in page:
-            errors.append(f"stale seller-copilot/tool framing still present: '{stale}'")
+            errors.append(f"stale/misleading number still present: '{stale}'")
     n_tables = page.count("<table>")
     if n_tables < 5:
         errors.append(f"expected >=5 tables, found {n_tables}")
-    # Relative ../../ links break on GitHub Pages (only docs/ is published) — all
-    # data links must be absolute raw.githubusercontent.com URLs. This caught the
-    # banner JSON 404 bug.
+    # Relative ../../ links break on GitHub Pages (only docs/ is published)
     rel = sorted(set(re.findall(r'href="(\.\./\.\./[^"]+)"', page)))
     if rel:
         errors.append(f"relative ../ links that 404 on Pages: {rel}")

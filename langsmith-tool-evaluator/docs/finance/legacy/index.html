@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Agent Eval — Run v1 (2026-09-18) [legacy]</title>
+<style>
+:root {
+  --bg: #f8f9fb;
+  --card: #ffffff;
+  --primary: #2563eb;
+  --primary-light: #dbeafe;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --amber: #d97706;
+  --amber-light: #fef3c7;
+  --purple: #7c3aed;
+  --purple-light: #ede9fe;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --radius: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: white;
+  padding: 48px 24px 40px;
+  text-align: center;
+}
+header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+header p { font-size: 15px; opacity: 0.88; }
+header .badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  margin-top: 12px;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 14px;
+  margin: -32px 0 40px;
+}
+.stat-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 16px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-card .number { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+.stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-card.green .number { color: var(--green); }
+.stat-card.red .number { color: var(--red); }
+.stat-card.amber .number { color: var(--amber); }
+.stat-card.blue .number { color: var(--primary); }
+.stat-card.purple .number { color: var(--purple); }
+
+/* SECTION */
+section { margin-bottom: 40px; }
+section h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--border);
+}
+
+/* TABLE */
+table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+th, td { padding: 10px 14px; text-align: left; font-size: 13px; }
+th { background: #f1f5f9; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+tr { border-bottom: 1px solid var(--border); }
+tr:last-child { border-bottom: none; }
+tr:hover { background: #f8fafc; }
+
+/* QUALITY BUCKETS */
+.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+.quality-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); text-align: center; }
+.quality-card .icon { font-size: 36px; margin-bottom: 8px; }
+.quality-card .count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
+.quality-card .desc { font-size: 13px; color: var(--text-muted); }
+.quality-card .pct { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.quality-card.success { border-top: 4px solid var(--green); }
+.quality-card.success .count { color: var(--green); }
+.quality-card.marginal { border-top: 4px solid var(--amber); }
+.quality-card.marginal .count { color: var(--amber); }
+.quality-card.fail { border-top: 4px solid var(--red); }
+.quality-card.fail .count { color: var(--red); }
+.quality-card.no-data { border-top: 4px solid var(--amber); }
+.quality-card.no-data .count { color: var(--amber); }
+
+/* INFO LEAK */
+.leak-banner {
+  background: var(--amber-light);
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.leak-banner .summary { font-size: 15px; font-weight: 600; color: #92400e; }
+.leak-banner .types { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+.leak-type-badge {
+  background: white;
+  border: 1px solid #fcd34d;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: #92400e;
+}
+.leak-type-badge strong { font-weight: 700; }
+
+/* BAR */
+.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.bar-row .label { width: 180px; font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; background: #f1f5f9; border-radius: 6px; height: 24px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; color: white; font-size: 11px; font-weight: 600; }
+
+/* STacked quality bar */
+.qbar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; }
+.qbar .seg-success { background: var(--green); }
+.qbar .seg-marginal { background: var(--amber); }
+.qbar .seg-fail { background: var(--red); }
+.qbar .seg { display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; }
+
+/* TOOL GRID */
+.tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.tool-card { background: var(--card); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
+.tool-card .tool-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.tool-card .tool-count { font-size: 20px; font-weight: 700; color: var(--primary); }
+.tool-card .tool-bar { margin-top: 6px; height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.tool-card .tool-bar-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+
+/* QUERY TABLE */
+.search-box { width: 100%; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: var(--card); }
+.filter-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.filter-tab:hover { border-color: var(--primary); }
+.filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+.query-table th { cursor: pointer; user-select: none; }
+.query-table th:hover { background: #e2e8f0; }
+.query-table th .sort-arrow { font-size: 10px; margin-left: 3px; opacity: 0.4; }
+.query-table th.sorted .sort-arrow { opacity: 1; }
+.query-table .q-num { font-weight: 600; color: var(--text-muted); }
+.query-table .q-tools .tool-tag { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 4px; margin: 1px; font-size: 11px; }
+.query-table .q-tools .no-tool { color: var(--text-muted); font-style: italic; font-size: 11px; }
+.query-table tr.clickable { cursor: pointer; }
+.query-table .expand-row { display: none; }
+.query-table .expand-row.show { display: table-row; }
+.query-table .expand-content { background: #f8fafc; padding: 16px 20px; font-size: 13px; }
+.query-table .expand-content .section-label { font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
+.query-table .expand-content .section-label:first-child { margin-top: 0; }
+.query-table .expand-content pre { background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; }
+.q-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.q-badge.success { background: var(--green-light); color: var(--green); }
+.q-badge.marginal { background: var(--amber-light); color: var(--amber); }
+.q-badge.fail { background: var(--red-light); color: var(--red); }
+.leak-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; margin-left: 4px; title: "Info leak"; }
+.leak-dot.clean { background: #e2e8f0; }
+
+/* PRINCIPLES */
+.principles { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+.principles ol { padding-left: 20px; }
+.principles li { margin-bottom: 8px; font-size: 14px; }
+.principles li strong { color: var(--primary); }
+
+/* RAW DATA */
+.raw-data { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
+.raw-data a { color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none; }
+.raw-data a:hover { text-decoration: underline; }
+.raw-data .link-row { margin-bottom: 10px; }
+.raw-data .link-row .desc { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+
+footer { background: #1e293b; color: #94a3b8; text-align: center; padding: 32px 20px; margin-top: 40px; }
+footer a { color: #60a5fa; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* COMPARISON SNAPSHOT */
+.comparison-snapshot {
+  margin: 0 0 40px;
+}
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 16px;
+}
+.snapshot-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  box-shadow: var(--shadow);
+}
+
+
+.snapshot-card h3 { font-size: 15px; margin-bottom: 12px; }
+
+
+.snapshot-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.snapshot-metric {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.snapshot-metric .label { color: var(--text-muted); }
+.snapshot-metric .value { font-weight: 700; }
+
+
+
+
+
+.snapshot-card.v1 .snapshot-metric .value { color: var(--amber); }
+.snapshot-card.v2 { border-top: 4px solid var(--primary); }
+.snapshot-card.v2 h3 { color: var(--primary); }
+.snapshot-card.v2 .snapshot-metric .value { color: var(--primary); }
+.snapshot-card.v3 { border-top: 4px solid var(--primary); }
+.snapshot-card.v3 h3 { color: var(--primary); }
+.snapshot-card.v3 .snapshot-metric .value { color: var(--primary); }
+.snapshot-card.v4 { border-top: 4px solid var(--green); }
+.snapshot-card.v4 h3 { color: var(--green); }
+.snapshot-card.v4 .snapshot-metric .value { color: var(--green); }
+
+.snapshot-improvement {
+  grid-column: 1 / -1;
+  background: var(--green-light);
+  border: 1px solid #86efac;
+  border-radius: 8px;
+  padding: 14px 20px;
+  text-align: center;
+  font-size: 14px;
+  color: #166534;
+}
+.snapshot-improvement strong { font-size: 18px; }
+
+
+.dashboard-grid { max-width: 1200px; margin: 0 auto; padding: 24px; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted, #94a3b8); padding: 8px 10px; border-bottom: 2px solid var(--border, #334155); }
+td { padding: 9px 10px; border-bottom: 1px solid var(--border, #334155); vertical-align: top; }
+code { background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+a { color: #93c5fd; text-underline-offset: 2px; }
+.stat-banner { background: linear-gradient(135deg,#0f172a,#1e293b); border:1px solid var(--border,#334155); border-left:4px solid var(--green,#22c55e); border-radius:12px; padding:18px 22px; margin:16px 0; font-size:14px; line-height:1.7; }
+.quality-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin:14px 0; }
+.info-card { background:var(--surface, #0b1220); border:1px solid var(--border,#334155); border-left:4px solid var(--primary,#3b82f6); border-radius:10px; padding:14px 18px; margin:12px 0; font-size:13.5px; line-height:1.75; }
+.ref-box { background:var(--surface, #0b1220); border:1px solid var(--border,#334155); border-radius:10px; padding:14px 18px; margin:12px 0; font-size:13px; line-height:2; }
+details { margin: 12px 0; border: 1px solid var(--border,#334155); border-radius: 10px; background: var(--surface, #0b1220); overflow: hidden; }
+details > summary { cursor: pointer; padding: 12px 16px; font-weight: 600; color: var(--text,#e2e8f0); user-select: none; }
+details .details-body { padding: 4px 16px 14px; }
+.desc { color: var(--text-muted, #94a3b8); font-size: 12.5px; }</style>
+</head><body><div class="dashboard-grid"><div style="background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.5);border-radius:10px;padding:10px 16px;margin:12px 0;font-size:13px;">SUPERSEDED — this is the pre-redesign story-first page. The redesigned dashboard (sticky nav, 7 sections, findings, label cards) is <a href="../index.html" style="font-weight:700;">here (../index.html)</a>.</div><div class="dashboard-grid">
+<header><h1>Finance Agent — Eval Readout v1 [LEGACY]</h1>
+<div class="desc">Run 2026-09-18 · 30 user-provided CFO queries · hirafoods workspace ·
+producer gpt-5.4-mini (classify gate + answer fm) · judge in-session deepseek-v4 (no external call) · human-reviewed 0/20 ·
+invariants OK</div></header>
+<div class="stat-banner"><strong>16 answered</strong> · <strong>4 hard refusals</strong> · <strong>9 clarify-parks</strong> · <strong>1 technical error</strong> — <strong>13/30</strong> CFO asks delivered decision-grade support (L4/L5), <strong>0 data-dumps</strong>, <strong>no fabricated figures detected (20 answers judged)</strong>. Main defect: cross-answer template reuse (top-5 block reused in 9/16 answered answers (56%)).</div>
+<section><h2>Outcomes</h2><div class="quality-grid"><div class="quality-card" style="background:var(--surface);border-left:4px solid #16a34a;border-radius:8px;padding:16px;"><div class="count" style="color:#16a34a;">16</div><div class="desc"><strong>Answered</strong></div><div class="pct">53% of queries</div></div><div class="quality-card" style="background:var(--surface);border-left:4px solid #2563eb;border-radius:8px;padding:16px;"><div class="count" style="color:#2563eb;">4</div><div class="desc"><strong>Hard refusal</strong></div><div class="pct">13% of queries</div></div><div class="quality-card" style="background:var(--surface);border-left:4px solid #7c3aed;border-radius:8px;padding:16px;"><div class="count" style="color:#7c3aed;">9</div><div class="desc"><strong>Clarify park</strong></div><div class="pct">30% of queries</div></div><div class="quality-card" style="background:var(--surface);border-left:4px solid #dc2626;border-radius:8px;padding:16px;"><div class="count" style="color:#dc2626;">1</div><div class="desc"><strong>Technical error</strong></div><div class="pct">3% of queries</div></div></div></section>
+<section><h2>How This Run Was Done</h2>
+<div class="info-card"><h3>Setup</h3>30 user-provided CFO insight questions run live against the <code>finance</code> agent template (hirafoods workspace) via <code>scripts/run_agent_evals.py</code> — a two-turn-aware SSE runner that captures full answers, interrupt/clarify parks, errors and timing into versioned JSONL. No retries (HEART #5): a drop is recorded as-is. Every query carries an <code>expected_behavior</code> label (ANSWER 9 / CLARIFY 12 / REFUSE 9).</div>
+<div class="info-card"><h3>Derivation &amp; checks</h3><code>scripts/finance_pipeline.py</code> derives the outcome taxonomy, expected-vs-observed verdicts, value mix, latency by outcome, deterministic content checks and leak hits with matched strings. Invariants are asserted at build and the build fails on disagreement.</div>
+<div class="info-card"><h3>Judge &amp; provenance</h3>in-session deepseek-v4 (no external call) · rubric vv1 · <strong>20 judged</strong> · human-reviewed 0/20 · Grades come from one in-session model (deepseek-v4, a different family from the producing agent gpt-5.4-mini) in two passes: Phase 3 = direct reading against pre-written accountant skeletons (no separate LLM judge invocation, no second reader); Phase 2 = an anchored judge pass with a verbatim-evidence requirement. The two passes agree 20/20 — that is model SELF-CONSISTENCY, not human calibration. Human-reviewed: 0/20.</div></section>
+<section><h2>Sources &amp; Reference</h2><div class="ref-box"><strong>Machine-readable:</strong><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/summary.json">summary.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/findings.json">findings.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/judgments.jsonl">judgments.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/leaks.jsonl">leaks.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/results.jsonl">results.jsonl</a><br><br><strong>Owner-facing readouts:</strong><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/EVAL_READOUT_v1.md">EVAL_READOUT_v1.md</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/VALUE_READOUT_v1.md">VALUE_READOUT_v1.md</a></div></section>
+<details>
+<summary>Expected vs Observed — behavior matrix</summary>
+<div class="details-body"><div class="desc">Verdicts: <strong>13 match</strong> · 4 partial · <strong style='color:#dc2626;'>12 mismatch</strong> · 1 error</div><div class="table-wrap"><table><thead><tr><th>Expected label</th><th>Answered</th><th>Hard refusal</th><th>Clarify park</th><th>Error</th></tr></thead><tbody><tr><td><strong>ANSWER</strong></td><td>5</td><td>0</td><td>4</td><td>0</td></tr><tr><td><strong>CLARIFY</strong></td><td>7</td><td>0</td><td>4</td><td>1</td></tr><tr><td><strong>REFUSE</strong></td><td>4</td><td>4</td><td>1</td><td>0</td></tr></tbody></table></div></div></details>
+<details>
+<summary>Response Value (judge)</summary>
+<div class="details-body"><div class="desc">L4/L5 <strong>13</strong> · L3 2 · correct refusals 5 · not judged 10</div><div class="desc">L-levels are model self-consistency (judge same family as grader); 10-answer human calibration spot-check is the open item</div></div></details>
+<details>
+<summary>Latency by Outcome</summary>
+<div class="details-body"><div class="desc">Client timeout is 300s per HEART #2; a 244.7s IncompleteRead = upstream drop, not timeout.</div><div class="table-wrap"><table><thead><tr><th>Outcome</th><th>n</th><th>Median</th><th>p95</th><th>Max</th></tr></thead><tbody><tr><td>Answered</td><td>16</td><td>47.2s</td><td>211.9s</td><td>211.9s</td></tr><tr><td>Clarify park</td><td>9</td><td>2.5s</td><td>3.4s</td><td>3.4s</td></tr><tr><td>Hard refusal</td><td>4</td><td>2.1s</td><td>2.3s</td><td>2.3s</td></tr><tr><td>Technical error</td><td>1</td><td>244.7s</td><td>244.7s</td><td>244.7s</td></tr></tbody></table></div></div></details>
+<details>
+<summary>Content Checks</summary>
+<div class="details-body"><div class="desc">Deterministic checks over the answers.</div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Check</th><th>Status</th><th>Queries</th><th>Evidence</th></tr></thead><tbody><tr><td><strong>C-01</strong></td><td>ratio_reconcile</td><td>FAIL</td><td>q16</td><td style="font-size:12px;">q16 ₹162,137,760 as 50.3% =&gt; implied 32.2cr vs sales 24.18cr; q16 ₹239,495,748 as 49.6% =&gt; implied 48.3cr vs sales 24.18cr</td></tr><tr><td><strong>C-02</strong></td><td>topN_coverage</td><td>WARN</td><td>q4, q11, q26, q28</td><td style="font-size:12px;">top-5 block ₹2,240,723 = 1.3% of outstanding ₹174,830,219 in q4,11,26,28</td></tr><tr><td><strong>C-03</strong></td><td>cross_view</td><td>FAIL</td><td>q21</td><td style="font-size:12px;">q21 movement-view ₹1,453,793 &gt; ranking &quot;largest&quot; ₹905,018 (&gt;1.2x)</td></tr><tr><td><strong>C-04</strong></td><td>repetition</td><td>WARN</td><td>q1, q2, q4, q9, q11, q25, q26, q28, q30</td><td style="font-size:12px;">top-5 block reused in 9/16 answered answers (56%)</td></tr><tr><td><strong>C-05</strong></td><td>data_recency</td><td>UNKNOWN</td><td>—</td><td style="font-size:12px;">answers cite latest-month drop 9.77cr→11.98L; max invoice date not checked (no invoice-date column in the run) — manual verification required</td></tr><tr><td><strong>C-06</strong></td><td>unit_duplication</td><td>WARN</td><td>q1, q4, q9, q11, q22, q26</td><td style="font-size:12px;">&#x27;days days&#x27; in 6 answers: q1,4,9,11,22,26</td></tr><tr><td><strong>C-07</strong></td><td>grounding_artifact</td><td>WARN</td><td>q1</td><td style="font-size:12px;">literal &#x27;[unverified]&#x27; emitted in q1</td></tr></tbody></table></div></div></details>
+<details>
+<summary>Findings (ranked, actionable)</summary>
+<div class="details-body"><div class="desc">Stable IDs — fixes can be confirmed closed on the next run.</div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>Type</th><th>Queries</th><th>Evidence</th><th>Suggested fix</th><th>Status</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td>high</td><td>ratio_reconcile</td><td>q16</td><td style="font-size:12px;">q16 ₹162,137,760 as 50.3% =&gt; implied 32.2cr vs sales 24.18cr; q16 ₹239,495,748 as 49.6% =&gt; implied 48.3cr vs sales 24.18cr</td><td style="font-size:12px;color:#6b7280;">reconcile segment/product aggregation (likely double count); percentage denominators must match the sales total</td><td>open</td></tr><tr><td><strong>F-002</strong></td><td>medium</td><td>topN_coverage</td><td>q4, q11, q26, q28</td><td style="font-size:12px;">top-5 block ₹2,240,723 = 1.3% of outstanding ₹174,830,219 in q4,11,26,28</td><td style="font-size:12px;color:#6b7280;">when naming top accounts, quantify their share of the portfolio so the coverage limit is visible</td><td>open</td></tr><tr><td><strong>F-003</strong></td><td>high</td><td>cross_view</td><td>q21</td><td style="font-size:12px;">q21 movement-view ₹1,453,793 &gt; ranking &quot;largest&quot; ₹905,018 (&gt;1.2x)</td><td style="font-size:12px;color:#6b7280;">label the view/source per figure (movement vs ranking vs outstanding) so contradictory &#x27;largest&#x27; claims are impossible</td><td>open</td></tr><tr><td><strong>F-004</strong></td><td>medium</td><td>repetition</td><td>q1, q2, q4, q9, q11, q25, q26, q28, q30</td><td style="font-size:12px;">top-5 block reused in 9/16 answered answers (56%)</td><td style="font-size:12px;color:#6b7280;">per-intent evidence selection: same KPI trio + top-5 block must not be the &#x27;insight&#x27; for 8 different questions</td><td>open</td></tr><tr><td><strong>F-005</strong></td><td>low</td><td>data_recency</td><td>—</td><td style="font-size:12px;">answers cite latest-month drop 9.77cr→11.98L; max invoice date not checked (no invoice-date column in the run) — manual verification required</td><td style="font-size:12px;color:#6b7280;">add invoice_date to the query set so recency is checkable</td><td>open</td></tr><tr><td><strong>F-006</strong></td><td>medium</td><td>unit_duplication</td><td>q1, q4, q9, q11, q22, q26</td><td style="font-size:12px;">&#x27;days days&#x27; in 6 answers: q1,4,9,11,22,26</td><td style="font-size:12px;color:#6b7280;">deduplicate unit tokens in the format node</td><td>open</td></tr><tr><td><strong>F-007</strong></td><td>medium</td><td>grounding_artifact</td><td>q1</td><td style="font-size:12px;">literal &#x27;[unverified]&#x27; emitted in q1</td><td style="font-size:12px;color:#6b7280;">re-probe or drop the sentence; never emit the placeholder token to the user</td><td>open</td></tr><tr><td><strong>F-008</strong></td><td>medium</td><td>refusal_craft</td><td>q12, q13, q18, q27</td><td style="font-size:12px;">double-period &#x27;.. I can work&#x27; glitch in q12,13,18,27</td><td style="font-size:12px;color:#6b7280;">strip trailing period duplication in the refusal template</td><td>open</td></tr><tr><td><strong>F-009</strong></td><td>high</td><td>clarify_gate_noise</td><td>q7, q8, q14, q24, q29</td><td style="font-size:12px;">5 ANSWER/REFUSE-labeled queries parked by the clarify gate (q7,8,14,24,29) — q14 margin-pressure is provably answerable (see q2/q15)</td><td style="font-size:12px;color:#6b7280;">tighten the classify gate; multi-reading queries should split, not park (gate is non-deterministic: q3 parked in-run, answered on re-probe ~30% park rate on clarify-prone queries)</td><td>open</td></tr><tr><td><strong>F-010</strong></td><td>medium</td><td>latency</td><td>q1, q20, q30</td><td style="font-size:12px;">answers &gt;120s: q1,20,30 (q20 dropped at 244.7s IncompleteRead)</td><td style="font-size:12px;color:#6b7280;">chunk the analysis branch or raise the read timeout; 300s client timeout is the ceiling per HEART #2</td><td>open</td></tr></tbody></table></div></div></details>
+<details>
+<summary>Leak Hits (with matched strings)</summary>
+<div class="details-body"><div class="desc">Total 14 flagged — per-response regex hits; the workspace banner is intentional user-facing text (allowlisted).</div><div class="table-wrap"><table><thead><tr><th>Query</th><th>Rule</th><th>Matched text</th><th>Note</th></tr></thead><tbody><tr><td>q1</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q2</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q4</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q9</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q10</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q11</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q15</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q19</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q21</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q22</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q25</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q26</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q28</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q30</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr></tbody></table></div></div></details>
+<details>
+<summary>Per-Query — all 30</summary>
+<div class="details-body"><div class="desc">Full row-level view.</div><div class="table-wrap"><table><thead><tr><th>#</th><th>Query</th><th>Expected</th><th>Outcome</th><th>Verdict</th><th>Value</th><th>Latency</th><th>Response (excerpt)</th></tr></thead><tbody><tr><td>q1</td><td style="font-size:12px;max-width:260px;">Give me a quick sense of how the business is doing financially. Anything that stands out to you?</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L4</td><td>142.08s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q2</td><td style="font-size:12px;max-width:260px;">Revenue looks okay to me, but are we actually making money? Walk me through the profitability.</td><td>REFUSE</td><td>answered</td><td>partial</td><td>L4</td><td>53.29s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q3</td><td style="font-size:12px;max-width:260px;">Where is our cash getting stuck right now?</td><td>CLARIFY</td><td>parked</td><td>match</td><td></td><td>2.45s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q4</td><td style="font-size:12px;max-width:260px;">I&#x27;m concerned about receivables. Who is holding up our cash and how serious is it?</td><td>ANSWER</td><td>answered</td><td>match</td><td>L5</td><td>38.65s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q5</td><td style="font-size:12px;max-width:260px;">Do we have a working-capital problem, or is the situation under control?</td><td>CLARIFY</td><td>parked</td><td>match</td><td></td><td>2.7s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q6</td><td style="font-size:12px;max-width:260px;">Which customers are becoming a cash-flow risk for us?</td><td>CLARIFY</td><td>parked</td><td>match</td><td></td><td>2.23s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q7</td><td style="font-size:12px;max-width:260px;">Show me customers where we&#x27;re doing good business but collections are poor. I want to understand the pattern.</td><td>ANSWER</td><td>parked</td><td>mismatch</td><td></td><td>2.77s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q8</td><td style="font-size:12px;max-width:260px;">Are there customers whose outstanding is growing faster than their business with us?</td><td>ANSWER</td><td>parked</td><td>mismatch</td><td></td><td>2.34s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q9</td><td style="font-size:12px;max-width:260px;">If I had to recover cash aggressively this month, which accounts would you ask me to focus on first?</td><td>ANSWER</td><td>answered</td><td>match</td><td>L5</td><td>43.57s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q10</td><td style="font-size:12px;max-width:260px;">How much of our receivables is actually overdue, and how much of that looks difficult to recover?</td><td>ANSWER</td><td>answered</td><td>match</td><td>L3</td><td>35.94s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q11</td><td style="font-size:12px;max-width:260px;">Are we giving customers too much credit? What does the data suggest?</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L4</td><td>38.42s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q12</td><td style="font-size:12px;max-width:260px;">What is happening with our payables? Are we under pressure from suppliers or do we have some room?</td><td>REFUSE</td><td>hard_refusal</td><td>match</td><td>REF</td><td>2.32s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — Supplier payables / amount owed to suppliers is not reliably available in the dataset. Purchase-invoice entries are under-…</td></tr><tr><td>q13</td><td style="font-size:12px;max-width:260px;">Are we paying suppliers before we collect from customers?</td><td>REFUSE</td><td>hard_refusal</td><td>match</td><td>REF</td><td>2.22s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — The dataset has sales, customer receivables/collections, and purchase-invoice entries, but it does not reliably contain su…</td></tr><tr><td>q14</td><td style="font-size:12px;max-width:260px;">What&#x27;s putting pressure on our margins?</td><td>REFUSE</td><td>parked</td><td>mismatch</td><td></td><td>2.07s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q15</td><td style="font-size:12px;max-width:260px;">Our sales may be growing, but are margins improving or deteriorating?</td><td>REFUSE</td><td>answered</td><td>partial</td><td>L4</td><td>52.07s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q16</td><td style="font-size:12px;max-width:260px;">Find me the areas where revenue is growing but profitability isn&#x27;t keeping up.</td><td>REFUSE</td><td>answered</td><td>partial</td><td>L4</td><td>97.59s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">💡 **Revenue peaked at ₹9,77,65,078, but profitability is not tracked in the books, so no area can be confirmed as growing faster than profit.**  ###  Revenue gr…</td></tr><tr><td>q17</td><td style="font-size:12px;max-width:260px;">Which expenses should I be questioning right now?</td><td>REFUSE</td><td>answered</td><td>partial</td><td>REF</td><td>66.31s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">💡 **Expense accounts and cost increases cannot be assessed from the tracked books**  ### 🔎 What the data supports - This dataset does not contain expense accoun…</td></tr><tr><td>q18</td><td style="font-size:12px;max-width:260px;">Have any expenses increased disproportionately compared with the business?</td><td>REFUSE</td><td>hard_refusal</td><td>match</td><td>REF</td><td>1.96s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — No expense table or P&amp;L/COGS data is available, so expenses and their growth cannot be measured or compared to business gr…</td></tr><tr><td>q19</td><td style="font-size:12px;max-width:260px;">If you were reviewing these numbers with me as CFO, what would you challenge?</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L5</td><td>50.51s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q20</td><td style="font-size:12px;max-width:260px;">Forget the standard reports. Tell me what looks unusual in the financial data.</td><td>CLARIFY</td><td>error</td><td>error</td><td></td><td>244.7s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q21</td><td style="font-size:12px;max-width:260px;">Something doesn&#x27;t look right in the numbers. Can you find any unusual movements that I should investigate?</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L5</td><td>48.45s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q22</td><td style="font-size:12px;max-width:260px;">Where are we taking the biggest financial risks without necessarily seeing them in the P&amp;L?</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L4</td><td>39.53s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q23</td><td style="font-size:12px;max-width:260px;">Are there any customers where the amount of credit we&#x27;re extending doesn&#x27;t make sense given their payment hist</td><td>CLARIFY</td><td>parked</td><td>match</td><td></td><td>3.38s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q24</td><td style="font-size:12px;max-width:260px;">Which accounts have become materially different from what we normally see?</td><td>ANSWER</td><td>parked</td><td>mismatch</td><td></td><td>2.41s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q25</td><td style="font-size:12px;max-width:260px;">Tell me where management attention is most needed financially.</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L4</td><td>45.91s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q26</td><td style="font-size:12px;max-width:260px;">If sales remain at the current level, what could hurt our cash flow over the next few months?</td><td>ANSWER</td><td>answered</td><td>match</td><td>L3</td><td>42.14s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q27</td><td style="font-size:12px;max-width:260px;">What is the biggest difference between our accounting profit and the cash situation?</td><td>REFUSE</td><td>hard_refusal</td><td>match</td><td>REF</td><td>1.83s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — Accounting profit and cash situation require profit &amp; loss data, cost/COGS, and cash/bank balances, which are not availabl…</td></tr><tr><td>q28</td><td style="font-size:12px;max-width:260px;">Are there signs that our growth is consuming too much working capital?</td><td>ANSWER</td><td>answered</td><td>match</td><td>L4</td><td>43.81s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q29</td><td style="font-size:12px;max-width:260px;">Which customers or suppliers have the biggest financial concentration for us?</td><td>ANSWER</td><td>parked</td><td>mismatch</td><td></td><td>2.49s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q30</td><td style="font-size:12px;max-width:260px;">What would worry you if you were looking at these numbers for the first time?</td><td>CLARIFY</td><td>answered</td><td>mismatch</td><td>L4</td><td>211.92s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr></tbody></table></div></div></details>
+<footer style="margin-top:32px;color:#64748b;font-size:12px;">Superseded static page — the redesigned dashboard is <a href="../index.html">../index.html</a>. Raw traces: <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/query_results_v1.jsonl">query_results_v1.jsonl</a> · Run v1 · 2026-09-18</footer>
+</div></body></html>

@@ -48,7 +48,7 @@ banner when records carry expected_behavior. Live: https://navneetlearns.github.
 Queries are generator-owned (scripts/gen_finance_queries.py, scripts/gen_ar_agent_queries.py —
 AR set of 70 real-entity queries ready, not yet run).
 
-**Derived-artifact pipeline + eval CLI + story-first static page (2026-09-19):**
+**Derived-artifact pipeline + eval CLI + static dashboard (2026-09-19):**
 `scripts/finance_pipeline.py` derives a single source of truth from the raw JSONL
 (outcome taxonomy answered/hard_refusal/parked/error, expected-vs-observed verdicts, value mix,
 latency by outcome, deterministic content checks, leaks with matched strings + judge provenance)
@@ -57,13 +57,22 @@ results.jsonl}` — invariants asserted at build (outcomes/verdicts sum == queri
 == 30; this is what catches "10 failed" vs "1 failed" conflicts). `eval_cli.py` is the agent-facing
 surface: `summary / findings --open / show qN / diff / rerun --failed / gate --min-match 0.6`, all
 with `--json`; rerun passes `--only` to run_agent_evals.py which pre-seeds untouched rows from the
-prior run so v2 stays diffable. Finance dashboards render a fully STATIC story-first page (headline
-+ outcome cards + "How This Run Was Done" + "Sources & Reference" above the fold; all 7 detail
-tables behind native `<details>` collapse — zero JS, opens on click; links are absolute
-raw.githubusercontent.com URLs styled light so they're identifiable on dark surfaces). Tool-selection/
-step framing dropped because finance streams no tool events (backend SQL); leaks show matched strings.
-Other accounts build byte-identical pages (verified head-vs-head). See
-`accounts/finance/runs/v1/summary.json`.
+prior run so v2 stays diffable.
+
+**Redesign (2026-09-19, dev-audience):** `scripts/render_finance_static.py` builds the finance
+dashboard with a sticky side nav and 7 server-rendered sections (summary + clickable outcome bar +
+KPI cards + 4-step pipeline; findings grouped by agent component with "done when" tests; results
+with expected-vs-observed heatmap, mismatch-first query explorer + client-side filters only and
+`#qN` deep links, value by tier/family, latency dot plot by outcome with the 300s timeout marked;
+how-we-evaluated incl. deterministic checks + leak hits with matched strings; how-we-labeled with
+per-query label cards for all 30, disputed tier/tool/family flags and a FinGAIA-definitions TODO;
+limits & trust; reproduce with rerun commands + absolute raw links). All content is server-rendered
+— view-source shows every row, zero external CDNs, inline JS only for the explorer's filters.
+Build fails on invariant violations (sums == 30, all 30 deep links, no relative `../../` hrefs).
+The pre-redesign page is preserved at `docs/finance/legacy/` with a SUPERSEDED banner until the new
+page is verified. Verdict provenance is surfaced on-page: 13 match / 4 partial / 12 mismatch / 1
+error (recomputed from the JSONL, not the earlier hand count). Other accounts build byte-identical
+pages (verified head-vs-head). See `accounts/finance/runs/v1/summary.json`.
 
 **QA lesson (2026-09-19, user-caught bugs):** structural checks (row counts, section markers, zero
 console errors) do NOT catch wrong cell values or dead links — they passed while the behavior matrix

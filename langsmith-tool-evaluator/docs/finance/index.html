@@ -253,133 +253,857 @@ footer a:hover { text-decoration: underline; }
 .snapshot-improvement strong { font-size: 18px; }
 
 
-
-.dashboard-grid { max-width: 1200px; margin: 0 auto; padding: 24px; }
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted, #94a3b8); padding: 8px 10px; border-bottom: 2px solid var(--border, #334155); }
-td { padding: 9px 10px; border-bottom: 1px solid var(--border, #334155); vertical-align: top; }
-code { background: rgba(148,163,184,.12); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
-a { color: #93c5fd; text-decoration: underline; text-underline-offset: 2px; }
-a:visited { color: #a5b4fc; }
-.stat-banner { background: linear-gradient(135deg,#0f172a,#1e293b); border:1px solid var(--border,#334155); border-left:4px solid var(--green,#22c55e); border-radius:12px; padding:18px 22px; margin:16px 0; font-size:14px; line-height:1.7; }
-.quality-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:14px; margin:14px 0; }
-.info-card { background:var(--surface, #0b1220); border:1px solid var(--border,#334155); border-left:4px solid var(--primary,#3b82f6); border-radius:10px; padding:14px 18px; margin:12px 0; font-size:13.5px; line-height:1.75; }
-.info-card h3 { margin:0 0 8px; font-size:14px; color:var(--text,#e2e8f0); }
-.ref-box { background:var(--surface, #0b1220); border:1px solid var(--border,#334155); border-radius:10px; padding:14px 18px; margin:12px 0; font-size:13px; line-height:2; }
-details { margin: 12px 0; border: 1px solid var(--border,#334155); border-radius: 10px; background: var(--surface, #0b1220); overflow: hidden; }
-details > summary { cursor: pointer; padding: 12px 16px; font-size: 14px; font-weight: 600; color: var(--text,#e2e8f0); list-style: none; display: flex; align-items: center; gap: 10px; user-select: none; position: relative; }
-details > summary::-webkit-details-marker, details > summary::marker { display: none; content: ""; }
-details > summary::before { content: "\25B8"; display:inline-block; color: var(--green,#22c55e); font-size: 13px; transition: transform .15s ease; }
-details[open] > summary::before { transform: rotate(90deg); }
-details > summary:hover { background: rgba(148,163,184,.07); }
-details .details-body { padding: 4px 16px 14px; }
-details .desc { color: var(--text-muted, #94a3b8); font-size: 12.5px; }
+:root{--green:#22c55e;--blue:#3b82f6;--violet:#7c3aed;--red:#dc2626;--amber:#d97706;}
+*{box-sizing:border-box;} body{margin:0;}
+.layout{display:grid;grid-template-columns:230px 1fr;max-width:1400px;margin:0 auto;gap:28px;padding:0 20px;}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;padding:22px 10px 40px;border-right:1px solid var(--border,#334155);}
+.sidebar h1{font-size:15px;margin:0 0 4px;line-height:1.35;}
+.sidebar .src{font-size:11px;color:var(--text-muted,#94a3b8);margin-bottom:14px;}
+.sidebar nav{display:flex;flex-direction:column;gap:2px;}
+.sidebar nav a{color:var(--text-muted,#94a3b8);text-decoration:none;font-size:12.5px;padding:6px 10px;border-radius:6px;}
+.sidebar nav a:hover{background:rgba(148,163,184,.1);color:var(--text,#e2e8f0);}
+.sidebar nav a.act{color:#c7d2fe;background:rgba(99,102,241,.14);font-weight:600;}
+main{min-width:0;padding:22px 8px 80px;}
+section{margin:0 0 44px;scroll-margin-top:14px;}
+h2{font-size:19px;margin:0 0 6px;border-bottom:1px solid var(--border,#334155);padding-bottom:8px;}
+h3{font-size:14.5px;margin:16px 0 6px;}
+.desc{color:var(--text-muted,#94a3b8);font-size:12.5px;line-height:1.6;margin:6px 0;}
+.verdict{background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid var(--border,#334155);border-left:4px solid var(--green,#22c55e);border-radius:12px;padding:16px 20px;margin:14px 0;font-size:14px;line-height:1.75;}
+.verdict .s{color:#86efac;font-weight:700;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0;}
+.kpi{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-left:4px solid var(--blue,#3b82f6);border-radius:10px;padding:12px 14px;}
+.kpi-v{font-size:22px;font-weight:800;color:var(--blue,#93c5fd);}
+.kpi-d{font-size:11.5px;color:var(--text-muted,#94a3b8);line-height:1.5;margin-top:4px;}
+.obar{display:flex;height:64px;border-radius:10px;overflow:hidden;border:1px solid var(--border,#334155);margin:12px 0 4px;}
+.obar-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#04121d;font-weight:800;text-decoration:none;min-width:44px;transition:filter .12s;}
+.obar-seg:hover{filter:brightness(1.15);}
+.obar-n{font-size:17px;} .obar-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+.obar-total{font-size:11px;color:var(--text-muted,#94a3b8);}
+.psteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0;}
+.pstep{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-top:3px solid var(--blue,#3b82f6);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--text,#e2e8f0);}
+.pstep-t{font-weight:700;font-size:13px;} .pstep-d{font-size:11.5px;color:var(--text-muted,#94a3b8);line-height:1.5;margin:6px 0;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#94a3b8);padding:8px 10px;border-bottom:2px solid var(--border,#334155);}
+td{padding:8px 10px;border-bottom:1px solid var(--border,#334155);vertical-align:top;}
+table.heat td,table.heat th{text-align:center;}
+table.heat td{font-weight:800;font-size:16px;}
+.heat-0{color:#475569;} .heat-1{color:#93c5fd;} .heat-2{color:#fbbf24;} .heat-3{color:#f87171;} .heat-4,.heat-5,.heat-6,.heat-7{color:#fff;background:rgba(220,38,38,.25);}
+.heat-q{font-weight:400;font-size:11px;line-height:1.7;} .heat-q a{color:inherit;}
+.heat-note{font-size:10px;font-weight:400;color:var(--amber,#fbbf24);max-width:180px;margin:4px auto;}
+code{background:rgba(148,163,184,.12);padding:1px 5px;border-radius:4px;font-size:11px;}
+a{color:#93c5fd;text-underline-offset:2px;}
+a:visited{color:#a5b4fc;}
+details{margin:8px 0;border:1px solid var(--border,#334155);border-radius:10px;background:var(--surface,#0b1220);overflow:hidden;}
+details>summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:600;list-style:none;display:flex;gap:10px;align-items:baseline;}
+details>summary::-webkit-details-marker,details>summary::marker{display:none;content:"";}
+details>summary::before{content:"\25B8";display:inline-block;color:var(--green,#22c55e);transition:transform .15s;}
+details[open]>summary::before{transform:rotate(90deg);}
+details .details-body{padding:2px 16px 14px;}
+.finding{border-left:4px solid var(--blue,#3b82f6);}
+.finding.sev-high{border-left-color:var(--red,#dc2626);}
+.finding.sev-medium{border-left-color:var(--amber,#d97706);}
+.finding.sev-low{border-left-color:#64748b;}
+.flag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:1px 7px;border-radius:99px;margin-left:6px;white-space:nowrap;}
+.flag.auto{color:#86efac;background:rgba(34,197,94,.12);} .flag.manual{color:#93c5fd;background:rgba(59,130,246,.12);}
+.flag.disp{color:#fbbf24;background:rgba(217,119,6,.14);} .flag.open{color:#f87171;background:rgba(220,38,38,.12);}
+.qrow{border-left:4px solid #334155;margin:10px 0;}
+.qrow.out-answered{border-left-color:#16a34a;} .qrow.out-hard_refusal{border-left-color:#2563eb;}
+.qrow.out-parked{border-left-color:#7c3aed;} .qrow.out-error{border-left-color:#dc2626;}
+.qrow summary .qmeta{color:var(--text-muted,#94a3b8);font-size:11px;font-weight:400;}
+.qrow pre{white-space:pre-wrap;font-size:11.5px;line-height:1.6;color:#dbe4f0;background:#0a0f1c;border:1px solid var(--border,#334155);border-radius:8px;padding:12px;max-height:420px;overflow-y:auto;}
+.filters{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0;font-size:12px;}
+.filters label{color:var(--text-muted,#94a3b8);}
+.filters select{background:var(--surface,#0b1220);color:var(--text,#e2e8f0);border:1px solid var(--border,#334155);border-radius:6px;padding:4px 8px;}
+.dotplot{display:flex;gap:0;align-items:flex-end;height:150px;padding:10px 8px 0;border-bottom:1px solid var(--border,#334155);position:relative;}
+.dotplot .bar{width:9px;background:var(--blue,#3b82f6);border-radius:3px 3px 0 0;margin:0 2px;}
+.dotplot .bar.error{background:var(--red,#dc2626);} .dotplot .bar.parked{background:var(--violet,#7c3aed);} .dotplot .bar.hard_refusal{background:#2563eb;}
+.dotplot .t300{position:absolute;right:0;bottom:0;height:0;border-right:2px dashed #f87171;}
+.latlabel{font-size:10px;color:var(--text-muted,#94a3b8);}
+.latgrid{display:flex;flex-direction:column;gap:10px;}
+.latrow{display:grid;grid-template-columns:130px 1fr 60px;gap:8px;align-items:center;font-size:11.5px;}
+.latbar{background:linear-gradient(90deg,#1e3a5f,#3b82f6);height:14px;border-radius:4px;min-width:4px;}
+.latbar.error{background:linear-gradient(90deg,#450a0a,#dc2626);}
+.latbar.parked{background:linear-gradient(90deg,#2a1a4a,#7c3aed);}
+.latbar.hard_refusal{background:linear-gradient(90deg,#172554,#2563eb);}
+.latmark{position:relative;height:14px;}
+.latmark::after{content:"300s client timeout";position:absolute;right:0;top:-2px;font-size:10px;color:#f87171;border-right:2px dashed #f87171;padding-right:4px;}
+.info-card{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-left:4px solid var(--blue,#3b82f6);border-radius:10px;padding:12px 16px;margin:10px 0;font-size:12.5px;line-height:1.75;}
+.labels-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;}
+.lcard{background:var(--surface,#0b1220);border:1px solid var(--border,#334155);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.6;}
+.lcard .q{font-weight:800;}
+.note-box{background:rgba(217,119,6,.08);border:1px solid rgba(217,119,6,.35);border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin:12px 0;}
+.todo-box{background:rgba(148,163,184,.07);border:1px dashed #64748b;border-radius:10px;padding:12px 16px;font-size:12.5px;line-height:1.7;margin:12px 0;}
+.foot{color:#64748b;font-size:11.5px;margin-top:40px;border-top:1px solid var(--border,#334155);padding-top:14px;line-height:1.8;}
+@media (max-width:900px){.layout{grid-template-columns:1fr;padding:0 12px;}
+.sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border,#334155);}
+.sidebar nav{flex-direction:row;flex-wrap:wrap;gap:6px;}}
 </style>
 </head>
 <body>
-<div class="dashboard-grid">
+<div class="layout">
+  <aside class="sidebar">
+    <h1>Finance Agent — Eval v1</h1>
+    <div class="src">Run 2026-09-18 · 30 user-provided CFO queries · hirafoods workspace ·
+    producer gpt-5.4-mini · judge in-session deepseek-v4 · human-reviewed 0/20 ·
+    invariants OK (asserted at build)</div>
+    <nav><a href="#summary">1 · Summary</a><a href="#means">2 · What this means for you</a><a href="#results">3 · Results</a><a href="#evaluated">4 · How we evaluated</a><a href="#labels">5 · How we labeled</a><a href="#limits">6 · Limits & trust</a><a href="#reproduce">7 · Reproduce</a></nav>
+    <div class="src" style="margin-top:16px;"><a href="legacy/" style="color:#94a3b8;">← pre-redesign page (legacy)</a></div>
+  </aside>
+  <main>
+    
+<section id="summary">
+  <h2>1 · Summary — how did the agent do?</h2>
+  <div class="verdict"><span class="s">One-sentence verdict:</span> 16 of 30 CFO questions got substantive answers and <strong>13/30 (43%)</strong> were decision-grade (L4/L5 on the value ladder); 4 clean boundary-named refusals + 9 clarify-parks; <strong>no fabricated figures detected</strong> (in-session judge, 20 answers judged) — the main defect is <strong>cross-answer template reuse</strong>, not answer-level quality. Refusals about payables, expenses, P&amp;L/COGS and cash/bank reflect <strong>data gaps in the workspace</strong>, not agent bugs.</div>
+  <h3>Outcome bar (mutually exclusive; sums to 30)</h3>
+  <div class="obar" role="img" aria-label="Outcome bar — sums to 30"><a class="obar-seg" href="#results" style="background:#16a34a;width:53.33%;" title="Answered — click for per-query detail"><span class="obar-n">16</span><span class="obar-lbl">Answered</span></a><a class="obar-seg" href="#results" style="background:#2563eb;width:13.33%;" title="Hard refusal — click for per-query detail"><span class="obar-n">4</span><span class="obar-lbl">Hard refusal</span></a><a class="obar-seg" href="#results" style="background:#7c3aed;width:30.00%;" title="Clarify park — click for per-query detail"><span class="obar-n">9</span><span class="obar-lbl">Clarify park</span></a><a class="obar-seg" href="#results" style="background:#dc2626;width:3.33%;" title="Technical error — click for per-query detail"><span class="obar-n">1</span><span class="obar-lbl">Technical error</span></a></div><div class="obar-total">mutually exclusive outcomes — sum <strong>30</strong></div>
+  <h3>KPI cards</h3>
+  <div class="kpis"><div class="kpi"><div class="kpi-v">13/30</div><div class="kpi-l"><strong>Decision-grade answers</strong><div class="kpi-d">answered at L4/L5 (13 of 20 judged) — L-ladder: L1 fetch → L5 proactive CFO partner</div></div></div><div class="kpi"><div class="kpi-v">13/30</div><div class="kpi-l"><strong>Behavior matched expectation</strong><div class="kpi-d">expected-vs-observed verdicts; +4 partial (hedged) · 12 mismatch · 1 error</div></div></div><div class="kpi"><div class="kpi-v">5/30</div><div class="kpi-l"><strong>Wrongly parked by clarify gate</strong><div class="kpi-d">ANSWER/REFUSE-labeled queries the gate parked instead of resolving (technical note: gate is a ~30% stochastic rate, not per-query truth)</div></div></div><div class="kpi"><div class="kpi-v">3</div><div class="kpi-l"><strong>Open data-integrity findings</strong><div class="kpi-d">F2 q16 ratio-reconciliation + F3 q21 cross-view contradiction (deterministic FAIL checks)</div></div></div></div>
+  <h3>How this run was built — 4 steps</h3>
+  <div class="psteps"><a class="pstep" href="#labels"><div class="pstep-t">1 · Query set</div><div class="pstep-d">30 CFO insight questions, user-provided 2026-09-18</div><code>ANSWER 9 · CLARIFY 12 · REFUSE 9</code></a><a class="pstep" href="#labels"><div class="pstep-t">2 · Expected labels</div><div class="pstep-d">per classify-gate rules (real metric → ANSWER; vague/judgment → CLARIFY; absent data → REFUSE)</div><code>9 · 12 · 9</code></a><a class="pstep" href="#results"><div class="pstep-t">3 · Agent run (v1)</div><div class="pstep-d">live streams, one isolated thread per query (30 distinct), no retries — 16 answered · 4 refused · 9 parked · 1 error</div><code>16 · 4 · 9 · 1</code></a><a class="pstep" href="#evaluated"><div class="pstep-t">4 · Rating</div><div class="pstep-d">skeleton-first grading (Phase 3) + in-session cross-family judge (Phase 2), verbatim evidence</div><code>13 L4/L5 · 2 L3 · 5 REF · 10 ungraded</code></a></div>
+  <h3>Data integrity (what not to trust)</h3><div class="note-box">Two deterministic checks FAIL: <strong>F2</strong> q16 percentages imply denominators above the invoiced-sales total (double counting suspected) and <strong>F3</strong> q21 cross-view contradiction (movement view outranks the “largest outstanding”). The q10/q26 <code>expected_tool: aging</code> labels conflict with the workspace banner — overdue/ageing are OVERSTATED (only ~3% of collected amounts are allocated to invoices). Numbers in answers can co-exist incoherently even with zero fabrication — F2 is the proof.</div>
+</section><section id="means"><h2>2 · What this means for you — what should I fix first?</h2><div class="desc">Findings grouped by the agent component that owns the fix. Each lists affected queries (deep-link into the explorer), a “done when” test to close it, and status across runs (all open in v1). “What works” is the do-not-regress list.</div><h3>Clarify gate</h3><details class="finding sev-high"><summary><span style="color:#dc2626;font-weight:800;">F1</span> <span>Clarify gate routing is inconsistent — parked and answered queries overlap</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> 5 answerable queries wrongly parked (q7 q8 q14 q24 q29); 7 CLARIFY-labeled queries answered instead (q1 q11 q19 q21 q22 q25 q30) while equally vague q3 q5 q6 q23 parked. Gate is non-deterministic: q3 parked in-run, answered on re-probe (~30% park rate on clarify-prone queries; grade as a rate, not per-query).</div><div class="desc"><strong>Affected queries:</strong> <a href="#q1">q1</a> <a href="#q7">q7</a> <a href="#q8">q8</a> <a href="#q11">q11</a> <a href="#q14">q14</a> <a href="#q19">q19</a> <a href="#q21">q21</a> <a href="#q22">q22</a> <a href="#q24">q24</a> <a href="#q25">q25</a> <a href="#q29">q29</a> <a href="#q30">q30</a></div><div class="desc"><strong>Done when:</strong> no ANSWER/REFUSE-labeled query parks; clarify-park rate reproducible per input</div></div></details><h3>Planner / evidence selection</h3><details class="finding sev-medium"><summary><span style="color:#d97706;font-weight:800;">F4</span> <span>Top-5 list is not material: ~1.3% of the portfolio presented as a recovery plan</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> The top-5 collection block totals Rs 22,40,723 = ~1.3% of Rs 17,48,30,219 outstanding across 1,549 debtors, yet q9 presents it as the aggressive-recovery plan while q4 says the issue is broad. Same block, opposite framings.</div><div class="desc"><strong>Affected queries:</strong> <a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q26">q26</a> <a href="#q28">q28</a></div><div class="desc"><strong>Done when:</strong> answers naming top accounts quantify their share of the portfolio</div></div></details><details class="finding sev-medium"><summary><span style="color:#d97706;font-weight:800;">F5</span> <span>Cross-answer template reuse hides query-specific evidence</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> Ganesh Retail Traders appears in 12 of 16 data answers (q1 q2 q4 q9 q11 q16 q21 q22 q25 q26 q28 q30 per run data; KPI trio recycled: Rs 17,48,30,219 in 6, DSO 120.8 in 4, 33.8% in 7). Four answers (q1 q15 q19 q25) say the outstanding total is unavailable while six state it (q4 q10 q11 q22 q26 q28): non-deterministic tool selection. Caveat: threads are isolated so answers cannot know they repeat; q21/q28/q30 prove query-specific evidence exists.</div><div class="desc"><strong>Affected queries:</strong> <a href="#q1">q1</a> <a href="#q2">q2</a> <a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q10">q10</a> <a href="#q11">q11</a> <a href="#q15">q15</a> <a href="#q16">q16</a> <a href="#q17">q17</a> <a href="#q19">q19</a> <a href="#q21">q21</a> <a href="#q22">q22</a> <a href="#q25">q25</a> <a href="#q26">q26</a> <a href="#q28">q28</a> <a href="#q30">q30</a></div><div class="desc"><strong>Done when:</strong> answers to different questions use different evidence blocks (C-04 share &lt; 50%)</div></div></details><details class="finding sev-medium"><summary><span style="color:#d97706;font-weight:800;">F6</span> <span>q1 headlines &#x27;priority customers&#x27; at 23.6% of sales, but they are small accounts</span> <span class="flag manual">manual</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (manual):</strong> q1: &#x27;listed priority customers contribute Rs 5,70,49,359, or 23.6% of sales&#x27;. The collection-priority top-5 are small (Ganesh sales Rs 3,62,161 per q16) — two different &#x27;priority&#x27; populations, one headline.</div><div class="desc"><strong>Affected queries:</strong> <a href="#q1">q1</a></div><div class="desc"><strong>Done when:</strong> &#x27;priority&#x27; labels in the answer match the population they are computed from</div></div></details><h3>Data & aggregation layer</h3><details class="finding sev-high"><summary><span style="color:#dc2626;font-weight:800;">F2</span> <span>q16 percentages do not reconcile with invoiced sales</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> Rs 23,94,95,748 stated as 49.6% implies a Rs 48.29cr total vs invoiced sales Rs 24,17,71,682 (it is ~99% of sales); Rs 16,21,37,760 stated as 50.3% implies Rs 32.23cr (actual ~67% of sales). Likely double counting / join fan-out in the segment and product aggregations.</div><div class="desc"><strong>Affected queries:</strong> <a href="#q16">q16</a></div><div class="desc"><strong>Done when:</strong> q16 percentages imply denominators within 5% of the sales total</div></div></details><details class="finding sev-high"><summary><span style="color:#dc2626;font-weight:800;">F3</span> <span>q21 cross-view contradiction: movement view outranks the outstanding ranking</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> Movement view: Krishna Wholesalers LLP Rs 14,53,793 largest ending balance (up Rs 8,27,052), Jai Retail Traders up Rs 9,05,018 to Rs 9,63,472, Radha Distributors &amp; Co Rs 8,06,190 (up Rs 9,66,376 from a NEGATIVE opening of -Rs 1,60,186 — unallocated advances?), Ganesh Retail Traders Rs 8,01,148 (up Rs 9,10,046 while period sales were only Rs 3,62,161 per q16) — all four ABOVE the Rs 4,94,550 &#x27;largest outstanding&#x27; the agent repeats in 12 answers (q1 q2 q4 q9 q11 q16 q21 q22 q25 q26 q28 q30). q21&#x27;s headline flags the Radha movement spike for investigation but only Ganesh&#x27;s cross-view difference is explicitly resolved (&#x27;confirm that both views use the same cut-off&#x27;).</div><div class="desc"><strong>Affected queries:</strong> <a href="#q21">q21</a></div><div class="desc"><strong>Done when:</strong> every figure states its view/source; no &#x27;largest&#x27; claim contradicts another view</div></div></details><details class="finding sev-low"><summary><span style="color:#64748b;font-weight:800;">F9</span> <span>Data recency unverified: latest-month drop may be a partial/cutoff artifact</span> <span class="flag manual">manual</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (manual):</strong> Sales fall Rs 9,77,65,078 (5,642 invoices) to Rs 11,97,739 (117 invoices) in the latest month — likely a partial month or cutoff, but the max invoice date was never checked. If partial, 33.8% collection efficiency and DSO 120.8d (over a 167-day window) are period-sensitive.</div><div class="desc"><strong>Affected queries:</strong> —</div><div class="desc"><strong>Done when:</strong> invoice_date is captured and the latest-month window verified (C-05)</div></div></details><h3>Grounding & formatting</h3><details class="finding sev-medium"><summary><span style="color:#d97706;font-weight:800;">F7</span> <span>Format-node defects: unit duplication, placeholder tokens, craft glitches</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> &#x27;days days&#x27; x30 across 6 answers (q1 q4 q9 q11 q22 q26); literal &#x27;[unverified]&#x27; x2 in q1; &#x27;..&#x27; before &#x27;I can work&#x27; in q12 q13 q18 q27; q17 footer &#x27;0 figures verified&#x27; on a refusal; &#x27;figures verified&#x27; counts not comparable (42-123 typical, 2685 in q1, 929 in q30); reconcile banner in 14 answers even when ageing is not used.</div><div class="desc"><strong>Affected queries:</strong> <a href="#q1">q1</a> <a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q11">q11</a> <a href="#q12">q12</a> <a href="#q13">q13</a> <a href="#q17">q17</a> <a href="#q18">q18</a> <a href="#q22">q22</a> <a href="#q26">q26</a> <a href="#q27">q27</a></div><div class="desc"><strong>Done when:</strong> no &#x27;days days&#x27; / &#x27;[unverified]&#x27; / &#x27;..&#x27; artifacts; banner once per thread; footer consistent</div></div></details><h3>Latency / robustness</h3><details class="finding sev-medium"><summary><span style="color:#d97706;font-weight:800;">F8</span> <span>Broadest prompts are slowest; one answer dropped before the client timeout</span> <span class="flag auto">auto</span><span class="flag open">open</span></summary><div class="details-body"><div class="desc"><strong>Evidence (auto):</strong> q20 dropped at 244.7s (IncompleteRead — upstream drop, before the 300s SSE timeout, so NOT a client timeout); q30 211.9s, q1 142.1s; the three broadest prompts are the slowest.</div><div class="desc"><strong>Affected queries:</strong> <a href="#q1">q1</a> <a href="#q20">q20</a> <a href="#q30">q30</a></div><div class="desc"><strong>Done when:</strong> no answer exceeds 120s; no IncompleteReads in a rerun</div></div></details><h3>What works (do not regress)</h3><div class="info-card"><strong>Zero fabrication</strong> — no invented profit/cash/expense figures across all 30 asks (hard refusals or hedged boundaries instead). <strong>Reconcile-guard discipline</strong> — ageing/overdue never headlined. <strong>Clean boundary-naming refusals</strong> (“Supplier payables … not reliably available”) that tell the user exactly which data is absent. <strong>Concrete actions</strong> in every answer (call today, dated commitments, escalation triggers). <strong>L5 benchmarks to preserve:</strong> q4, q9 (portfolio sizing + wave-based chase plan), q19 (CFO-style challenges), q21 (anomaly cross-check with hypotheses).</div></section>
+<section id="results">
+  <h2>3 · Results — query-by-query</h2>
+  <h3>Expected-vs-observed heatmap</h3>
+  <div class="table-wrap"><table class="heat"><thead><tr><th>Expected ↓ / observed →</th><th>Answered</th><th>Hard refusal</th><th>Clarify park</th><th>Technical error</th></tr></thead><tbody><tr><th>ANSWER</th><td class="heat-5">5<div class="heat-q"><a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q10">q10</a> <a href="#q26">q26</a> <a href="#q28">q28</a></div></td><td class="heat-0">0</td><td class="heat-4">4<div class="heat-q"><a href="#q7">q7</a> <a href="#q8">q8</a> <a href="#q24">q24</a> <a href="#q29">q29</a></div></td><td class="heat-0">0</td></tr><tr><th>CLARIFY</th><td class="heat-7">7<div class="heat-q"><a href="#q1">q1</a> <a href="#q11">q11</a> <a href="#q19">q19</a> <a href="#q21">q21</a> <a href="#q22">q22</a> <a href="#q25">q25</a> <a href="#q30">q30</a></div></td><td class="heat-0">0</td><td class="heat-4">4<div class="heat-q"><a href="#q3">q3</a> <a href="#q5">q5</a> <a href="#q6">q6</a> <a href="#q23">q23</a></div></td><td class="heat-1">1<div class="heat-q"><a href="#q20">q20</a></div></td></tr><tr><th>REFUSE</th><td class="heat-4">4<div class="heat-q"><a href="#q2">q2</a> <a href="#q15">q15</a> <a href="#q16">q16</a> <a href="#q17">q17*</a></div><div class="heat-note">answered-with-boundary (hedged refusal)</div></td><td class="heat-4">4<div class="heat-q"><a href="#q12">q12</a> <a href="#q13">q13</a> <a href="#q18">q18</a> <a href="#q27">q27</a></div></td><td class="heat-1">1<div class="heat-q"><a href="#q14">q14</a></div></td><td class="heat-0">0</td></tr></tbody></table></div><div class="desc">Observed axis is the derived mutually-exclusive taxonomy (4 buckets; “error” holds q20) — a literal 3×3 would mislabel it. <strong>q17* has an “answer” payload but refuses in substance.</strong> REFUSE-row “answered” cells are all hedged boundary-named refusals (partial verdicts), never clean data answers. Cells sum to 30 (asserted at build).</div>
+  <h3>Query explorer (mismatches first)</h3>
+  <div class="desc">Expand any row for the full question, labels, judge grade and the agent's complete response.
+      Inline filters are client-side only — all content is server-rendered (view-source shows every row).
+      Behavior verdict: <strong>13 match</strong> ·
+      4 partial · <strong style="color:#dc2626;">12 mismatch</strong> ·
+      1 error.
+      Mismatches exactly: CLARIFY→answered q1 q11 q19 q21 q22 q25 q30 · ANSWER→parked q7 q8 q24 q29 · REFUSE→parked q14.</div>
+  <div class="filters" id="qfilter">
+<label>tier <select data-f="tier"><option value="">all</option><option>T1</option><option>T2</option><option>T3</option></select></label>
+<label>family <select data-f="fam"><option value="">all</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></label>
+<label>outcome <select data-f="out"><option value="">all</option><option>answered</option><option>hard_refusal</option><option>parked</option><option>error</option></select></label>
+<label>verdict <select data-f="ver"><option value="">all</option><option>match</option><option>partial</option><option>mismatch</option><option>error</option></select></label>
+<label>error code <select data-f="err"><option value="">all</option><option>Craft</option><option>DataTypeHandling</option><option>FinancialTerminologicalBias</option><option>none</option></select></label>
+<label><button type="button" id="qreset" style="background:transparent;color:#93c5fd;border:1px solid #334155;border-radius:6px;padding:3px 10px;cursor:pointer;">reset</button></label>
+</div><div id="qexplorer"><details class="qrow out-answered" id="q1" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T1" data-fam="E" data-err="DataTypeHandling"><summary><span>q1</span> <span>Give me a quick sense of how the business is doing financially. Anything that stands out to you?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T1 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L4 · 142.08s · <span class="flag disp">mismatch</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Give me a quick sense of how the business is doing financially. Anything that stands out to you?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T1 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>DataTypeHandling</code></div>
+<div class="desc"><strong>Judge note:</strong> Actions + priorities good; literal &#x27;[unverified]&#x27; x2 is a grounding-guard artifact; no portfolio outstanding (honest).</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
 
-  <header>
-    <h1>Finance Agent — Eval Readout v1</h1>
-    <div class="desc">Run 2026-09-18 · 30 user-provided CFO queries · hirafoods workspace (phone 4040505050)
-    · producer gpt-5.4-mini (classify gate + answer fm) · judge in-session deepseek-v4 (no external call) · rubric v1
-    · human-reviewed 0/20 · invariants OK &#10003;</div>
-  </header>
+💡 **Immediate financial risk is receivables: the largest identified outstanding amount is ₹4,94,550, while the listed priority customers account for 23.6% of sales.**
 
-  <!-- WHAT THE OUTPUT IS — always visible -->
-  <div class="stat-banner">
-    <strong>16 answered</strong> · <strong>4 hard refusals</strong> ·
-    <strong>9 clarify-parks</strong> · <strong>1 technical error</strong> —
-    <strong>13/30</strong> CFO asks delivered decision-grade support (L4/L5),
-    <strong>0 data-dumps</strong>, <strong>0 fabricated figures</strong>.
-    Main defect: cross-answer template reuse (top-5 block reused in 9/16 answered answers (56%)).
+### 🚩 Receivables risk
+- Ganesh Retail Traders has the largest identified outstanding amount at ₹4,94,550, with 79.0 days days since its last payment.
+- Jai Wholesalers &amp; Co carries ₹4,50,426 outstanding, with 74.0 days days since its last payment; Om Enterprises Traders carries ₹4,43,121, with 54.0 days days since payment.
+- Krishna Traders LLP has ₹4,33,051 outstanding and 62.0 days days since payment; Om Wholesalers &amp; Co has ₹4,19,575 outstanding and 44.0 days days since payment. These are the clearest calls for collection priority.
+
+###  Sales picture
+- Total invoiced sales are ₹24,17,71,682; the listed priority customers contribute ₹5,70,49,359, or 23.6% of sales, across 1,771 customers overall.
+- Monthly sales are highly uneven: the strongest reported period was [unverified], while the weakest was [unverified]. The business needs a closer look at what drove that volatility.
+
+###  Data-supported caution
+- The segment view reports customer counts rather than outstanding amounts, so it does not establish which segment is driving receivables risk.
+
+### 🎯 What to do
+- Call the listed priority customers today, starting with the largest outstanding amounts and longest payment gaps.
+- Obtain firm payment commitments and escalate accounts that do not provide a credible date.
+- Review the causes of monthly sales volatility before relying on the strongest reported period for planning.
+- Use the reconciled outstanding balance for collections decisions; do not rely on overdue or ageing measures because invoice-level payment allocation is not reliable.
+
+&gt; A reconciled total outstanding balance is not present in the supplied rows, so no portfolio-wide receivables total is stated.
+&gt; Overdue, ageing, and days-overdue measures are not used because payments are recorded but not allocated reliably to invoices.
+&gt; The supplied segment results contain customer counts only; they do not contain segment-level outstanding balances.
+
+_How I worked this out (8 steps) · 2685 figures verified from your data_ · _2 unverified figures removed by the grounding guard_
+
+**Ask next:** Which customers represent the largest reconciled receivables exposure?  ·  How are collections and payment recency trending over time?  ·  Which customers or segments are showing weakening sales or order activity?</pre>
+</div></details><details class="qrow out-parked" id="q7" data-exp="ANSWER" data-out="parked" data-ver="mismatch" data-tier="T3" data-fam="B" data-err="none"><summary><span>q7</span> <span>Show me customers where we&#x27;re doing good business but collections are poor. I want to understand the pattern.</span><span class="qmeta">expected ANSWER · tool TOOL:top_customers · tier T3 · family B · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#dc2626">mismatch</b> · value — · 2.77s · <span class="flag disp">mismatch</span><span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Show me customers where we&#x27;re doing good business but collections are poor. I want to understand the pattern.</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:top_customers</code> · FinGAIA tier T3 · family B</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-parked" id="q8" data-exp="ANSWER" data-out="parked" data-ver="mismatch" data-tier="T3" data-fam="B" data-err="none"><summary><span>q8</span> <span>Are there customers whose outstanding is growing faster than their business with us?</span><span class="qmeta">expected ANSWER · tool TOOL:balance_movement · tier T3 · family B · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#dc2626">mismatch</b> · value — · 2.34s · <span class="flag disp">mismatch</span><span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Are there customers whose outstanding is growing faster than their business with us?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:balance_movement</code> · FinGAIA tier T3 · family B</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q11" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T2" data-fam="B" data-err="FinancialTerminologicalBias"><summary><span>q11</span> <span>Are we giving customers too much credit? What does the data suggest?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T2 · family B · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L4 · 38.42s · <span class="flag disp">mismatch</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Are we giving customers too much credit? What does the data suggest?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T2 · family B</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>FinancialTerminologicalBias</code></div>
+<div class="desc"><strong>Judge note:</strong> Verdict + honest no-external-benchmark caveat + control actions. &#x27;days days&#x27; present.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Credit exposure is high: outstanding receivables are ₹17,48,30,219, with DSO at 120.8 days and collection efficiency of 33.8%.**
+
+### 🔎 What the data suggests
+- The business has ₹17,48,30,219 outstanding across 1,549 debtors and 14,556 unpaid invoices, indicating broad-based credit exposure rather than a small number of isolated accounts.
+- DSO is 120.8 days days, while only 33.8% of invoiced value has been collected: ₹8,16,34,549 collected against ₹24,17,71,682 invoiced. This points to a slow cash-conversion cycle and supports tightening credit discipline.
+- Collections should start with the largest balances: Ganesh Retail Traders owes ₹4,94,550, Jai Wholesalers &amp; Co owes ₹4,50,426, Om Enterprises Traders owes ₹4,43,121, Krishna Traders LLP owes ₹4,33,051, and Om Wholesalers &amp; Co owes ₹4,19,575.
+
+###  Management conclusion
+- The ledger supports the conclusion that customers are receiving extended credit relative to the pace of collections. However, it does not provide a reliable external benchmark for deciding whether 120.8 days days is above industry norms.
+- The unpaid invoice count is available, but the average invoice size for these exposures is not present in the supplied results.
+
+### 🎯 What to do
+- Rank collection work using outstanding balance together with days since last payment, then assign senior follow-up to the largest exposures.
+- Review credit limits, payment terms, and order release controls for customers with persistently high outstanding balances.
+- Set a tighter collections cadence and monitor DSO, collection efficiency, and outstanding receivables as the core credit-control metrics.
+
+&gt; Overdue amounts, ageing buckets, and days-overdue measures are overstated because payments are recorded but not allocated to individual invoices; they should not drive credit or collections decisions.
+&gt; No external benchmark or agreed credit policy is included, so the data shows slow collection and substantial exposure but cannot quantify the precise credit-limit breach.
+&gt; Inventory value at cost, cash and bank balances, expenses, profit and loss, and supplier payables are not tracked in your books.
+
+_How I worked this out (8 steps) · 64 figures verified from your data_
+
+**Ask next:** Which customers have the largest receivables and the longest time since their last payment?  ·  How is collection efficiency and DSO trending over time?  ·  Which customers are showing deterioration in payment behaviour or increasing outstanding balances?</pre>
+</div></details><details class="qrow out-parked" id="q14" data-exp="REFUSE" data-out="parked" data-ver="mismatch" data-tier="T2" data-fam="C" data-err="none"><summary><span>q14</span> <span>What&#x27;s putting pressure on our margins?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T2 · family C · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#dc2626">mismatch</b> · value — · 2.07s · <span class="flag disp">mismatch</span><span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> What&#x27;s putting pressure on our margins?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T2 · family C</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q19" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="none"><summary><span>q19</span> <span>If you were reviewing these numbers with me as CFO, what would you challenge?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L5 · 50.51s · <span class="flag disp">mismatch</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> If you were reviewing these numbers with me as CFO, what would you challenge?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level L5 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Period-matching challenge, concentration review, forecasting caution with invoice-count evidence (1,640-&gt;5,642-&gt;117).</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Collections are ₹8,16,34,549 against invoicing of ₹24,17,71,682, a 33.8% collection rate; 14,556 invoices remain unpaid, but the authoritative outstanding balance is not in the returned results.**
+
+###  Collections and receivables
+- I would challenge whether collections and invoicing cover the same period and are measured on a comparable basis: only 33.8% of invoicing has been collected in the reported period.
+- The 14,556 unpaid invoices indicate a broad open-invoice population, but invoice count alone cannot establish whether exposure is concentrated in a few large balances. The authoritative outstanding amount must be reconciled before judging receivables risk.
+- Average invoice size and DSO were requested but are not present, so I would not accept a collection-efficiency conclusion beyond the reported collection rate.
+
+###  Revenue concentration
+- The top-customer cohort contributes ₹5,70,49,359 against total sales of ₹24,17,71,682, or 23.6%. That is not extreme concentration, but customer-level exposure still needs review before concluding that the portfolio is well diversified.
+- The customer base contains 1,771 customers, so the key challenge is whether the top-customer cohort is stable and whether weaker collection performance is concentrated among those accounts.
+
+###  Sales trend quality
+- Monthly sales are highly uneven: the strongest reported month reached ₹9,77,65,078, while the latest reported month was ₹11,97,739. I would challenge forecasting or annualising the latest run rate without explaining the underlying volume and timing effects.
+- Invoice counts moved from 1,640 in the earliest reported month to 5,642 at the peak and 117 in the latest reported month. This supports a volume-driven investigation, not a simple assumption that sales momentum is intact.
+
+### 🎯 What to do
+- Reconcile the authoritative outstanding balance to the unpaid-invoice count and validate that collections and invoicing use the same reporting period.
+- Review customer-level outstanding balances together with days since last payment; prioritise the largest exposures with the longest payment gap.
+- Investigate the sharp monthly sales and invoice-count swings before setting forecasts, collection targets, or working-capital commitments.
+
+&gt; The returned rows do not include the authoritative outstanding balance, average invoice size, DSO, or the requested dormant-customer count.
+&gt; Overdue amounts, ageing buckets, and days-overdue are not used for decision-making because payments are not allocated to invoices and those measures are overstated.
+&gt; Revenue and collection comparisons should be period-matched before being used for performance assessment.
+
+_How I worked this out (8 steps) · 80 figures verified from your data_
+
+**Ask next:** Which customers represent the largest outstanding receivables, and how concentrated is that exposure?  ·  How have collections, outstanding balances, and DSO trended over time?  ·  Which customers have dues and the longest time since their last payment or recent activity?</pre>
+</div></details><details class="qrow out-answered" id="q21" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="none"><summary><span>q21</span> <span>Something doesn&#x27;t look right in the numbers. Can you find any unusual movements that I should investigate?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L5 · 48.45s · <span class="flag disp">mismatch</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Something doesn&#x27;t look right in the numbers. Can you find any unusual movements that I should investigate?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level L5 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Standout: cross-view inconsistency caught (movement vs ranking), negative starting balances, hypotheses (cut-off/duplicates), verification path.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Receivables show unusually large customer-level increases, led by a current balance of ₹8,06,190 and a movement of ₹9,66,376; investigate billing, cut-off and collections immediately.**
+
+###  Unusual receivables movements
+- Radha Distributors &amp; Co reached ₹8,06,190, up ₹9,66,376 from a starting balance of -₹1,60,186; Ganesh Retail Traders reached ₹8,01,148, up ₹9,10,046 from -₹1,08,898.
+- Krishna Wholesalers LLP has the largest ending balance in the movement view at ₹14,53,793, after an increase of ₹8,27,052. Jai Retail Traders also rose by ₹9,05,018 to ₹9,63,472.
+- Ganesh Retail Traders appears at ₹8,01,148 in the latest movement view but ₹4,94,550 in the outstanding ranking. Confirm that both views use the same cut-off, customer mapping and transaction population.
+
+###  Sales and order context
+- Sales were ₹9,77,65,078 in the stronger month and ₹9,71,68,124 in the following month, then fell to ₹1,59,48,487 and ₹11,97,739 in the later periods. This volatility could explain part of the receivables movement, but it does not by itself explain the customer-level spikes.
+- Invoice volume moved from 5,493 to 5,642 across the stronger periods and then to 1,187 and 117; the order result shows only 1 approved order with value ₹366, so the available order data does not validate a broad pipeline shift.
+
+### 🎯 What to do
+- Reconcile the largest customer movements to invoices, credit notes, returns and payment postings, starting with Radha Distributors &amp; Co, Ganesh Retail Traders and Krishna Wholesalers LLP.
+- Resolve the balance difference for Ganesh Retail Traders between the movement view and the outstanding ranking before making collection commitments.
+- Review whether the sales surge and subsequent slowdown reflect genuine shipments, delayed billing, duplicate postings or cut-off timing.
+- Prioritise calls using outstanding amount and days since last payment; do not use overdue or ageing figures for collection decisions.
+
+&gt; Overdue amount, ageing buckets and days-overdue are overstated because payments are recorded but not allocated to invoices; they are not suitable for headline conclusions or collection prioritisation.
+&gt; The order result is too limited to establish a broad pipeline or channel movement.
+
+_How I worked this out (5 steps) · 81 figures verified from your data_
+
+**Ask next:** Which customers are driving the latest receivables increase, and what are their days since last payment?  ·  How have collections and outstanding balances trended over time?  ·  Which customers have the largest outstanding balances and the longest payment gaps?</pre>
+</div></details><details class="qrow out-answered" id="q22" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="FinancialTerminologicalBias"><summary><span>q22</span> <span>Where are we taking the biggest financial risks without necessarily seeing them in the P&amp;L?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L4 · 39.53s · <span class="flag disp">mismatch</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Where are we taking the biggest financial risks without necessarily seeing them in the P&amp;L?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>FinancialTerminologicalBias</code></div>
+<div class="desc"><strong>Judge note:</strong> Off-P&amp;L framing + payment-to-sales ratio (new metric). &#x27;days days&#x27; present.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Receivables are the largest off-P&amp;L cash risk: outstanding exposure is ₹17,48,30,219.**
+
+### 🚩 Where risk is building
+- The ledger shows ₹17,48,30,219 of outstanding receivables across 1,549 debtors—capital tied up outside the P&amp;L until collected.
+- The largest listed increase is Radha Distributors &amp; Co at ₹9,66,376; Ganesh Retail Traders and Jai Retail Traders also increased by ₹9,10,046 and ₹9,05,018, respectively.
+- The latest-month sales and collections figures are not present, so the exposure cannot be sized against those benchmarks from this extract.
+
+### 🎯 Collections priority today
+- Start with Ganesh Retail Traders: outstanding is ₹4,94,550, with 79.0 days days since the last payment and a payment-to-sales ratio of 0.02.
+- Next, pursue Jai Wholesalers &amp; Co at ₹4,50,426 outstanding and 74.0 days days since the last payment.
+- Om Enterprises Traders is the next actionable exposure at ₹4,43,121, with 54.0 days days since the last payment; its payment-to-sales ratio is 0.06.
+
+### 🎯 What to do
+- Place the priority accounts on a same-day collection plan, beginning with Ganesh Retail Traders, Jai Wholesalers &amp; Co, and Om Enterprises Traders.
+- Temporarily tighten credit and require escalation before further exposure increases for customers showing the largest dues build-up, especially Radha Distributors &amp; Co, Ganesh Retail Traders, and Jai Retail Traders.
+- Track receivables conversion and collections separately from reported P&amp;L; cash and receivables risk are not the same as booked profitability.
+
+&gt; Overdue amounts, ageing buckets, and days-overdue measures are not reliable for prioritisation because payments are recorded but not allocated to invoices.
+&gt; Inventory value at cost, cash and bank balances, expenses, profit or loss, and supplier payables are not tracked in your books.
+
+_How I worked this out (5 steps) · 80 figures verified from your data_
+
+**Ask next:** Which customers are my biggest receivables exposures?  ·  How is collection performance trending?  ·  Which customers are showing the fastest deterioration in outstanding dues?</pre>
+</div></details><details class="qrow out-parked" id="q24" data-exp="ANSWER" data-out="parked" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="none"><summary><span>q24</span> <span>Which accounts have become materially different from what we normally see?</span><span class="qmeta">expected ANSWER · tool TOOL:balance_movement · tier T3 · family E · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#dc2626">mismatch</b> · value — · 2.41s · <span class="flag disp">mismatch</span><span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Which accounts have become materially different from what we normally see?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:balance_movement</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q25" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="none"><summary><span>q25</span> <span>Tell me where management attention is most needed financially.</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L4 · 45.91s · <span class="flag disp">mismatch</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Tell me where management attention is most needed financially.</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Multi-area (receivables + inventory sell-through gate). Actions specific.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Receivables concentration and weak cash conversion are the immediate financial priorities; the largest named outstanding balance is ₹4,94,550.**
+
+### 🚩 Receivables risk
+- Ganesh Retail Traders carries the largest named outstanding amount at ₹4,94,550, followed by Jai Wholesalers &amp; Co at ₹4,50,426 and Om Enterprises Traders at ₹4,43,121.
+- Krishna Traders LLP has ₹4,33,051 outstanding and Om Wholesalers &amp; Co has ₹4,19,575; these named accounts should anchor today&#x27;s collection review.
+
+###  Cash conversion and sales
+- Only 33.8% of invoiced sales has been collected: ₹8,16,34,549 collected against ₹24,17,71,682 invoiced.
+- Reported monthly sales peaked at ₹9,77,65,078, alongside an invoice count of 5,642; management should verify whether the high-sales periods are converting into collections.
+- Leading customers represent 23.6% of total sales, with sales of ₹5,70,49,359, indicating concentration that warrants account-level credit and collection controls.
+
+###  Inventory and operating pressure
+- The highest recorded stock position is Fresh Biscuits Plus 200g at 1,861 units, followed by Fresh Biscuits Plus 200ml at 1,815 and Fresh Biscuits Plus 100ml at 1,700.
+- Classic Body Lotion Premium 200g has 1,500 units and Classic Body Lotion Lite 100ml has 1,452; the listed products have no recorded last-sale date, so replenishment and sell-through should be reviewed before further buying.
+
+### 🎯 What to do
+- Make collection calls first to Ganesh Retail Traders at ₹4,94,550, Jai Wholesalers &amp; Co at ₹4,50,426, Om Enterprises Traders at ₹4,43,121, Krishna Traders LLP at ₹4,33,051, and Om Wholesalers &amp; Co at ₹4,19,575; assign owners and payment commitments.
+- Review credit limits, blocked orders, and sales terms for the largest outstanding accounts, while monitoring whether collections improve from the current 33.8%.
+- Pause or tightly gate replenishment for the listed products with no recorded last sale; run a product-level sell-through and liquidation review before committing to more purchases.
+
+&gt; Ageing, overdue amounts, and days overdue are not reliable for prioritisation because payments are recorded but not allocated to invoices; this brief therefore uses reconciled outstanding balances and does not rely on overdue metrics.
+&gt; Inventory value at cost, cash and bank balances, expenses, profit or loss, and supplier payables are not tracked in your books.
+&gt; The provided rows do not include a portfolio-wide outstanding total or monthly collection amounts.
+
+_How I worked this out (8 steps) · 83 figures verified from your data_
+
+**Ask next:** Which customers currently have the largest outstanding amounts and the longest time since last payment?  ·  How are collections trending over time, and which customers are slipping despite continued sales?  ·  Which products and customer segments are driving sales, purchases, and inventory movement?</pre>
+</div></details><details class="qrow out-parked" id="q29" data-exp="ANSWER" data-out="parked" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="none"><summary><span>q29</span> <span>Which customers or suppliers have the biggest financial concentration for us?</span><span class="qmeta">expected ANSWER · tool TOOL:concentration · tier T3 · family E · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#dc2626">mismatch</b> · value — · 2.49s · <span class="flag disp">mismatch</span><span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Which customers or suppliers have the biggest financial concentration for us?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:concentration</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q30" data-exp="CLARIFY" data-out="answered" data-ver="mismatch" data-tier="T3" data-fam="E" data-err="none"><summary><span>q30</span> <span>What would worry you if you were looking at these numbers for the first time?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#dc2626">mismatch</b> · value L4 · 211.92s · <span class="flag disp">mismatch</span><span class="flag manual">family A + E</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> What would worry you if you were looking at these numbers for the first time?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family E (shared A/E)</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Surfaced a 6th entity (Jai Enterprises 151 days) beyond the standard top-5; priority plan concrete.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **The first warning is a large listed outstanding balance of ₹4,94,550, combined with weak collections at ₹8,16,34,549 collected against ₹24,17,71,682 invoiced and a 33.8% collection rate.**
+
+### 🚩 Primary risks
+- Ganesh Retail Traders is the largest listed exposure at ₹4,94,550, with no payment recorded for 79.0 days; it should be treated as the first recovery priority.
+- Jai Wholesalers &amp; Co has ₹4,50,426 outstanding and 74.0 days since its last payment. Jai Enterprises Traders is also notable for 151.0 days since its last payment, despite its listed outstanding balance being lower than the largest exposure.
+- The collection result is concerning: only ₹8,16,34,549 has been collected against ₹24,17,71,682 invoiced, giving a collection rate of 33.8%. This raises immediate cash-conversion risk even among high-sales accounts.
+
+###  Immediate collection focus
+- Call Ganesh Retail Traders and Jai Wholesalers &amp; Co for firm payment commitments; both combine large outstanding balances with extended payment gaps.
+- Call Krishna Traders LLP for a firm payment commitment; its outstanding balance is ₹4,33,051 and its last payment was 62.0 days ago.
+- Send firm reminders to Om Enterprises Traders and Om Wholesalers &amp; Co; their outstanding balances are ₹4,43,121 and ₹4,19,575, with 54.0 days and 44.0 days since their last payments, respectively.
+
+### 🎯 What to do
+- Start today with Ganesh Retail Traders and Jai Wholesalers &amp; Co, seeking dated payment commitments rather than general assurances.
+- Escalate any account that will not commit to a payment date, and document the outcome of every call or reminder.
+- Review the full receivables position and collection trend before extending further credit to slow-paying customers.
+
+&gt; Outstanding balances are the authoritative reconciled ledger figures used here.
+&gt; Days since last payment is used for collection priority; overdue amounts, invoice ageing, and days-overdue measures are not reliable for decision-making because payments are not allocated to invoices.
+&gt; The rows show customer-level risk and collection totals, but do not establish profitability, cash-bank position, expenses, payables, or inventory value at cost; these are not tracked in your books.
+
+_How I worked this out (8 steps) · 929 figures verified from your data_
+
+**Ask next:** Which customers are driving the largest outstanding receivables across the full ledger?  ·  How is collection performance trending over time?  ·  Which customers are slipping based on outstanding balance and time since last payment?</pre>
+</div></details><details class="qrow out-answered" id="q2" data-exp="REFUSE" data-out="answered" data-ver="partial" data-tier="T3" data-fam="C" data-err="none"><summary><span>q2</span> <span>Revenue looks okay to me, but are we actually making money? Walk me through the profitability.</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T3* · family C · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#d97706">partial</b> · value L4 · 53.29s · <span class="flag disp">partial − hedged</span><span class="flag manual">answered-with-boundary</span><span class="flag disp">tier disputed (v1 scorecard)</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Revenue looks okay to me, but are we actually making money? Walk me through the profitability.</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3* · family C</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Correct boundary: cannot prove profitability, uses purchases as cost-base indicator only. Top-5 receivables block copied from template.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Profitability is not yet proven: invoiced sales are ₹24,17,71,682, while the largest named outstanding balance is ₹4,94,550.**
+
+###  Revenue and cash conversion
+- Total invoiced sales are ₹24,17,71,682; the monthly series peaks at ₹9,77,65,078 and falls to ₹11,97,739 in the latest listed month.
+- Collections are ₹8,16,34,549 against invoicing of ₹24,17,71,682, giving collection efficiency of 33.8%.
+
+###  Cost base and profitability limits
+- Recorded purchases are ₹1,23,68,304 across 203 purchase invoices, but this is not sufficient to establish cost of goods sold or gross profit.
+- The largest listed product sales value is ₹16,21,37,760; matching product-level purchase costs are not provided, so product profitability cannot be calculated.
+
+### 🚩 Receivables risk
+- The largest named outstanding balances are Ganesh Retail Traders at ₹4,94,550, Jai Wholesalers &amp; Co at ₹4,50,426, Om Enterprises Traders at ₹4,43,121, Krishna Traders LLP at ₹4,33,051, and Om Wholesalers &amp; Co at ₹4,19,575.
+
+### 🎯 What to do
+- Prioritize collection follow-up on the listed largest outstanding balances and review each customer’s days since last payment.
+- Reconcile product-level sales with product-level purchase cost before using revenue performance as evidence of gross margin.
+- Treat purchases as a cost-base indicator only; do not label the business profitable until cost of goods sold and operating expenses are available.
+
+&gt; Profitability cannot be determined from these rows: operating expenses are not tracked in your books, and purchases cannot be treated as cost of goods sold without inventory movement and product-level cost matching.
+&gt; The authoritative outstanding balances are usable for collection prioritization. Overdue and ageing measures are not used because payments are not allocated onto invoices and would be overstated.
+
+_How I worked this out (8 steps) · 63 figures verified from your data_
+
+**Ask next:** Which customers have the largest outstanding balances and the weakest payment recency?  ·  How is collection efficiency trending over time?  ·  How are sales and purchase values trending over time?</pre>
+</div></details><details class="qrow out-answered" id="q15" data-exp="REFUSE" data-out="answered" data-ver="partial" data-tier="T3" data-fam="C" data-err="none"><summary><span>q15</span> <span>Our sales may be growing, but are margins improving or deteriorating?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T3* · family C · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#d97706">partial</b> · value L4 · 52.07s · <span class="flag disp">partial − hedged</span><span class="flag manual">answered-with-boundary</span><span class="flag disp">tier disputed (v1 scorecard)</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Our sales may be growing, but are margins improving or deteriorating?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3* · family C</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Real comparative insight (invoices 5,642-&gt;117; revenue fall) + honest margin boundary.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Sales are highly volatile, but margin direction cannot be determined because cost data is not tracked in the books.**
+
+###  Sales signal
+- Reported sales total ₹24,17,71,682 over the period, with the strongest month at ₹9,77,65,078 and the latest month at only ₹11,97,739; this is not a consistent growth pattern.
+- Sales fell from ₹1,59,48,487 in the prior month to ₹11,97,739 in the latest month, while invoices declined from 5,642 to 117; the latest result reflects both lower volume and lower revenue.
+- Average invoice value was ₹16,215, but the ledger does not show whether that value is translating into better profitability.
+
+###  Margin conclusion
+- Gross margin and cost of goods sold are unavailable for every month in the supplied results, so margins cannot be classified as improving or deteriorating.
+- The segment and customer outputs do not contain usable gross-margin values or margin changes; no defensible deterioration ranking can be made from them.
+
+### 🎯 What to do
+- Do not treat the sales volatility as evidence of improving profitability; gross margin is not tracked in your books.
+- Review sales mix and pricing commercially, but defer margin-based decisions until product cost data is recorded in the books.
+- Use the reconciled outstanding balance and days since last payment for collections priorities; do not use overdue or ageing figures because payments are not allocated to invoices.
+
+&gt; The supplied results do not include the authoritative outstanding balance, so receivables exposure cannot be quantified here.
+&gt; Gross margin and cost of goods sold are not tracked in your books; profitability cannot be inferred from sales alone.
+&gt; Overdue, ageing, and days-overdue measures are unreliable because payments are not allocated to invoices.
+
+_How I worked this out (8 steps) · 42 figures verified from your data_
+
+**Ask next:** Which customers have the largest outstanding balances, and how long since their last payment?  ·  How is collection performance trending alongside sales?  ·  Which customers or segments are driving sales growth and purchase-value changes?</pre>
+</div></details><details class="qrow out-answered" id="q16" data-exp="REFUSE" data-out="answered" data-ver="partial" data-tier="T3" data-fam="C" data-err="none"><summary><span>q16</span> <span>Find me the areas where revenue is growing but profitability isn&#x27;t keeping up.</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T3* · family C · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#d97706">partial</b> · value L4 · 97.59s · <span class="flag disp">partial − hedged</span><span class="flag manual">answered-with-boundary</span><span class="flag disp">tier disputed (v1 scorecard)</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Find me the areas where revenue is growing but profitability isn&#x27;t keeping up.</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3* · family C</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Cross-metric linkage (Ganesh sales vs outstanding) + concentrations 50.3%/49.6%. No boilerplate.</div>
+<pre>💡 **Revenue peaked at ₹9,77,65,078, but profitability is not tracked in the books, so no area can be confirmed as growing faster than profit.**
+
+###  Revenue growth concentration
+- Monthly sales reached ₹9,77,65,078 in the strongest reported month, following ₹9,71,68,124 in the preceding month; however, the corresponding profitability values are unavailable.
+- An unnamed product line generated ₹16,21,37,760, representing 50.3% of reported revenue, making it the clearest product-area concentration to review.
+- The North Zone customer segment generated ₹23,94,95,748, representing 49.6% of segment revenue, indicating the strongest geographic concentration.
+
+### 🚩 Collection risk alongside growth
+- Ganesh Retail Traders combines sales of ₹3,62,161 with the largest reported outstanding amount of ₹4,94,550; this is the clearest customer-level area where revenue may be tying up cash.
+- The leading reported outstanding balances also include ₹4,50,426, ₹4,43,121, and ₹4,33,051, so growth should be reviewed alongside collection performance rather than sales alone.
+
+### 🎯 What to do
+- Do not treat the reported revenue growth as profitable growth: profitability is not tracked in your books, so margin-based decisions cannot yet be validated.
+- Prioritize a commercial review of the unnamed high-revenue product line and the North Zone segment, focusing on pricing, discounts, and contribution economics.
+- Escalate collection review for Ganesh Retail Traders and the other largest outstanding balances before extending further credit.
+
+&gt; Monthly profitability values were unavailable for every reported month; profitability and profit/loss are not tracked in your books.
+&gt; The data identifies revenue concentration and outstanding amounts, but does not provide gross margin, pricing, discount, cost, or profit by product, customer, or segment.
+&gt; Several product and customer rows are unnamed in the underlying records, limiting precise attribution.
+
+_How I worked this out (7 steps) · 123 figures verified from your data_
+
+**Ask next:** Which customers have the largest outstanding amounts and the oldest receivables?  ·  How is collection performance trending against sales over time?  ·  Which products, customers, or segments are driving sales and purchase value trends?</pre>
+</div></details><details class="qrow out-answered" id="q17" data-exp="REFUSE" data-out="answered" data-ver="partial" data-tier="T1" data-fam="D" data-err="Craft"><summary><span>q17</span> <span>Which expenses should I be questioning right now?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T1 · family D · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#d97706">partial</b> · value REF · 66.31s · <span class="flag disp">partial − hedged</span><span class="flag manual">answered-with-boundary</span><span class="flag manual">refusal in substance</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Which expenses should I be questioning right now?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T1 · family D</div>
+<div class="desc"><strong>Grade:</strong> value level REF · FinGAIA error codes: <code>Craft</code></div>
+<div class="desc"><strong>Judge note:</strong> Structured refusal. &#x27;0 figures verified&#x27; process footer reads odd on a refusal.</div>
+<pre>💡 **Expense accounts and cost increases cannot be assessed from the tracked books**
+
+### 🔎 What the data supports
+- This dataset does not contain expense accounts or general-ledger data, so recurring monthly expenses and changes versus a 6-month average cannot be identified.
+
+### 🎯 What to do
+- Treat expense accounts, recurring costs, and profit performance as not tracked in your books rather than as items available for review.
+
+&gt; Expense accounts and a general ledger are not tracked in your books, so no expense account can be prioritised for questioning.
+
+_How I worked this out (1 step) · 0 figures verified from your data_</pre>
+</div></details><details class="qrow out-error" id="q20" data-exp="CLARIFY" data-out="error" data-ver="error" data-tier="T3" data-fam="E" data-err="none"><summary><span>q20</span> <span>Forget the standard reports. Tell me what looks unusual in the financial data.</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family E · outcome <b style="color:#dc2626">error</b> · verdict <b style="color:#dc2626">error</b> · value — · 244.7s · <span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Forget the standard reports. Tell me what looks unusual in the financial data.</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-parked" id="q3" data-exp="CLARIFY" data-out="parked" data-ver="match" data-tier="T2" data-fam="A" data-err="none"><summary><span>q3</span> <span>Where is our cash getting stuck right now?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T2 · family A · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#16a34a">match</b> · value — · 2.45s · <span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Where is our cash getting stuck right now?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T2 · family A</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q4" data-exp="ANSWER" data-out="answered" data-ver="match" data-tier="T2" data-fam="A" data-err="FinancialTerminologicalBias"><summary><span>q4</span> <span>I&#x27;m concerned about receivables. Who is holding up our cash and how serious is it?</span><span class="qmeta">expected ANSWER · tool TOOL:top_outstanding · tier T2 · family A · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#16a34a">match</b> · value L5 · 38.65s · </span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> I&#x27;m concerned about receivables. Who is holding up our cash and how serious is it?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:top_outstanding</code> · FinGAIA tier T2 · family A</div>
+<div class="desc"><strong>Grade:</strong> value level L5 · FinGAIA error codes: <code>FinancialTerminologicalBias</code></div>
+<div class="desc"><strong>Judge note:</strong> Portfolio sizing + fastest-worsening tracked separately + credit-hold decision link. &#x27;days days&#x27; x2.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Receivables are ₹17,48,30,219 across 1,549 debtors, with DSO at 120.8 days; collections require immediate focus.**
+
+###  Cash exposure
+- The current outstanding receivables balance is ₹17,48,30,219 across 1,549 debtors, indicating a broad cash-conversion issue rather than a single-account problem.
+- DSO is 120.8 days days against sales of ₹24,17,71,682, so cash is remaining tied up for a prolonged period.
+
+###  Who to contact first
+- Ganesh Retail Traders is the first priority: ₹4,94,550 outstanding and 79.0 days days since the last payment.
+- Jai Wholesalers &amp; Co follows with ₹4,50,426 outstanding and 74.0 days days since the last payment; Krishna Traders LLP has ₹4,33,051 outstanding and 62.0 days days since the last payment.
+- Om Enterprises Traders has ₹4,43,121 outstanding with 54.0 days days since the last payment, while Om Wholesalers &amp; Co has ₹4,19,575 outstanding and 44.0 days days since the last payment.
+
+###  Receivables worsening fastest
+- Radha Distributors &amp; Co recorded the largest increase in dues at ₹9,66,376.
+- Ganesh Retail Traders increased by ₹9,10,046, and Jai Retail Traders increased by ₹9,05,018; these accounts need separate review alongside the largest current balances.
+
+### 🎯 What to do
+- Assign named owners today for the five priority accounts and pursue payment commitments, not just reminders.
+- Escalate accounts with both high outstanding balances and long gaps since the last payment to senior commercial owners.
+- Review new credit and dispatch decisions for customers whose receivables are increasing fastest until collection behaviour improves.
+- Use the reconciled outstanding balance for management decisions; overdue and ageing views are overstated because payments are not allocated to invoices.
+
+&gt; Overdue amounts, ageing buckets, and days-overdue measures are unreliable in this ledger because recorded payments are not allocated to individual invoices.
+&gt; Inventory value at cost, cash and bank balances, expenses, profit and loss, and supplier payables are not tracked in your books.
+
+_How I worked this out (7 steps) · 98 figures verified from your data_
+
+**Ask next:** Which customers represent the largest share of outstanding receivables?  ·  How has collection performance and DSO changed over time?  ·  Which customers are showing the clearest deterioration in payment behaviour?</pre>
+</div></details><details class="qrow out-parked" id="q5" data-exp="CLARIFY" data-out="parked" data-ver="match" data-tier="T3" data-fam="—" data-err="none"><summary><span>q5</span> <span>Do we have a working-capital problem, or is the situation under control?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family — · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#16a34a">match</b> · value — · 2.7s · <span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Do we have a working-capital problem, or is the situation under control?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family —</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-parked" id="q6" data-exp="CLARIFY" data-out="parked" data-ver="match" data-tier="T3" data-fam="—" data-err="none"><summary><span>q6</span> <span>Which customers are becoming a cash-flow risk for us?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T3 · family — · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#16a34a">match</b> · value — · 2.23s · <span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Which customers are becoming a cash-flow risk for us?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3 · family —</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q9" data-exp="ANSWER" data-out="answered" data-ver="match" data-tier="T2" data-fam="A" data-err="FinancialTerminologicalBias"><summary><span>q9</span> <span>If I had to recover cash aggressively this month, which accounts would you ask me to focus on first?</span><span class="qmeta">expected ANSWER · tool TOOL:collection_priority · tier T2 · family A · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#16a34a">match</b> · value L5 · 43.57s · </span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> If I had to recover cash aggressively this month, which accounts would you ask me to focus on first?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:collection_priority</code> · FinGAIA tier T2 · family A</div>
+<div class="desc"><strong>Grade:</strong> value level L5 · FinGAIA error codes: <code>FinancialTerminologicalBias</code></div>
+<div class="desc"><strong>Judge note:</strong> Operational plan: first wave / second wave / escalation track. &#x27;days days&#x27; present; escalation-growth figures correctly flagged as signals, not balances.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Start cash recovery with Ganesh Retail Traders ₹4,94,550, Jai Wholesalers &amp; Co ₹4,50,426, and Krishna Traders LLP ₹4,33,051; all have both substantial outstanding balances and stale payment activity.**
+
+###  First collection wave
+- Ganesh Retail Traders owes ₹4,94,550, with 79.0 days days since the last payment. Call today and secure a firm payment commitment.
+- Jai Wholesalers &amp; Co owes ₹4,50,426, with 74.0 days days since the last payment. Call next and require a dated commitment.
+- Krishna Traders LLP owes ₹4,33,051, with 62.0 days days since the last payment. Prioritize a direct call because its payment activity is more stale than the remaining accounts.
+
+###  Second collection wave and escalation watch
+- Om Enterprises Traders owes ₹4,43,121, with 54.0 days days since the last payment. Send a firm reminder, then escalate if there is no prompt response.
+- Om Wholesalers &amp; Co owes ₹4,19,575, with 44.0 days days since the last payment. Send a firm reminder and seek immediate payment confirmation.
+- Run a parallel escalation track for Radha Distributors &amp; Co, whose balance grew by ₹9,66,376; Ganesh Retail Traders also showed growth of ₹9,10,046, while Jai Retail Traders grew by ₹9,05,018. These are escalation signals, not replacements for the reconciled outstanding balances above.
+
+### 🎯 What to do
+- Launch the first-wave calls immediately and record a firm payment commitment for each account.
+- Send the two second-wave reminders and set a same-cycle escalation trigger for non-response.
+- Review any proposed credit hold or commercial escalation against the reconciled outstanding balance, not overdue or ageing figures.
+
+&gt; Overdue amounts, ageing buckets, and days overdue are not reliable for prioritisation because payments are not allocated to individual invoices in the ledger.
+&gt; The escalation-growth figures identify accounts whose balances increased during the measured period; they should not be treated as current outstanding balances unless separately reconciled.
+
+_How I worked this out (6 steps) · 108 figures verified from your data_
+
+**Ask next:** Which customers have the largest reconciled outstanding balances and the longest payment gaps?  ·  How are collections trending across recent periods?  ·  Which customers show the sharpest deterioration in balances or payment behaviour?</pre>
+</div></details><details class="qrow out-answered" id="q10" data-exp="ANSWER" data-out="answered" data-ver="match" data-tier="T1" data-fam="A" data-err="none"><summary><span>q10</span> <span>How much of our receivables is actually overdue, and how much of that looks difficult to recover?</span><span class="qmeta">expected ANSWER · tool TOOL:aging · tier T1 · family A · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#16a34a">match</b> · value L3 · 35.94s · <span class="flag disp">tool label conflicts w/ workspace banner</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> How much of our receivables is actually overdue, and how much of that looks difficult to recover?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:aging</code> · FinGAIA tier T1 · family A</div>
+<div class="desc"><strong>Grade:</strong> value level L3 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> Honest quantification refusal with substitute guidance. Correct given the data gap; thin (1 figure / 1777 chars).</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Receivables outstanding are ₹17,48,30,219 across 1,549 debtors; the overdue and difficult-to-recover portions cannot be quantified reliably from this extract.**
+
+### 🎯 CFO readout
+- The authoritative reconciled balance is ₹17,48,30,219 in outstanding receivables, spread across 1,549 debtors.
+- No reliable overdue amount or recoverability estimate is provided. Payments are recorded but not allocated to invoices, so overdue and ageing measures would be overstated.
+- Do not use overdue or ageing to rank collection risk; use each customer’s outstanding balance together with days since last payment.
+
+### 🎯 What to do
+- Prioritize collection review using customer-level outstanding balances and days since last payment.
+- Reconcile payment allocation to invoices before relying on overdue or ageing-based recovery conclusions.
+- Treat the overdue and difficult-to-recover amounts as unquantified in this report.
+
+&gt; The ledger does not provide a reliable overdue or difficult-to-recover amount here because payments are not allocated onto invoices.
+&gt; Profit, cash and bank balances, inventory value at cost, and supplier payables are not tracked in your books.
+
+_How I worked this out (4 steps) · 49 figures verified from your data_
+
+**Ask next:** Which customers have the largest outstanding receivables and the longest time since their last payment?  ·  How is the collection trend changing over time?  ·  Which customers are showing the clearest deterioration in receivables position?</pre>
+</div></details><details class="qrow out-hard_refusal" id="q12" data-exp="REFUSE" data-out="hard_refusal" data-ver="match" data-tier="T1" data-fam="D" data-err="Craft"><summary><span>q12</span> <span>What is happening with our payables? Are we under pressure from suppliers or do we have some room?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T1 · family D · outcome <b style="color:#2563eb">hard_refusal</b> · verdict <b style="color:#16a34a">match</b> · value REF · 2.32s · </span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> What is happening with our payables? Are we under pressure from suppliers or do we have some room?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T1 · family D</div>
+<div class="desc"><strong>Grade:</strong> value level REF · FinGAIA error codes: <code>Craft</code></div>
+<div class="desc"><strong>Judge note:</strong> Boundary precise (payables under-recorded) + alternative offer. &#x27;.. I can&#x27; double-period glitch.</div>
+<pre>I can&#x27;t answer that from your books — Supplier payables / amount owed to suppliers is not reliably available in the dataset. Purchase-invoice entries are under-recorded, so pressure from suppliers or room on payables cannot be assessed from ledger data.. I can work from sales, payments, the customer ledger, and outstanding/overdue instead.</pre>
+</div></details><details class="qrow out-hard_refusal" id="q13" data-exp="REFUSE" data-out="hard_refusal" data-ver="match" data-tier="T1" data-fam="D" data-err="Craft"><summary><span>q13</span> <span>Are we paying suppliers before we collect from customers?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T1 · family D · outcome <b style="color:#2563eb">hard_refusal</b> · verdict <b style="color:#16a34a">match</b> · value REF · 2.22s · </span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Are we paying suppliers before we collect from customers?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T1 · family D</div>
+<div class="desc"><strong>Grade:</strong> value level REF · FinGAIA error codes: <code>Craft</code></div>
+<div class="desc"><strong>Judge note:</strong> Names exactly which pieces are missing. &#x27;.. I can&#x27; glitch.</div>
+<pre>I can&#x27;t answer that from your books — The dataset has sales, customer receivables/collections, and purchase-invoice entries, but it does not reliably contain supplier payables, cash/bank balances, or actual supplier payment timing. So we cannot determine whether supplier payments are made before customer collections.. I can work from sales, payments, the customer ledger, and outstanding/overdue instead.</pre>
+</div></details><details class="qrow out-hard_refusal" id="q18" data-exp="REFUSE" data-out="hard_refusal" data-ver="match" data-tier="T1" data-fam="D" data-err="Craft"><summary><span>q18</span> <span>Have any expenses increased disproportionately compared with the business?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T1 · family D · outcome <b style="color:#2563eb">hard_refusal</b> · verdict <b style="color:#16a34a">match</b> · value REF · 1.96s · </span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Have any expenses increased disproportionately compared with the business?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T1 · family D</div>
+<div class="desc"><strong>Grade:</strong> value level REF · FinGAIA error codes: <code>Craft</code></div>
+<div class="desc"><strong>Judge note:</strong> Clean + fast. &#x27;.. I can&#x27; glitch.</div>
+<pre>I can&#x27;t answer that from your books — No expense table or P&amp;L/COGS data is available, so expenses and their growth cannot be measured or compared to business growth from the provided sources.. I can work from sales, payments, the customer ledger, and outstanding/overdue instead.</pre>
+</div></details><details class="qrow out-parked" id="q23" data-exp="CLARIFY" data-out="parked" data-ver="match" data-tier="T2" data-fam="B" data-err="none"><summary><span>q23</span> <span>Are there any customers where the amount of credit we&#x27;re extending doesn&#x27;t make sense given their payment history?</span><span class="qmeta">expected CLARIFY · tool NO_TOOL · tier T2 · family B · outcome <b style="color:#7c3aed">parked</b> · verdict <b style="color:#16a34a">match</b> · value — · 3.38s · <span class="flag manual">no response captured</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Are there any customers where the amount of credit we&#x27;re extending doesn&#x27;t make sense given their payment history?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior CLARIFY (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T2 · family B</div>
+<div class="desc"><strong>Grade:</strong> value level — · FinGAIA error codes: <code>none</code></div>
+
+<pre>(no response text captured on this stream)</pre>
+</div></details><details class="qrow out-answered" id="q26" data-exp="ANSWER" data-out="answered" data-ver="match" data-tier="T2" data-fam="A" data-err="FinancialTerminologicalBias"><summary><span>q26</span> <span>If sales remain at the current level, what could hurt our cash flow over the next few months?</span><span class="qmeta">expected ANSWER · tool TOOL:aging · tier T2 · family A · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#16a34a">match</b> · value L3 · 42.14s · <span class="flag disp">tool label conflicts w/ workspace banner</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> If sales remain at the current level, what could hurt our cash flow over the next few months?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:aging</code> · FinGAIA tier T2 · family A</div>
+<div class="desc"><strong>Grade:</strong> value level L3 · FinGAIA error codes: <code>FinancialTerminologicalBias</code></div>
+<div class="desc"><strong>Judge note:</strong> Forward-look is one line + standard chase block; honest &#x27;not a complete liquidity forecast&#x27;. &#x27;days days&#x27; present.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Receivables are the cash-flow risk: ₹17,48,30,219 remains outstanding while only 33.8% of invoiced sales has been collected.**
+
+###  Cash conversion pressure
+- Collections were 33.8%, with ₹8,16,34,549 collected against ₹24,17,71,682 invoiced. If sales hold steady, cash inflows are not keeping pace with billing.
+- DSO is 120.8 days days, so a substantial portion of sales cash is delayed in receivables.
+
+###  Largest collection exposures
+- Ganesh Retail Traders owes ₹4,94,550, with no payment recorded for 79.0 days days; this is the largest listed exposure.
+- Jai Wholesalers &amp; Co owes ₹4,50,426 after 74.0 days days since the last payment, while Om Enterprises Traders owes ₹4,43,121 after 54.0 days days.
+- Krishna Traders LLP owes ₹4,33,051 after 62.0 days days, and Om Wholesalers &amp; Co owes ₹4,19,575 after 44.0 days days.
+
+### 🎯 What to do
+- Call Ganesh Retail Traders and Jai Wholesalers &amp; Co for firm payment commitments on balances of ₹4,94,550 and ₹4,50,426; their last payments were 79.0 days and 74.0 days days ago.
+- Call Krishna Traders LLP for a firm payment commitment on ₹4,33,051; the last payment was 62.0 days days ago.
+- Send firm reminders to Om Enterprises Traders and Om Wholesalers &amp; Co for ₹4,43,121 and ₹4,19,575; their last payments were 54.0 days and 44.0 days days ago. Escalate accounts that do not commit to a payment date.
+
+&gt; Cash and bank balances are not tracked in your books, so this indicates receivables-driven cash-flow pressure rather than a complete liquidity forecast.
+
+_How I worked this out (7 steps) · 84 figures verified from your data_
+
+**Ask next:** Which customers currently represent the largest receivables exposures?  ·  How has collection efficiency and DSO changed over recent periods?  ·  Which customers are showing signs of slipping collections?</pre>
+</div></details><details class="qrow out-hard_refusal" id="q27" data-exp="REFUSE" data-out="hard_refusal" data-ver="match" data-tier="T3" data-fam="C" data-err="Craft"><summary><span>q27</span> <span>What is the biggest difference between our accounting profit and the cash situation?</span><span class="qmeta">expected REFUSE · tool NO_TOOL · tier T3* · family C · outcome <b style="color:#2563eb">hard_refusal</b> · verdict <b style="color:#16a34a">match</b> · value REF · 1.83s · <span class="flag disp">tier disputed (v1 scorecard)</span></span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> What is the biggest difference between our accounting profit and the cash situation?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior REFUSE (per classify-gate rules) · expected_tool <code>NO_TOOL</code> · FinGAIA tier T3* · family C</div>
+<div class="desc"><strong>Grade:</strong> value level REF · FinGAIA error codes: <code>Craft</code></div>
+<div class="desc"><strong>Judge note:</strong> Precise on required inputs. &#x27;.. I can&#x27; glitch.</div>
+<pre>I can&#x27;t answer that from your books — Accounting profit and cash situation require profit &amp; loss data, cost/COGS, and cash/bank balances, which are not available in the dataset.. I can work from sales, payments, the customer ledger, and outstanding/overdue instead.</pre>
+</div></details><details class="qrow out-answered" id="q28" data-exp="ANSWER" data-out="answered" data-ver="match" data-tier="T2" data-fam="E" data-err="none"><summary><span>q28</span> <span>Are there signs that our growth is consuming too much working capital?</span><span class="qmeta">expected ANSWER · tool TOOL:dso · tier T2 · family E · outcome <b style="color:#16a34a">answered</b> · verdict <b style="color:#16a34a">match</b> · value L4 · 43.81s · </span></summary><div class="details-body">
+<div class="desc"><strong>Question:</strong> Are there signs that our growth is consuming too much working capital?</div>
+<div class="desc"><strong>Labels:</strong> expected_behavior ANSWER (per classify-gate rules) · expected_tool <code>TOOL:dso</code> · FinGAIA tier T2 · family E</div>
+<div class="desc"><strong>Grade:</strong> value level L4 · FinGAIA error codes: <code>none</code></div>
+<div class="desc"><strong>Judge note:</strong> DSO 120.8d vs 167d window = 72% of period in receivables: sharpest ratio insight; volatility caution.</div>
+<pre>&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and are OVERSTATED. Trust the outstanding balance (reconciled ledger), not the overdue/ageing figures.
+
+💡 **Yes—working-capital pressure is evident: outstanding receivables are ₹17,48,30,219, with DSO at 120.8 days and collection efficiency at only 33.8%.**
+
+###  Cash conversion pressure
+- Receivables of ₹17,48,30,219 are spread across 1,549 debtors, while invoiced sales were ₹24,17,71,682; this is a substantial cash commitment tied up in customers.
+- Collections totalled ₹8,16,34,549, equivalent to 33.8% of invoiced sales. DSO is 120.8 days against a measured period of 167.0 days, indicating slow conversion of sales into cash.
+
+###  Sales momentum is not converting consistently
+- Reported monthly sales were highly volatile, reaching ₹9,71,68,124 and ₹9,77,65,078 in the strongest reported periods, then falling to ₹1,59,48,487 and ₹11,97,739 in later reported periods.
+- The data supports a working-capital concern, but not a clean steady-growth conclusion: sales movement is uneven while receivables remain high.
+
+###  Largest listed receivables exposures
+- The largest listed balance is Ganesh Retail Traders at ₹4,94,550, followed by Jai Wholesalers &amp; Co at ₹4,50,426 and Om Enterprises Traders at ₹4,43,121.
+- Krishna Traders LLP has ₹4,33,051, and Om Wholesalers &amp; Co has ₹4,19,575; these accounts should be included in the immediate collection review.
+
+### 🎯 What to do
+- Set a tighter credit-and-collections operating rhythm around outstanding receivables, using DSO 120.8 days and collection efficiency 33.8% as primary cash-conversion KPIs.
+- Prioritise the listed high-balance customers for payment commitments, credit-limit review, and escalation.
+- Align new sales growth with collection capacity; avoid extending additional credit where payment behaviour is weakening.
+
+&gt; The segment results report customer counts, not unpaid balances, so they do not establish which segment contributes most to outstanding receivables.
+&gt; Overdue amounts, ageing buckets, and days-overdue are not reliable for prioritisation because payments are not allocated to individual invoices.
+&gt; Inventory value at cost, cash and bank balances, expenses, profit and loss, and supplier payables are not tracked in your books.
+
+_How I worked this out (8 steps) · 69 figures verified from your data_
+
+**Ask next:** Which customers are driving the largest outstanding receivables and how concentrated is the exposure?  ·  How is collection performance trending across customers and reporting periods?  ·  Which customers are slipping based on payment recency and outstanding balance?</pre>
+</div></details></div><script>
+(function(){
+ var f=document.querySelectorAll('#qfilter select'), rows=Array.prototype.slice.call(document.querySelectorAll('.qrow'));
+ function apply(){var s={};f.forEach(function(x){s[x.dataset.f]=x.value;});
+  rows.forEach(function(r){var ok=true;Object.keys(s).forEach(function(k){if(!s[k])return;if(k==='err'){var e=r.dataset.err;if(s[k]==='none'?e!=='none':e.indexOf(s[k])<0)ok=false;}else if(r.dataset[k]!==s[k])ok=false;});r.style.display=ok?'':'none';});
+ }
+ f.forEach(function(x){x.addEventListener('change',apply);});
+ document.getElementById('qreset').addEventListener('click',function(){f.forEach(function(x){x.value='';});apply();});
+})();
+</script>
+  <h3>Value by tier and family</h3>
+  <div class="table-wrap"><table><thead><tr><th>Tier</th><th>Queries</th><th>L4/L5</th><th>Definition (FinGAIA business-depth)</th></tr></thead><tbody><tr><td>T1</td><td>6</td><td>1</td><td style="font-size:11.5px;">operational fetch / refusal</td></tr><tr><td>T2</td><td>8</td><td>4</td><td style="font-size:11.5px;">decision support</td></tr><tr><td>T3</td><td>16</td><td>8</td><td style="font-size:11.5px;">strategic risk</td></tr></tbody></table></div><div class="desc">Tier tags: authoritative = Phase 2/3 docs (user-approved 2026-09-18); q2/q15/q16/q27 marked * are DISPUTED — the Phase 1 scorecard tagged them T1/T2. See the label section.</div>
+  <div class="table-wrap"><table><thead><tr><th>Family</th><th>Queries</th><th>L4/L5</th><th>Ungraded</th><th>Queries (q30 in A and E)</th></tr></thead><tbody><tr><td><strong>A</strong> — Cash / chase / collections</td><td>5</td><td>2</td><td>1</td><td style="font-size:11px;"><a href="#q3">q3</a> <a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q10">q10</a> <a href="#q26">q26</a></td></tr><tr><td><strong>B</strong> — Credit discipline</td><td>4</td><td>1</td><td>3</td><td style="font-size:11px;"><a href="#q7">q7</a> <a href="#q8">q8</a> <a href="#q11">q11</a> <a href="#q23">q23</a></td></tr><tr><td><strong>C</strong> — Profitability / margins</td><td>5</td><td>3</td><td>1</td><td style="font-size:11px;"><a href="#q2">q2</a> <a href="#q14">q14</a> <a href="#q15">q15</a> <a href="#q16">q16</a> <a href="#q27">q27</a></td></tr><tr><td><strong>D</strong> — Expenses / payables</td><td>4</td><td>0</td><td>0</td><td style="font-size:11px;"><a href="#q12">q12</a> <a href="#q13">q13</a> <a href="#q17">q17</a> <a href="#q18">q18</a></td></tr><tr><td><strong>E</strong> — Anomaly / strategic review</td><td>10</td><td>7</td><td>3</td><td style="font-size:11px;"><a href="#q1">q1</a> <a href="#q19">q19</a> <a href="#q20">q20</a> <a href="#q21">q21</a> <a href="#q22">q22</a> <a href="#q24">q24</a> <a href="#q25">q25</a> <a href="#q28">q28</a> <a href="#q29">q29</a> <a href="#q30">q30</a></td></tr></tbody></table></div>
+  <h3>Latency by outcome (0→300s, client timeout marked)</h3>
+  <div class="latgrid"><div class="latrow"><span>q27 · Hard refusal</span><span class="latmark"><span class="latbar hard_refusal" style="width:1.2%;display:inline-block;"></span></span><span>1.8s</span></div><div class="latrow"><span>q18 · Hard refusal</span><span class="latmark"><span class="latbar hard_refusal" style="width:1.2%;display:inline-block;"></span></span><span>2.0s</span></div><div class="latrow"><span>q14 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.1s</span></div><div class="latrow"><span>q13 · Hard refusal</span><span class="latmark"><span class="latbar hard_refusal" style="width:1.2%;display:inline-block;"></span></span><span>2.2s</span></div><div class="latrow"><span>q6 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.2s</span></div><div class="latrow"><span>q12 · Hard refusal</span><span class="latmark"><span class="latbar hard_refusal" style="width:1.2%;display:inline-block;"></span></span><span>2.3s</span></div><div class="latrow"><span>q8 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.3s</span></div><div class="latrow"><span>q24 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.4s</span></div><div class="latrow"><span>q3 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.5s</span></div><div class="latrow"><span>q29 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.5s</span></div><div class="latrow"><span>q5 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.7s</span></div><div class="latrow"><span>q7 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>2.8s</span></div><div class="latrow"><span>q23 · Clarify park</span><span class="latmark"><span class="latbar parked" style="width:1.2%;display:inline-block;"></span></span><span>3.4s</span></div><div class="latrow"><span>q10 · Answered</span><span class="latmark"><span class="latbar answered" style="width:12.0%;display:inline-block;"></span></span><span>35.9s</span></div><div class="latrow"><span>q11 · Answered</span><span class="latmark"><span class="latbar answered" style="width:12.8%;display:inline-block;"></span></span><span>38.4s</span></div><div class="latrow"><span>q4 · Answered</span><span class="latmark"><span class="latbar answered" style="width:12.9%;display:inline-block;"></span></span><span>38.6s</span></div><div class="latrow"><span>q22 · Answered</span><span class="latmark"><span class="latbar answered" style="width:13.2%;display:inline-block;"></span></span><span>39.5s</span></div><div class="latrow"><span>q26 · Answered</span><span class="latmark"><span class="latbar answered" style="width:14.0%;display:inline-block;"></span></span><span>42.1s</span></div><div class="latrow"><span>q9 · Answered</span><span class="latmark"><span class="latbar answered" style="width:14.5%;display:inline-block;"></span></span><span>43.6s</span></div><div class="latrow"><span>q28 · Answered</span><span class="latmark"><span class="latbar answered" style="width:14.6%;display:inline-block;"></span></span><span>43.8s</span></div><div class="latrow"><span>q25 · Answered</span><span class="latmark"><span class="latbar answered" style="width:15.3%;display:inline-block;"></span></span><span>45.9s</span></div><div class="latrow"><span>q21 · Answered</span><span class="latmark"><span class="latbar answered" style="width:16.2%;display:inline-block;"></span></span><span>48.5s</span></div><div class="latrow"><span>q19 · Answered</span><span class="latmark"><span class="latbar answered" style="width:16.8%;display:inline-block;"></span></span><span>50.5s</span></div><div class="latrow"><span>q15 · Answered</span><span class="latmark"><span class="latbar answered" style="width:17.4%;display:inline-block;"></span></span><span>52.1s</span></div><div class="latrow"><span>q2 · Answered</span><span class="latmark"><span class="latbar answered" style="width:17.8%;display:inline-block;"></span></span><span>53.3s</span></div><div class="latrow"><span>q17 · Answered</span><span class="latmark"><span class="latbar answered" style="width:22.1%;display:inline-block;"></span></span><span>66.3s</span></div><div class="latrow"><span>q16 · Answered</span><span class="latmark"><span class="latbar answered" style="width:32.5%;display:inline-block;"></span></span><span>97.6s</span></div><div class="latrow"><span>q1 · Answered</span><span class="latmark"><span class="latbar answered" style="width:47.4%;display:inline-block;"></span></span><span>142.1s</span></div><div class="latrow"><span>q30 · Answered</span><span class="latmark"><span class="latbar answered" style="width:70.6%;display:inline-block;"></span></span><span>211.9s</span></div><div class="latrow"><span>q20 · Technical error</span><span class="latmark"><span class="latbar error" style="width:81.6%;display:inline-block;"></span></span><span>244.7s</span></div></div><div class="desc">Scale: 0→300s (HEART #2 SSE client timeout). q20 at 244.7s is an upstream IncompleteRead drop <em>before</em> the timeout — recorded as-is, no retry (HEART #5). Answered median 47.2s (mean 65.6s; range 35.9–211.9s) — the old blended “44.2s avg” hid the outcome split: parks 2–3s, hard refusals ~2s.</div>
+</section>
+<section id="evaluated">
+  <h2>4 · How we evaluated</h2>
+  <div class="info-card">
+    <h3>Run pipeline (per HEART.md)</h3>
+    30 CFO insight questions, executed by <code>scripts/run_agent_evals.py</code> against the live
+    <code>finance</code> agent template (hirafoods workspace): <strong>one isolated thread per query</strong>
+    (30 distinct thread_ids), single turn, SSE capture with a <strong>300s client timeout</strong>
+    (HEART #2), <strong>no retries</strong> (HEART #5 — q20's IncompleteRead is recorded as-is), and full
+    trace capture (status sequence, timing, errors). Versioned, never overwritten (HEART #4). Parser fixed
+    2026-09-18 to unwrap nested <code>ui.payload.data.markdown</code> answers and to capture SSE error events —
+    a pre-fix run would have recorded most answers as empty.
   </div>
-
-  <section>
-    <h2>Outcomes</h2>
-    <div class="quality-grid"><div class="quality-card" style="background:var(--surface);border-left:4px solid #16a34a;border-radius:8px;padding:16px;"><div class="count" style="color:#16a34a;">16</div><div class="desc"><strong>Answered</strong></div><div class="pct">53% of queries</div></div><div class="quality-card" style="background:var(--surface);border-left:4px solid #2563eb;border-radius:8px;padding:16px;"><div class="count" style="color:#2563eb;">4</div><div class="desc"><strong>Hard refusal</strong></div><div class="pct">13% of queries</div></div><div class="quality-card" style="background:var(--surface);border-left:4px solid #7c3aed;border-radius:8px;padding:16px;"><div class="count" style="color:#7c3aed;">9</div><div class="desc"><strong>Clarify park</strong></div><div class="pct">30% of queries</div></div><div class="quality-card" style="background:var(--surface);border-left:4px solid #dc2626;border-radius:8px;padding:16px;"><div class="count" style="color:#dc2626;">1</div><div class="desc"><strong>Technical error</strong></div><div class="pct">3% of queries</div></div></div>
-  </section>
-
-  <!-- HOW IT WAS DONE — always visible -->
-  <section>
-    <h2>How This Run Was Done</h2>
-    <div class="info-card">
-      <h3>Setup</h3>
-      30 user-provided CFO insight questions run live against the <code>finance</code> agent template
-      (hirafoods workspace) via <code>scripts/run_agent_evals.py</code> — a two-turn-aware SSE runner that
-      captures full answers, interrupt/clarify parks, errors and timing into versioned JSONL. No retries
-      (HEART #5): a drop is recorded as-is. Every query carries an <code>expected_behavior</code> label
-      (ANSWER 9 / CLARIFY 12 / REFUSE 9) assigned per the classify-gate rules.
+  <div class="info-card">
+    <h3>Grading: skeleton-first (Phase 3) + anchored judge (Phase 2)</h3>
+    Before scoring, a competent-accountant answer skeleton was written per query family (see the label
+    section for the 5 skeletons), then every response was graded element-by-element (present / partial /
+    missing) and placed on the value ladder: L1 fetch · L2 paraphrase/padding · L3 structured finding ·
+    L4 insight + decision support · L5 proactive CFO partner. Phase 2 re-scored all 20 answers with a
+    mandatory verbatim-evidence quote and a FinGAIA error-code axis.
+  </div>
+  <div class="info-card">
+    <h3>Versions &amp; provenance</h3>
+    Producer: <strong>gpt-5.4-mini (classify gate + answer fm)</strong> (classify gate + answer format node).
+    Judge: <strong>in-session deepseek-v4 (no external call)</strong> · rubric vv1 ·
+    human-reviewed <strong>0/20</strong>.
+    Grades come from one in-session model (deepseek-v4, a different family from the producing agent gpt-5.4-mini) in two passes: Phase 3 = direct reading against pre-written accountant skeletons (no separate LLM judge invocation, no second reader); Phase 2 = an anchored judge pass with a verbatim-evidence requirement. The two passes agree 20/20 — that is model SELF-CONSISTENCY, not human calibration. Human-reviewed: 0/20.
+  </div>
+  <div class="info-card">
+    <h3>Deterministic content checks (no LLM)</h3>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Check</th><th>Status</th><th>Queries</th><th>Evidence</th></tr></thead><tbody><tr><td><strong>C-01</strong></td><td>ratio_reconcile</td><td><span style="color:#dc2626;font-weight:700;">FAIL</span></td><td><a href="#q16">q16</a></td><td style="font-size:11.5px;">q16 ₹162,137,760 as 50.3% =&gt; implied 32.2cr vs sales 24.18cr; q16 ₹239,495,748 as 49.6% =&gt; implied 48.3cr vs sales 24.18cr</td></tr><tr><td><strong>C-02</strong></td><td>topN_coverage</td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td><a href="#q4">q4</a> <a href="#q11">q11</a> <a href="#q26">q26</a> <a href="#q28">q28</a></td><td style="font-size:11.5px;">top-5 block ₹2,240,723 = 1.3% of outstanding ₹174,830,219 in q4,11,26,28</td></tr><tr><td><strong>C-03</strong></td><td>cross_view</td><td><span style="color:#dc2626;font-weight:700;">FAIL</span></td><td><a href="#q21">q21</a></td><td style="font-size:11.5px;">q21 movement-view ₹1,453,793 &gt; ranking &quot;largest&quot; ₹905,018 (&gt;1.2x)</td></tr><tr><td><strong>C-04</strong></td><td>repetition</td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td><a href="#q1">q1</a> <a href="#q2">q2</a> <a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q11">q11</a> <a href="#q25">q25</a> <a href="#q26">q26</a> <a href="#q28">q28</a> <a href="#q30">q30</a></td><td style="font-size:11.5px;">top-5 block reused in 9/16 answered answers (56%)</td></tr><tr><td><strong>C-05</strong></td><td>data_recency</td><td><span style="color:#64748b;font-weight:700;">UNKNOWN</span></td><td>—</td><td style="font-size:11.5px;">answers cite latest-month drop 9.77cr→11.98L; max invoice date not checked (no invoice-date column in the run) — manual verification required</td></tr><tr><td><strong>C-06</strong></td><td>unit_duplication</td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td><a href="#q1">q1</a> <a href="#q4">q4</a> <a href="#q9">q9</a> <a href="#q11">q11</a> <a href="#q22">q22</a> <a href="#q26">q26</a></td><td style="font-size:11.5px;">&#x27;days days&#x27; in 6 answers: q1,4,9,11,22,26</td></tr><tr><td><strong>C-07</strong></td><td>grounding_artifact</td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td><a href="#q1">q1</a></td><td style="font-size:11.5px;">literal &#x27;[unverified]&#x27; emitted in q1</td></tr></tbody></table></div>
+  </div>
+  <div class="info-card">
+    <h3>Leak hits — with the matched string per hit</h3>
+    <div class="desc">14 hits, all rule <code>workspace_ref</code>: the reconcile warning banner
+    (“…in this workspace”) trips the detector in every answer that carries it. This is intentional
+    user-facing text, on a review allowlist — <strong>not</strong> a PII leak. Counts are per-response
+    regex hits; the rule and matched string are shown so each hit is auditable.</div>
+    <div class="table-wrap"><table><thead><tr><th>Query</th><th>Rule</th><th>Matched string</th><th>Note</th></tr></thead><tbody><tr><td>q1</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q2</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q4</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q9</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q10</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q11</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q15</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q19</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q21</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q22</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q25</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q26</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q28</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q30</td><td><code>workspace_ref</code></td><td style="font-size:11.5px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#94a3b8;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr></tbody></table></div>
+  </div>
+  <div class="info-card">
+    <h3>NOT tested by this run</h3>
+    <div class="desc">Multi-turn conversation (each query ran in its own isolated thread — no follow-ups), tool selection (the finance stream is backend SQL and emits no tool events), run-to-run variance of the clarify gate (except the q3 park-then-answer re-probe), other workspaces, and the numeric correctness of every figure (the ledger cross-checks consistency, not ground truth).</div>
+  </div>
+</section>
+<section id="labels">
+  <h2>5 · How we labeled the queries</h2>
+  <div class="desc">Labels were assigned by you (user, 2026-09-18) per the finance classify-gate decision
+  order: a real metric → <strong>ANSWER</strong>; vague / judgment / multi-reading → <strong>CLARIFY</strong>;
+  data genuinely absent → <strong>REFUSE</strong>. The tier tags (FinGAIA business-depth, T1–T3) were
+  user-approved on the Phase 3 review; the Phase 1 scorecard initially tagged q2/q15/q16/q27 differently
+  and that disagreement is deliberately surfaced, not resolved here.</div>
+  <div class="table-wrap"><table><thead><tr><th>Label family</th><th>Distribution</th></tr></thead><tbody><tr><td><strong>expected_behavior (expected label)</strong></td><td>9 ANSWER · 12 CLARIFY · 9 REFUSE</td></tr><tr><td><strong>expected_tool (review-intent)</strong></td><td>21 NO_TOOL · 9 TOOL:* (see flags)</td></tr><tr><td><strong>FinGAIA tier</strong></td><td>T1 6 · T2 8 · T3 16 (4 disputed)</td></tr><tr><td><strong>question family</strong></td><td>A 6 (incl. q30) · B 4 · C 5 · D 4 · E 10 (incl. q30); q5 q6 unassigned</td></tr></tbody></table></div>
+  <h3>Tier definitions (FinGAIA business-depth)</h3>
+  <div class="table-wrap"><table><thead><tr><th>Tier</th><th>Definition (as used in this eval)</th><th>Queries</th><th>Example</th></tr></thead><tbody>
+  <tr><td>T1</td><td>operational fetch / refusal</td><td>6</td><td>q10 – quantify overdue recoverability</td></tr>
+  <tr><td>T2</td><td>decision support</td><td>8</td><td>q9 – aggressive recovery plan</td></tr>
+  <tr><td>T3</td><td>strategic risk</td><td>16</td><td>q27 – profitability &amp; cash verdict</td></tr>
+  </tbody></table></div>
+  <div class="todo-box"><strong>TODO (FinGAIA definitions &amp; citation):</strong> the workspace has no local
+  copy or notes of the FinGAIA paper (arXiv:2507.17186). Tier and error-code definitions above are quoted
+  from the local eval artifacts (VALUE_SCORECARD_phase1.md, VALUE_JUDGE_phase2.md, VALUE_GRADE_phase3.md),
+  which cite the paper — they were NOT invented here, but the paper's own wording must be verified and
+  cited before the definitions are treated as authoritative.</div>
+  <h3>Error-code taxonomy (as used by the judge)</h3>
+  <div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning here</th></tr></thead><tbody><tr><td><code>Craft</code></td><td>answer-structure/format defects (refusal &#x27;..&#x27; glitches, q17 footer) — 5 hits, 4 answers</td></tr><tr><td><code>FinancialTerminologicalBias</code></td><td>&#x27;days days&#x27; unit duplication — 5 hits</td></tr><tr><td><code>DataTypeHandling</code></td><td>literal &#x27;[unverified]&#x27; placeholder emitted to the user — 1 hit</td></tr><tr><td><code>HallucinatoryFinancialReasoning</code></td><td>0 — no invented figures</td></tr><tr><td><code>EntityCausationMisidentification</code></td><td>0 — no entity blamed wrongly from data</td></tr></tbody></table></div>
+  <h3>Disputed labels (surfaced, not resolved)</h3>
+  <div class="note-box">
+  <strong>Tier conflict:</strong> VALUE_SCORECARD_phase1.md tagged q2 T1, q15 T2, q16 T2, q27 T1; the
+  Phase 2/3 docs (user-approved 2026-09-18) tag all four T3. This page uses the Phase 2/3 tags and marks
+  qq2, q15, q16, q27 with a dispute flag. <br>
+  <strong>Tool-label conflict:</strong> qq10, q26 carry
+  <code>expected_tool: aging</code> while the workspace banner says overdue/ageing are OVERSTATED
+  (~3% of collected amounts allocated to invoices) — the label contradicts the workspace's own limitation.<br>
+  <strong>Family gaps:</strong> q5 and q6 are not assigned to any family; q30 appears in A and E.
+  Flagged for the owner to resolve.</div>
+  <h3>Per-query label cards — all 30</h3>
+  <div class="labels-grid"><details class="lcard" id="lc1"><summary><span class="q">q1</span> <span style="font-size:11px;color:#94a3b8;">Give me a quick sense of how the business is doing financially. Anythi</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T1</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: Actions + priorities good; literal &#x27;[unverified]&#x27; x2 is a grounding-guard artifact; no portfolio outstanding (honest).</div></div></details><details class="lcard" id="lc2"><summary><span class="q">q2</span> <span style="font-size:11px;color:#94a3b8;">Revenue looks okay to me, but are we actually making money? Walk me th</span><span class="flag disp">tier disputed</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3*</code> · family <code>C</code></div><div class="desc" style="font-size:11px;">Rationale: Correct boundary: cannot prove profitability, uses purchases as cost-base indicator only. Top-5 receivables block copied from template.</div></div></details><details class="lcard" id="lc3"><summary><span class="q">q3</span> <span style="font-size:11px;color:#94a3b8;">Where is our cash getting stuck right now?</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T2</code> · family <code>A</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc4"><summary><span class="q">q4</span> <span style="font-size:11px;color:#94a3b8;">I&#x27;m concerned about receivables. Who is holding up our cash and how se</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:top_outstanding</code> · tier <code>T2</code> · family <code>A</code></div><div class="desc" style="font-size:11px;">Rationale: Portfolio sizing + fastest-worsening tracked separately + credit-hold decision link. &#x27;days days&#x27; x2.</div></div></details><details class="lcard" id="lc5"><summary><span class="q">q5</span> <span style="font-size:11px;color:#94a3b8;">Do we have a working-capital problem, or is the situation under contro</span><span class="flag manual">family unassigned</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>—</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc6"><summary><span class="q">q6</span> <span style="font-size:11px;color:#94a3b8;">Which customers are becoming a cash-flow risk for us?</span><span class="flag manual">family unassigned</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>—</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc7"><summary><span class="q">q7</span> <span style="font-size:11px;color:#94a3b8;">Show me customers where we&#x27;re doing good business but collections are </span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:top_customers</code> · tier <code>T3</code> · family <code>B</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc8"><summary><span class="q">q8</span> <span style="font-size:11px;color:#94a3b8;">Are there customers whose outstanding is growing faster than their bus</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:balance_movement</code> · tier <code>T3</code> · family <code>B</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc9"><summary><span class="q">q9</span> <span style="font-size:11px;color:#94a3b8;">If I had to recover cash aggressively this month, which accounts would</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:collection_priority</code> · tier <code>T2</code> · family <code>A</code></div><div class="desc" style="font-size:11px;">Rationale: Operational plan: first wave / second wave / escalation track. &#x27;days days&#x27; present; escalation-growth figures correctly flagged as signals, not balances.</div></div></details><details class="lcard" id="lc10"><summary><span class="q">q10</span> <span style="font-size:11px;color:#94a3b8;">How much of our receivables is actually overdue, and how much of that </span><span class="flag disp">tool vs banner</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:aging</code> · tier <code>T1</code> · family <code>A</code></div><div class="desc" style="font-size:11px;">Rationale: Honest quantification refusal with substitute guidance. Correct given the data gap; thin (1 figure / 1777 chars).</div></div></details><details class="lcard" id="lc11"><summary><span class="q">q11</span> <span style="font-size:11px;color:#94a3b8;">Are we giving customers too much credit? What does the data suggest?</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T2</code> · family <code>B</code></div><div class="desc" style="font-size:11px;">Rationale: Verdict + honest no-external-benchmark caveat + control actions. &#x27;days days&#x27; present.</div></div></details><details class="lcard" id="lc12"><summary><span class="q">q12</span> <span style="font-size:11px;color:#94a3b8;">What is happening with our payables? Are we under pressure from suppli</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T1</code> · family <code>D</code></div><div class="desc" style="font-size:11px;">Rationale: Boundary precise (payables under-recorded) + alternative offer. &#x27;.. I can&#x27; double-period glitch.</div></div></details><details class="lcard" id="lc13"><summary><span class="q">q13</span> <span style="font-size:11px;color:#94a3b8;">Are we paying suppliers before we collect from customers?</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T1</code> · family <code>D</code></div><div class="desc" style="font-size:11px;">Rationale: Names exactly which pieces are missing. &#x27;.. I can&#x27; glitch.</div></div></details><details class="lcard" id="lc14"><summary><span class="q">q14</span> <span style="font-size:11px;color:#94a3b8;">What&#x27;s putting pressure on our margins?</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T2</code> · family <code>C</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc15"><summary><span class="q">q15</span> <span style="font-size:11px;color:#94a3b8;">Our sales may be growing, but are margins improving or deteriorating?</span><span class="flag disp">tier disputed</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3*</code> · family <code>C</code></div><div class="desc" style="font-size:11px;">Rationale: Real comparative insight (invoices 5,642-&gt;117; revenue fall) + honest margin boundary.</div></div></details><details class="lcard" id="lc16"><summary><span class="q">q16</span> <span style="font-size:11px;color:#94a3b8;">Find me the areas where revenue is growing but profitability isn&#x27;t kee</span><span class="flag disp">tier disputed</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3*</code> · family <code>C</code></div><div class="desc" style="font-size:11px;">Rationale: Cross-metric linkage (Ganesh sales vs outstanding) + concentrations 50.3%/49.6%. No boilerplate.</div></div></details><details class="lcard" id="lc17"><summary><span class="q">q17</span> <span style="font-size:11px;color:#94a3b8;">Which expenses should I be questioning right now?</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T1</code> · family <code>D</code></div><div class="desc" style="font-size:11px;">Rationale: Structured refusal. &#x27;0 figures verified&#x27; process footer reads odd on a refusal.</div></div></details><details class="lcard" id="lc18"><summary><span class="q">q18</span> <span style="font-size:11px;color:#94a3b8;">Have any expenses increased disproportionately compared with the busin</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T1</code> · family <code>D</code></div><div class="desc" style="font-size:11px;">Rationale: Clean + fast. &#x27;.. I can&#x27; glitch.</div></div></details><details class="lcard" id="lc19"><summary><span class="q">q19</span> <span style="font-size:11px;color:#94a3b8;">If you were reviewing these numbers with me as CFO, what would you cha</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: Period-matching challenge, concentration review, forecasting caution with invoice-count evidence (1,640-&gt;5,642-&gt;117).</div></div></details><details class="lcard" id="lc20"><summary><span class="q">q20</span> <span style="font-size:11px;color:#94a3b8;">Forget the standard reports. Tell me what looks unusual in the financi</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc21"><summary><span class="q">q21</span> <span style="font-size:11px;color:#94a3b8;">Something doesn&#x27;t look right in the numbers. Can you find any unusual </span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: Standout: cross-view inconsistency caught (movement vs ranking), negative starting balances, hypotheses (cut-off/duplicates), verification path.</div></div></details><details class="lcard" id="lc22"><summary><span class="q">q22</span> <span style="font-size:11px;color:#94a3b8;">Where are we taking the biggest financial risks without necessarily se</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: Off-P&amp;L framing + payment-to-sales ratio (new metric). &#x27;days days&#x27; present.</div></div></details><details class="lcard" id="lc23"><summary><span class="q">q23</span> <span style="font-size:11px;color:#94a3b8;">Are there any customers where the amount of credit we&#x27;re extending doe</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T2</code> · family <code>B</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc24"><summary><span class="q">q24</span> <span style="font-size:11px;color:#94a3b8;">Which accounts have become materially different from what we normally </span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:balance_movement</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc25"><summary><span class="q">q25</span> <span style="font-size:11px;color:#94a3b8;">Tell me where management attention is most needed financially.</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: Multi-area (receivables + inventory sell-through gate). Actions specific.</div></div></details><details class="lcard" id="lc26"><summary><span class="q">q26</span> <span style="font-size:11px;color:#94a3b8;">If sales remain at the current level, what could hurt our cash flow ov</span><span class="flag disp">tool vs banner</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:aging</code> · tier <code>T2</code> · family <code>A</code></div><div class="desc" style="font-size:11px;">Rationale: Forward-look is one line + standard chase block; honest &#x27;not a complete liquidity forecast&#x27;. &#x27;days days&#x27; present.</div></div></details><details class="lcard" id="lc27"><summary><span class="q">q27</span> <span style="font-size:11px;color:#94a3b8;">What is the biggest difference between our accounting profit and the c</span><span class="flag disp">tier disputed</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>REFUSE</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3*</code> · family <code>C</code></div><div class="desc" style="font-size:11px;">Rationale: Precise on required inputs. &#x27;.. I can&#x27; glitch.</div></div></details><details class="lcard" id="lc28"><summary><span class="q">q28</span> <span style="font-size:11px;color:#94a3b8;">Are there signs that our growth is consuming too much working capital?</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:dso</code> · tier <code>T2</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: DSO 120.8d vs 167d window = 72% of period in receivables: sharpest ratio insight; volatility caution.</div></div></details><details class="lcard" id="lc29"><summary><span class="q">q29</span> <span style="font-size:11px;color:#94a3b8;">Which customers or suppliers have the biggest financial concentration </span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>ANSWER</code> · expected_tool <code>TOOL:concentration</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: no rationale recorded</div></div></details><details class="lcard" id="lc30"><summary><span class="q">q30</span> <span style="font-size:11px;color:#94a3b8;">What would worry you if you were looking at these numbers for the firs</span><span class="flag manual">A + E</span></summary><div class="details-body" style="padding:2px 4px 8px;"><div class="desc">expected_behavior <code>CLARIFY</code> · expected_tool <code>NO_TOOL</code> · tier <code>T3</code> · family <code>E</code></div><div class="desc" style="font-size:11px;">Rationale: Surfaced a 6th entity (Jai Enterprises 151 days) beyond the standard top-5; priority plan concrete.</div></div></details></div>
+  <div class="desc"><strong>Why labels matter here:</strong> 7 CLARIFY-labeled queries were answered with
+  L4/L5 answers (q1 q11 q19 q21 q22 q25 q30) while equally vague queries parked (q3 q5 q6 q23) — so it is
+  unclear whether the agent or the label is wrong. The gate's non-determinism (~30% park rate) makes this
+  a rate question, not a per-query one.</div>
+</section>
+<section id="limits">
+  <h2>6 · Limits and trust — can I trust and reproduce this?</h2>
+  <div class="info-card">
+    <strong>Single judge, 30 queries, one run.</strong> The L-levels come from one in-session model
+    (deepseek-v4) in two self-consistent passes — Grades come from one in-session model (deepseek-v4, a different family from the producing agent gpt-5.4-mini) in two passes: Phase 3 = direct reading against pre-written accountant skeletons (no separate LLM judge invocation, no second reader); Phase 2 = an anchored judge pass with a verbatim-evidence requirement. The two passes agree 20/20 — that is model SELF-CONSISTENCY, not human calibration... A human has not reviewed the ratings
+    (human-reviewed 0/20). Grading measures element <em>presence</em> against the accountant skeletons
+    more than numeric correctness of the figures (the consistency ledger cross-checks figures against
+    each other and the known baseline, not against ground truth). The clarify gate is stochastic
+    (~30% park rate on clarify-prone inputs), so per-query verdicts on parks are probabilistic, not
+    categorical. q20's error is an upstream drop, not a verdict on the agent.
+  </div>
+  <div class="info-card">
+    <strong>What this page does not claim:</strong> no claim that figures are ground-truth correct;
+    no fabrication <em>guarantee</em> — "no fabricated figures detected (20 answers judged)" is the
+    honest form; no estimate of run-to-run variance; no coverage of multi-turn behavior or other
+    workspaces. The "44.2s average" of the old readout is not used — latency is shown by outcome.
+  </div>
+</section>
+<section id="reproduce">
+  <h2>7 · Reproduce — rerun as v2</h2>
+  <div class="info-card">
+    <h3>Commands</h3>
+    <pre style="font-size:11.5px;line-height:1.7;background:#0a0f1c;border:1px solid var(--border,#334155);border-radius:8px;padding:10px 12px;"># rerun only mismatches/errors as v2 (pre-seeds untouched rows — stays diffable)
+python3 scripts/eval_cli.py rerun --failed --account finance
+# derive + print the summary block (invariants asserted; exits 1 on violation)
+python3 scripts/finance_pipeline.py --run 2 --print
+# rebuild this dashboard
+python3 build_dashboard.py --account finance --version 2
+# compare v1 vs v2 per-query verdicts + metric deltas
+python3 scripts/eval_cli.py diff 1 2 --account finance</pre>
+    <div class="desc">HEART rules apply to v2 as to v1: versioned file, no retries, no masking,
+    full trace capture. A run selector and a v1-vs-v2 delta view will appear on this page once a
+    second run exists.</div>
+  </div>
+  <div class="info-card">
+    <h3>Raw sources (absolute links — GitHub Pages publishes only docs/)</h3>
+    Run v1:<br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/summary.json">summary.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/findings.json">findings.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/judgments.jsonl">judgments.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/leaks.jsonl">leaks.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/results.jsonl">results.jsonl</a><br><br>
+    Raw traces + label source:<br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/query_results_v1.jsonl">query_results_v1.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/manifest.json">manifest.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/value_phase2_judge.json">value_phase2_judge.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/value_phase1_v1.json">value_phase1_v1.json</a><br><br>
+    Owner-facing readouts:<br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/EVAL_READOUT_v1.md">EVAL_READOUT_v1.md</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/VALUE_READOUT_v1.md">VALUE_READOUT_v1.md</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/VALUE_JUDGE_phase2.md">VALUE_JUDGE_phase2.md</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/VALUE_GRADE_phase3.md">VALUE_GRADE_phase3.md</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/VALUE_SCORECARD_phase1.md">VALUE_SCORECARD_phase1.md</a>
+  </div>
+  <div class="info-card">
+    <h3>Add a query (with labels)</h3>
+    Queries are generator-owned: edit <code>scripts/gen_finance_queries.py</code> (query text +
+    <code>expected_behavior</code> ANSWER/CLARIFY/REFUSE + <code>expected_tool</code> review-intent),
+    regenerate the xlsx, probe one query live, then run. Labels follow the classify-gate decision order
+    (real metric → ANSWER; vague/judgment → CLARIFY; absent data → REFUSE). Tier tags (T1–T3) are
+    assigned per the FinGAIA business-depth ladder; keep the disputed-label list in sync when you change one.
+  </div>
+  <div class="info-card">
+    <h3>Verified-against-what</h3>
+    This page is generated from the derived artifacts with invariants asserted at build time
+    (outcomes/verdicts/matrix sums == 30; 30 label cards; all 30 deep links; no relative hrefs;
+    30 distinct thread_ids). Every displayed count is derived, never hard-coded.
+  </div>
+</section>
+    <div class="foot">
+      Static page rendered from derived artifacts (accounts/finance/runs/v1/) — all content
+      server-rendered; inline JS only for the explorer's client-side filters. ·
+      Raw traces: <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/query_results_v1.jsonl">query_results_v1.jsonl</a> ·
+      Pre-redesign page kept at <a href="legacy/">legacy/</a> until the new page is verified. ·
+      Repo: navneetlearns/langsmith-tool-evaluator · Run v1 · 2026-09-18
     </div>
-    <div class="info-card">
-      <h3>Derivation &amp; checks (single source of truth)</h3>
-      <code>scripts/finance_pipeline.py</code> derives the outcome taxonomy (answered / hard_refusal / parked /
-      error — mutually exclusive per query), the expected-vs-observed verdict, the judge-value mix, latency by
-      outcome, deterministic content checks and leak hits with matched strings. Invariants are asserted at
-      build: outcome/verdict sums must equal the query count, judged+parked+error must equal 30 — the build
-      fails on any disagreement.
-    </div>
-    <div class="info-card">
-      <h3>Judge &amp; provenance</h3>
-      in-session deepseek-v4 (no external call) · rubric v1 · <strong>20 judged</strong> ·
-      human-reviewed 0/20 (open item: 10-answer human calibration spot-check) ·
-      L-levels are judge self-consistency, not human calibration. Tools: no tool events in finance stream (backend SQL) — tool accuracy N/A; step count is the SSE status depth, not agent steps
-    </div>
-  </section>
-
-  <!-- SOURCES OF REFERENCE — always visible -->
-  <section>
-    <h2>Sources &amp; Reference</h2>
-    <div class="ref-box">
-      <strong>Machine-readable (for agents / deeper review):</strong><br>
-      <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/summary.json">summary.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/findings.json">findings.json</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/judgments.jsonl">judgments.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/leaks.jsonl">leaks.jsonl</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/v1/results.jsonl">results.jsonl</a><br><br>
-      <strong>Owner-facing readouts:</strong><br>
-      <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/EVAL_READOUT_v1.md">EVAL_READOUT_v1.md</a><br><a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/VALUE_READOUT_v1.md">VALUE_READOUT_v1.md</a>
-    </div>
-  </section>
-
-  <!-- DETAIL TABLES — collapsed by default -->
-  <details>
-  <summary>Expected vs Observed — behavior matrix</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">Verdicts: <strong>13 match</strong> · 4 partial · <strong style='color:#dc2626;'>12 mismatch</strong> · 1 error. Mismatch detail: CLARIFY→answered x7 · ANSWER→parked x4 · REFUSE→parked x1</div><div class="table-wrap"><table><thead><tr><th>Expected label</th><th>Answered</th><th>Hard refusal</th><th>Clarify park</th><th>Error</th></tr></thead><tbody><tr><td><strong>ANSWER</strong></td><td>5</td><td>0</td><td>4</td><td>0</td></tr><tr><td><strong>CLARIFY</strong></td><td>7</td><td>0</td><td>4</td><td>1</td></tr><tr><td><strong>REFUSE</strong></td><td>4</td><td>4</td><td>1</td><td>0</td></tr></tbody></table></div></div>
-</details>
-
-  <details>
-  <summary>Response Value (judge)</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">L4/L5 <strong>13</strong> · L3 2 · correct refusals 5 · not judged 10 · FinGAIA errors: <code>Craft x5</code> <code>DataTypeHandling x1</code> <code>FinancialTerminologicalBias x5</code> </div><div class='desc'>L-levels are model self-consistency (judge same family as grader); 10-answer human calibration spot-check is the open item</div></div>
-</details>
-
-  <details>
-  <summary>Latency by Outcome</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">Client timeout is 300s per HEART #2; a 244.7s IncompleteRead = upstream drop, not timeout.</div><div class="table-wrap"><table><thead><tr><th>Outcome</th><th>n</th><th>Median</th><th>p95</th><th>Max</th></tr></thead><tbody><tr><td>Answered</td><td>16</td><td>48.5s</td><td>211.9s</td><td>211.9s</td></tr><tr><td>Clarify park</td><td>9</td><td>2.5s</td><td>3.4s</td><td>3.4s</td></tr><tr><td>Hard refusal</td><td>4</td><td>2.2s</td><td>2.3s</td><td>2.3s</td></tr><tr><td>Technical error</td><td>1</td><td>244.7s</td><td>244.7s</td><td>244.7s</td></tr></tbody></table></div></div>
-</details>
-
-  <details>
-  <summary>Content Checks</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">Deterministic checks over the answers — the defects owners must fix.</div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Check</th><th>Status</th><th>Queries</th><th>Evidence</th></tr></thead><tbody><tr><td><strong>C-01</strong></td><td><span style="color:#dc2626;font-weight:700;">ratio_reconcile</span></td><td><span style="color:#dc2626;font-weight:700;">FAIL</span></td><td>q16</td><td style="font-size:12px;">q16 ₹162,137,760 as 50.3% =&gt; implied 32.2cr vs sales 24.18cr; q16 ₹239,495,748 as 49.6% =&gt; implied 48.3cr vs sales 24.18cr</td></tr><tr><td><strong>C-02</strong></td><td><span style="color:#d97706;font-weight:700;">topN_coverage</span></td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td>q4, q11, q26, q28</td><td style="font-size:12px;">top-5 block ₹2,240,723 = 1.3% of outstanding ₹174,830,219 in q4,11,26,28</td></tr><tr><td><strong>C-03</strong></td><td><span style="color:#dc2626;font-weight:700;">cross_view</span></td><td><span style="color:#dc2626;font-weight:700;">FAIL</span></td><td>q21</td><td style="font-size:12px;">q21 movement-view ₹1,453,793 &gt; ranking &quot;largest&quot; ₹905,018 (&gt;1.2x)</td></tr><tr><td><strong>C-04</strong></td><td><span style="color:#d97706;font-weight:700;">repetition</span></td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td>q1, q2, q4, q9, q11, q25, q26, q28, q30</td><td style="font-size:12px;">top-5 block reused in 9/16 answered answers (56%)</td></tr><tr><td><strong>C-05</strong></td><td><span style="color:#64748b;font-weight:700;">data_recency</span></td><td><span style="color:#64748b;font-weight:700;">UNKNOWN</span></td><td>—</td><td style="font-size:12px;">answers cite latest-month drop 9.77cr→11.98L; max invoice date not checked (no invoice-date column in the run) — manual verification required</td></tr><tr><td><strong>C-06</strong></td><td><span style="color:#d97706;font-weight:700;">unit_duplication</span></td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td>q1, q4, q9, q11, q22, q26</td><td style="font-size:12px;">&#x27;days days&#x27; in 6 answers: q1,4,9,11,22,26</td></tr><tr><td><strong>C-07</strong></td><td><span style="color:#d97706;font-weight:700;">grounding_artifact</span></td><td><span style="color:#d97706;font-weight:700;">WARN</span></td><td>q1</td><td style="font-size:12px;">literal &#x27;[unverified]&#x27; emitted in q1</td></tr></tbody></table></div></div>
-</details>
-
-  <details>
-  <summary>Findings (ranked, actionable)</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">Stable IDs — fixes can be confirmed closed on the next run.</div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Severity</th><th>Type</th><th>Queries</th><th>Evidence</th><th>Suggested fix</th><th>Status</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span style="color:#dc2626;font-weight:700;">high</span></td><td>ratio_reconcile</td><td>q16</td><td style="font-size:12px;">q16 ₹162,137,760 as 50.3% =&gt; implied 32.2cr vs sales 24.18cr; q16 ₹239,495,748 as 49.6% =&gt; implied 48.3cr vs sales 24.18cr</td><td style="font-size:12px;color:#6b7280;">reconcile segment/product aggregation (likely double count); percentage denominators must match the sales total</td><td>open</td></tr><tr><td><strong>F-003</strong></td><td><span style="color:#dc2626;font-weight:700;">high</span></td><td>cross_view</td><td>q21</td><td style="font-size:12px;">q21 movement-view ₹1,453,793 &gt; ranking &quot;largest&quot; ₹905,018 (&gt;1.2x)</td><td style="font-size:12px;color:#6b7280;">label the view/source per figure (movement vs ranking vs outstanding) so contradictory &#x27;largest&#x27; claims are impossible</td><td>open</td></tr><tr><td><strong>F-009</strong></td><td><span style="color:#dc2626;font-weight:700;">high</span></td><td>clarify_gate_noise</td><td>q7, q8, q14, q24, q29</td><td style="font-size:12px;">5 ANSWER/REFUSE-labeled queries parked by the clarify gate (q7,8,14,24,29) — q14 margin-pressure is provably answerable (see q2/q15)</td><td style="font-size:12px;color:#6b7280;">tighten the classify gate; multi-reading queries should split, not park (gate is non-deterministic: q3 parked in-run, answered on re-probe ~30% park rate on clarify-prone queries)</td><td>open</td></tr><tr><td><strong>F-002</strong></td><td><span style="color:#d97706;font-weight:700;">medium</span></td><td>topN_coverage</td><td>q4, q11, q26, q28</td><td style="font-size:12px;">top-5 block ₹2,240,723 = 1.3% of outstanding ₹174,830,219 in q4,11,26,28</td><td style="font-size:12px;color:#6b7280;">when naming top accounts, quantify their share of the portfolio so the coverage limit is visible</td><td>open</td></tr><tr><td><strong>F-004</strong></td><td><span style="color:#d97706;font-weight:700;">medium</span></td><td>repetition</td><td>q1, q2, q4, q9, q11, q25, q26, q28, q30</td><td style="font-size:12px;">top-5 block reused in 9/16 answered answers (56%)</td><td style="font-size:12px;color:#6b7280;">per-intent evidence selection: same KPI trio + top-5 block must not be the &#x27;insight&#x27; for 8 different questions</td><td>open</td></tr><tr><td><strong>F-006</strong></td><td><span style="color:#d97706;font-weight:700;">medium</span></td><td>unit_duplication</td><td>q1, q4, q9, q11, q22, q26</td><td style="font-size:12px;">&#x27;days days&#x27; in 6 answers: q1,4,9,11,22,26</td><td style="font-size:12px;color:#6b7280;">deduplicate unit tokens in the format node</td><td>open</td></tr><tr><td><strong>F-007</strong></td><td><span style="color:#d97706;font-weight:700;">medium</span></td><td>grounding_artifact</td><td>q1</td><td style="font-size:12px;">literal &#x27;[unverified]&#x27; emitted in q1</td><td style="font-size:12px;color:#6b7280;">re-probe or drop the sentence; never emit the placeholder token to the user</td><td>open</td></tr><tr><td><strong>F-008</strong></td><td><span style="color:#d97706;font-weight:700;">medium</span></td><td>refusal_craft</td><td>q12, q13, q18, q27</td><td style="font-size:12px;">double-period &#x27;.. I can work&#x27; glitch in q12,13,18,27</td><td style="font-size:12px;color:#6b7280;">strip trailing period duplication in the refusal template</td><td>open</td></tr><tr><td><strong>F-010</strong></td><td><span style="color:#d97706;font-weight:700;">medium</span></td><td>latency</td><td>q1, q20, q30</td><td style="font-size:12px;">answers &gt;120s: q1,20,30 (q20 dropped at 244.7s IncompleteRead)</td><td style="font-size:12px;color:#6b7280;">chunk the analysis branch or raise the read timeout; 300s client timeout is the ceiling per HEART #2</td><td>open</td></tr><tr><td><strong>F-005</strong></td><td><span style="color:#64748b;font-weight:700;">low</span></td><td>data_recency</td><td>—</td><td style="font-size:12px;">answers cite latest-month drop 9.77cr→11.98L; max invoice date not checked (no invoice-date column in the run) — manual verification required</td><td style="font-size:12px;color:#6b7280;">add invoice_date to the query set so recency is checkable</td><td>open</td></tr></tbody></table></div></div>
-</details>
-
-  <details>
-  <summary>Leak Hits (with matched strings)</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">Total 14 flagged — counts are per-response regex hits, not real secrets; the workspace banner is intentional user-facing warning text (review the allowlist, don't treat as PII).</div><div class="table-wrap"><table><thead><tr><th>Query</th><th>Rule</th><th>Matched text</th><th>Note</th></tr></thead><tbody><tr><td>q1</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q2</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q4</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q9</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q10</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q11</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q15</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q19</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q21</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q22</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q25</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q26</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q28</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr><tr><td>q30</td><td><code>workspace_ref</code></td><td style="font-size:12px;"><code>~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed from invoice status and ar</code></td><td style="font-size:11px;color:#6b7280;">reconcile banner (intentional user-facing warning) — review allowlist</td></tr></tbody></table></div></div>
-</details>
-
-  <details>
-  <summary>Per-Query — all 30</summary>
-  <div class="details-body"><div class="desc" style="margin-bottom:8px;">Full row-level view: expected label, observed outcome, verdict, value level, latency, response excerpt.</div><div class="table-wrap"><table><thead><tr><th>#</th><th>Query</th><th>Expected</th><th>Outcome</th><th>Verdict</th><th>Value</th><th>Latency</th><th>Response (excerpt)</th></tr></thead><tbody><tr><td>q1</td><td style="font-size:12px;max-width:260px;">Give me a quick sense of how the business is doing financially. Anything that stands out to you?</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L4</td><td>142.08s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q2</td><td style="font-size:12px;max-width:260px;">Revenue looks okay to me, but are we actually making money? Walk me through the profitability.</td><td>REFUSE</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#d97706;">partial</span></td><td>L4</td><td>53.29s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q3</td><td style="font-size:12px;max-width:260px;">Where is our cash getting stuck right now?</td><td>CLARIFY</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#16a34a;">match</span></td><td></td><td>2.45s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q4</td><td style="font-size:12px;max-width:260px;">I&#x27;m concerned about receivables. Who is holding up our cash and how serious is it?</td><td>ANSWER</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#16a34a;">match</span></td><td>L5</td><td>38.65s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q5</td><td style="font-size:12px;max-width:260px;">Do we have a working-capital problem, or is the situation under control?</td><td>CLARIFY</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#16a34a;">match</span></td><td></td><td>2.7s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q6</td><td style="font-size:12px;max-width:260px;">Which customers are becoming a cash-flow risk for us?</td><td>CLARIFY</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#16a34a;">match</span></td><td></td><td>2.23s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q7</td><td style="font-size:12px;max-width:260px;">Show me customers where we&#x27;re doing good business but collections are poor. I want to understand the pattern.</td><td>ANSWER</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#dc2626;">mismatch</span></td><td></td><td>2.77s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q8</td><td style="font-size:12px;max-width:260px;">Are there customers whose outstanding is growing faster than their business with us?</td><td>ANSWER</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#dc2626;">mismatch</span></td><td></td><td>2.34s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q9</td><td style="font-size:12px;max-width:260px;">If I had to recover cash aggressively this month, which accounts would you ask me to focus on first?</td><td>ANSWER</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#16a34a;">match</span></td><td>L5</td><td>43.57s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q10</td><td style="font-size:12px;max-width:260px;">How much of our receivables is actually overdue, and how much of that looks difficult to recover?</td><td>ANSWER</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#16a34a;">match</span></td><td>L3</td><td>35.94s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q11</td><td style="font-size:12px;max-width:260px;">Are we giving customers too much credit? What does the data suggest?</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L4</td><td>38.42s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q12</td><td style="font-size:12px;max-width:260px;">What is happening with our payables? Are we under pressure from suppliers or do we have some room?</td><td>REFUSE</td><td><span style="color:#2563eb;font-weight:700;">hard_refusal</span></td><td><span style="color:#16a34a;">match</span></td><td>REF</td><td>2.32s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — Supplier payables / amount owed to suppliers is not reliably available in the dataset. Purchase-invoice entries are under-…</td></tr><tr><td>q13</td><td style="font-size:12px;max-width:260px;">Are we paying suppliers before we collect from customers?</td><td>REFUSE</td><td><span style="color:#2563eb;font-weight:700;">hard_refusal</span></td><td><span style="color:#16a34a;">match</span></td><td>REF</td><td>2.22s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — The dataset has sales, customer receivables/collections, and purchase-invoice entries, but it does not reliably contain su…</td></tr><tr><td>q14</td><td style="font-size:12px;max-width:260px;">What&#x27;s putting pressure on our margins?</td><td>REFUSE</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#dc2626;">mismatch</span></td><td></td><td>2.07s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q15</td><td style="font-size:12px;max-width:260px;">Our sales may be growing, but are margins improving or deteriorating?</td><td>REFUSE</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#d97706;">partial</span></td><td>L4</td><td>52.07s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q16</td><td style="font-size:12px;max-width:260px;">Find me the areas where revenue is growing but profitability isn&#x27;t keeping up.</td><td>REFUSE</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#d97706;">partial</span></td><td>L4</td><td>97.59s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">💡 **Revenue peaked at ₹9,77,65,078, but profitability is not tracked in the books, so no area can be confirmed as growing faster than profit.**  ###  Revenue gr…</td></tr><tr><td>q17</td><td style="font-size:12px;max-width:260px;">Which expenses should I be questioning right now?</td><td>REFUSE</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#d97706;">partial</span></td><td>REF</td><td>66.31s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">💡 **Expense accounts and cost increases cannot be assessed from the tracked books**  ### 🔎 What the data supports - This dataset does not contain expense accoun…</td></tr><tr><td>q18</td><td style="font-size:12px;max-width:260px;">Have any expenses increased disproportionately compared with the business?</td><td>REFUSE</td><td><span style="color:#2563eb;font-weight:700;">hard_refusal</span></td><td><span style="color:#16a34a;">match</span></td><td>REF</td><td>1.96s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — No expense table or P&amp;L/COGS data is available, so expenses and their growth cannot be measured or compared to business gr…</td></tr><tr><td>q19</td><td style="font-size:12px;max-width:260px;">If you were reviewing these numbers with me as CFO, what would you challenge?</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L5</td><td>50.51s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q20</td><td style="font-size:12px;max-width:260px;">Forget the standard reports. Tell me what looks unusual in the financial data.</td><td>CLARIFY</td><td><span style="color:#dc2626;font-weight:700;">error</span></td><td><span style="color:#dc2626;">error</span></td><td></td><td>244.7s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q21</td><td style="font-size:12px;max-width:260px;">Something doesn&#x27;t look right in the numbers. Can you find any unusual movements that I should investigate?</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L5</td><td>48.45s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q22</td><td style="font-size:12px;max-width:260px;">Where are we taking the biggest financial risks without necessarily seeing them in the P&amp;L?</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L4</td><td>39.53s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q23</td><td style="font-size:12px;max-width:260px;">Are there any customers where the amount of credit we&#x27;re extending doesn&#x27;t make sense given their payment hist</td><td>CLARIFY</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#16a34a;">match</span></td><td></td><td>3.38s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q24</td><td style="font-size:12px;max-width:260px;">Which accounts have become materially different from what we normally see?</td><td>ANSWER</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#dc2626;">mismatch</span></td><td></td><td>2.41s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q25</td><td style="font-size:12px;max-width:260px;">Tell me where management attention is most needed financially.</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L4</td><td>45.91s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q26</td><td style="font-size:12px;max-width:260px;">If sales remain at the current level, what could hurt our cash flow over the next few months?</td><td>ANSWER</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#16a34a;">match</span></td><td>L3</td><td>42.14s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q27</td><td style="font-size:12px;max-width:260px;">What is the biggest difference between our accounting profit and the cash situation?</td><td>REFUSE</td><td><span style="color:#2563eb;font-weight:700;">hard_refusal</span></td><td><span style="color:#16a34a;">match</span></td><td>REF</td><td>1.83s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">I can&#x27;t answer that from your books — Accounting profit and cash situation require profit &amp; loss data, cost/COGS, and cash/bank balances, which are not availabl…</td></tr><tr><td>q28</td><td style="font-size:12px;max-width:260px;">Are there signs that our growth is consuming too much working capital?</td><td>ANSWER</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#16a34a;">match</span></td><td>L4</td><td>43.81s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr><tr><td>q29</td><td style="font-size:12px;max-width:260px;">Which customers or suppliers have the biggest financial concentration for us?</td><td>ANSWER</td><td><span style="color:#7c3aed;font-weight:700;">parked</span></td><td><span style="color:#dc2626;">mismatch</span></td><td></td><td>2.49s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">…</td></tr><tr><td>q30</td><td style="font-size:12px;max-width:260px;">What would worry you if you were looking at these numbers for the first time?</td><td>CLARIFY</td><td><span style="color:#16a34a;font-weight:700;">answered</span></td><td><span style="color:#dc2626;">mismatch</span></td><td>L4</td><td>211.92s</td><td style="font-size:11px;color:#6b7280;max-width:340px;">&gt; ⚠ Payments are not fully reconciled onto invoices — only ~3% of collected amounts are allocated to invoices in this workspace. Overdue and ageing are computed…</td></tr></tbody></table></div></div>
-</details>
-
-  <footer style="margin-top:32px;color:#64748b;font-size:12px;">
-    Static page rendered from derived artifacts (accounts/finance/runs/v1/) — no JavaScript.
-    Raw traces: <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/finance/runs/query_results_v1.jsonl">query_results_v1.jsonl</a> ·
-    Run v1 &middot; 2026-09-18
-  </footer>
+  </main>
 </div>
 </body>
 </html>

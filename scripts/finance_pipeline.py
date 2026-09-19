@@ -434,9 +434,11 @@ def latency_by_outcome(rows):
     out = {}
     for k, v in groups.items():
         v = sorted(v)
-        out[k] = {"median": round(v[len(v) // 2], 1),
-                  "p95": round(v[min(len(v) - 1, int(len(v) * 0.95))], 1),
-                  "min": round(min(v), 1), "max": round(max(v), 1), "n": len(v)}
+        n = len(v)
+        med = (v[n // 2] if n % 2 else (v[n // 2 - 1] + v[n // 2]) / 2)
+        out[k] = {"median": round(med, 1),
+                  "p95": round(v[min(n - 1, int(n * 0.95))], 1),
+                  "min": round(min(v), 1), "max": round(max(v), 1), "n": n}
     return out
 
 
