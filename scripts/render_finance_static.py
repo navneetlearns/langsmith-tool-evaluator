@@ -36,10 +36,13 @@ OUTCOME_LABEL = {
     "answered": "Answered", "hard_refusal": "Hard refusal",
     "parked": "Clarify park", "error": "Technical error",
 }
-# Dark 700-800 shades: readable as TEXT on white, and as BAR backgrounds with
-# white text. (Light 500-shades were invisible on both.)
+# Dark 700-800 shades: readable as TEXT on white. (Light 500-shades were
+# invisible on white; see OUTCOME_BAR for the bar's tinted backgrounds.)
 OUTCOME_COLOR = {"answered": "#166534", "hard_refusal": "#1e40af",
                  "parked": "#5b21b6", "error": "#991b1b"}
+# Outcome bar segment backgrounds: LIGHT tints + dark text (not dark bars).
+OUTCOME_BAR = {"answered": "#d9f0e2", "hard_refusal": "#dbe4fb",
+               "parked": "#e8dcf7", "error": "#f7dcdc"}
 VERDICT_LABEL = {"match": "Match", "partial": "Partial",
                  "mismatch": "Mismatch", "error": "Error"}
 VERDICT_COLOR = {"match": "#15803d", "partial": "#b45309",
@@ -299,7 +302,7 @@ def outcome_bar(b):
             continue
         pct = c / n * 100
         segs.append(
-            f'<a class="obar-seg" href="#results" style="background:{OUTCOME_COLOR[key]};width:{pct:.2f}%;" '
+            f'<a class="obar-seg" href="#results" style="background:{OUTCOME_BAR[key]};width:{pct:.2f}%;color:{OUTCOME_COLOR[key]};" '
             f'title="{OUTCOME_LABEL[key]} — click for per-query detail">'
             f'<span class="obar-n">{c}</span><span class="obar-lbl">{OUTCOME_LABEL[key]}</span></a>')
     return (f'<div class="obar" role="img" aria-label="Outcome bar — sums to {n}">'
@@ -436,9 +439,9 @@ h3{font-size:14.5px;margin:16px 0 6px;}
 .kpi-l strong{color:var(--ink);}
 .kpi-d{font-size:11.5px;color:var(--muted);line-height:1.5;margin-top:4px;}
 .obar{display:flex;height:64px;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin:12px 0 4px;}
-.obar-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-weight:800;text-decoration:none;min-width:44px;transition:filter .12s;}
-.obar-seg:hover{filter:brightness(1.12);}
-.obar-n{font-size:17px;} .obar-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;opacity:.92;}
+.obar-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;text-decoration:none;min-width:44px;transition:filter .12s;}
+.obar-seg:hover{filter:brightness(.97);}
+.obar-n{font-size:17px;} .obar-lbl{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;opacity:.9;}
 .obar-total{font-size:11px;color:var(--muted);}
 .psteps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0;}
 .pstep{background:var(--card);border:1px solid var(--border);border-top:3px solid var(--blue);border-radius:10px;padding:12px 14px;text-decoration:none;color:var(--ink);}
