@@ -162,9 +162,11 @@
   }
  ],
  "leaks": {
-  "flagged": 14,
+  "flagged": 20,
   "by_rule": {
-   "workspace_ref": 14
+   "workspace_ref": 14,
+   "data_availability": 5,
+   "requested_ref": 1
   }
  },
  "invariants": [

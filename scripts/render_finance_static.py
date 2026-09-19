@@ -224,6 +224,18 @@ def seed_findings(b):
                   "period-sensitive."),
         queries=[], done_when="invoice_date is captured and the latest-month window verified (C-05)",
         status="open", origin="manual"))
+    f.append(dict(id="F10", component="Grounding & formatting", severity="low",
+        title="Answers lean on cookie-cutter data-availability phrasing",
+        evidence=("Data-availability phrasing ('supplied|returned|provided rows|results', heuristically "
+                  "detected by the leak rule of the same name) repeats across q1 q15 q19 q25: q1 'total "
+                  "outstanding balance is not present in the supplied rows', q15 'unavailable for every month "
+                  "in the supplied results', q19 'authoritative outstanding balance is not in the returned "
+                  "results', q25 'provided rows do not include a portfolio-wide outstanding total'; q19 also "
+                  "echoes 'requested'. Process transparency is fine — the cookie-cutter repetition across "
+                  "isolated threads is the signal."),
+        queries=[1, 15, 19, 25],
+        done_when="answers name missing data with query-specific phrasing, not the same supplied/returned rows boilerplate",
+        status="open", origin="auto"))
     return f
 
 
@@ -301,7 +313,8 @@ def kpi_cards(b, findings):
     open_di = sum(1 for f2 in findings if f2["component"] in ("Data & aggregation layer",)
                   and f2["status"] == "open")
     cards = [
-        ("Decision-grade answers", f"{s['value']['L4_L5']}/30", "answered at L4/L5 (13 of 20 judged) — L-ladder: L1 fetch → L5 proactive CFO partner"),
+        ("L4/L5 by skeleton coverage (element presence)", f"{s['value']['L4_L5']}/30",
+         "13 of the 20 judged answers; grades measure element PRESENCE against pre-written accountant skeletons, not numeric correctness — limit: one in-session LLM judge, no ground truth (see §6)"),
         ("Behavior matched expectation", f"{v['match']}/30",
          f"expected-vs-observed verdicts; +{v['partial']} partial (hedged) · {v['mismatch']} mismatch · {v['error']} error"),
         ("Wrongly parked by clarify gate", f"{wrongly_parked}/30",
@@ -373,7 +386,8 @@ def error_chips(b):
     errs = val.get("errors") or {}
     if not errs:
         return "<code>none</code>"
-    extra = ["HallucinatoryFinancialReasoning: 0", "EntityCausationMisidentification: 0"]
+    extra = ["OperationalProcessAwarenessBarrier: 0", "HallucinatoryFinancialReasoning: 0",
+         "EntityCausationMisidentification: 0"]
     return " ".join(f"<code>{esc(k)} x{c}</code>" for k, c in sorted(errs.items())) + " " + \
            " ".join(f"<code>{esc(x)}</code>" for x in extra)
 
@@ -477,10 +491,12 @@ def section_summary(b, findings):
     s = b["summary"]; o = s["outcomes"]; v = s["vs_expected"]; val = s["value"]
     verdict = (f'<div class="verdict"><span class="s">One-sentence verdict:</span> '
                f'{o["answered"]} of 30 CFO questions got substantive answers and '
-               f'<strong>{val["L4_L5"]}/30 (43%)</strong> were decision-grade (L4/L5 on the value ladder); '
+               f'<strong>{val["L4_L5"]}/30 (43%)</strong> reached L4/L5 on the value ladder '
+               f'(graded by skeleton coverage — element presence, not numeric correctness); '
                f'{o["hard_refusal"]} clean boundary-named refusals + {o["parked"]} clarify-parks; '
-               f'<strong>no fabricated figures detected</strong> (in-session judge, 20 answers judged) — '
-               f'the main defect is <strong>cross-answer template reuse</strong>, not answer-level quality. '
+               f'<strong>no fabricated figures detected</strong> (1 judge, 20 answers judged) — '
+               f'but see <a href="#f2">F2</a>: numbers can co-exist incoherently even with zero fabrication. '
+               f'The main defect is <strong>cross-answer template reuse</strong>, not answer-level quality. '
                f'Refusals about payables, expenses, P&amp;L/COGS and cash/bank reflect <strong>data gaps in '
                f'the workspace</strong>, not agent bugs.</div>')
     header3 = (f'<h3>Data integrity (what not to trust)</h3>'
@@ -525,7 +541,8 @@ def section_findings(b, findings):
             col = SEV_COLOR[f2["severity"]]
             qs = " ".join(f'<a href="#q{q}">q{q}</a>' for q in sorted(set(f2["queries"])) if 1 <= q <= 30) or "—"
             origin_flag = f'<span class="flag {"auto" if f2["origin"] == "auto" else "manual"}">{f2["origin"]}</span>'
-            html.append(f'<details class="finding sev-{f2["severity"]}">'
+            find_id = f2["id"].lower()  # f1..f9, used as anchor target
+            html.append(f'<details class="finding sev-{f2["severity"]}" id="{find_id}">'
                         f'<summary><span style="color:{col};font-weight:800;">{f2["id"]}</span> '
                         f'<span>{esc(f2["title"])}</span> {origin_flag}<span class="flag open">{f2["status"]}</span></summary>'
                         f'<div class="details-body">'
@@ -536,8 +553,8 @@ def section_findings(b, findings):
     # What works
     html.append("<h3>What works (do not regress)</h3>")
     html.append('<div class="info-card">'
-                '<strong>Zero fabrication</strong> — no invented profit/cash/expense figures across all 30 asks (hard '
-                'refusals or hedged boundaries instead). <strong>Reconcile-guard discipline</strong> — ageing/overdue '
+                '<strong>No fabricated figures detected</strong> — none in 20 judged answers (1 judge); '
+                'this is not a correctness guarantee (see <a href="#f2">F2</a>). <strong>Reconcile-guard discipline</strong> — ageing/overdue '
                 'never headlined. <strong>Clean boundary-naming refusals</strong> (“Supplier payables … not reliably '
                 'available”) that tell the user exactly which data is absent. <strong>Concrete actions</strong> in every '
                 'answer (call today, dated commitments, escalation triggers). <strong>L5 benchmarks to preserve:</strong> '
@@ -764,10 +781,15 @@ def section_evaluated(b):
   </div>
   <div class="info-card">
     <h3>Leak hits — with the matched string per hit</h3>
-    <div class="desc">14 hits, all rule <code>workspace_ref</code>: the reconcile warning banner
-    (“…in this workspace”) trips the detector in every answer that carries it. This is intentional
-    user-facing text, on a review allowlist — <strong>not</strong> a PII leak. Counts are per-response
-    regex hits; the rule and matched string are shown so each hit is auditable.</div>
+    <div class="desc"><strong>{b["summary"]["leaks"]["flagged"]} hits</strong> across
+    {len(b["summary"]["leaks"]["by_rule"])} rules — {" · ".join(f"<code>{esc(k)}</code> x{v}" for k, v in sorted(b["summary"]["leaks"]["by_rule"].items()))}.
+    All rules are heuristic regexes over response text; every hit is a <strong>likely FALSE POSITIVE</strong>:
+    <code>workspace_ref</code> trips on the intentional reconcile warning banner (user-facing text, review
+    allowlist); <code>data_availability</code> trips when the agent references the rows/results it was given
+    (process transparency — q1 q15 q19 q25, see <a href="#f10">F10</a>); <code>requested_ref</code> trips when
+    the agent echoes what the question asked (q19). None reference live internal state, credentials or
+    other-workspace data; the matched string per hit is shown so each one is auditable, and the detector
+    is unchanged — flagged per hit, resolved manually.</div>
     <div class="table-wrap"><table><thead><tr><th>Query</th><th>Rule</th><th>Matched string</th><th>Note</th></tr></thead><tbody>{leaks}</tbody></table></div>
   </div>
   <div class="info-card">
@@ -785,12 +807,33 @@ def section_labels(b):
     tier_n = Counter(r["tier"].rstrip("*") for r in rows)
     disputed = [q for q, t in TIERS.items() if t.endswith("*")]
     aging_q = [r["query_index"] for r in rows if (r.get("expected_tool") or "") == "TOOL:aging"]
+    # Error-code taxonomy: definitions quoted from FinGAIA (arXiv:2507.17186v2)
+    # Appendix B "Examples for Error Analysis" (the paper's five error types);
+    # Craft is a LOCAL EXTENSION not present in the paper; local hit counts
+    # come from the judge file. See the taxonomy note below the table.
     err_defs = [
-        ("Craft", "answer-structure/format defects (refusal '..' glitches, q17 footer) — 5 hits, 4 answers"),
-        ("FinancialTerminologicalBias", "'days days' unit duplication — 5 hits"),
-        ("DataTypeHandling", "literal '[unverified]' placeholder emitted to the user — 1 hit"),
-        ("HallucinatoryFinancialReasoning", "0 — no invented figures"),
-        ("EntityCausationMisidentification", "0 — no entity blamed wrongly from data"),
+        ("Data Type Handling Error (paper)",
+         "agent triggers when the type/format of input data falls outside its supported range (e.g. video files, "
+         "executable programs), rendering it unable to process the task — a functional limitation, not a logic "
+         "error. <strong>This run: 1 local hit on q1</strong> (literal '[unverified]' placeholder) — see note."),
+        ("Financial Terminological Bias (paper)",
+         "comprehension flaws in the professional financial terminology system; confuses similar regulatory "
+         "definitions, misapplies calculation logic, or disregards context sensitivity. <strong>This run: 5 hits</strong> "
+         "(judge applied it to duplicated 'days days' unit tokens — format-level reuse of the paper concept)."),
+        ("Operational Process Awareness Barrier (paper)",
+         "cognitive obstacles regarding standardized financial business processes: misinterprets operational "
+         "requirements of regulatory rules, omits key compliance steps, or reverses business-execution sequence. "
+         "<strong>This run: 0 hits</strong> (added to this page's taxonomy per the paper; the local judge did not use it)."),
+        ("Hallucinatory Financial Reasoning (paper)",
+         "agent generates false financial propositions without reliable evidence (factual/logical/data "
+         "hallucinations). <strong>This run: 0</strong> — the 'no fabricated figures detected' claim above is exactly "
+         "this code's absence."),
+        ("Entity-Causation Misidentification (paper)",
+         "agent mistakes superficial correlations for fundamental causal drivers or confuses the sequential logic "
+         "of business processes. <strong>This run: 0</strong>."),
+        ("Craft — LOCAL EXTENSION (not in FinGAIA)",
+         "answer-structure/format defects the paper does not taxonomize: refusal '..' glitches (q12 q13 q18 q27), "
+         "q17's '0 figures verified' footer on a refusal, template-reuse artifacts. <strong>This run: 5 hits</strong>."),
     ]
     err_html = "".join(
         f"<tr><td><code>{esc(n)}</code></td><td>{esc(d)}</td></tr>" for n, d in err_defs)
@@ -833,19 +876,28 @@ def section_labels(b):
   user-approved on the Phase 3 review; the Phase 1 scorecard initially tagged q2/q15/q16/q27 differently
   and that disagreement is deliberately surfaced, not resolved here.</div>
   <div class="table-wrap"><table><thead><tr><th>Label family</th><th>Distribution</th></tr></thead><tbody>{lab}</tbody></table></div>
-  <h3>Tier definitions (FinGAIA business-depth)</h3>
-  <div class="table-wrap"><table><thead><tr><th>Tier</th><th>Definition (as used in this eval)</th><th>Queries</th><th>Example</th></tr></thead><tbody>
-  <tr><td>T1</td><td>operational fetch / refusal</td><td>{tier_n["T1"]}</td><td>q10 – quantify overdue recoverability</td></tr>
-  <tr><td>T2</td><td>decision support</td><td>{tier_n["T2"]}</td><td>q9 – aggressive recovery plan</td></tr>
-  <tr><td>T3</td><td>strategic risk</td><td>{tier_n["T3"]}</td><td>q27 – profitability &amp; cash verdict</td></tr>
+  <h3>Tier definitions (adapted from FinGAIA, arXiv:2507.17186v2)</h3>
+  <div class="table-wrap"><table><thead><tr><th>Tier</th><th>FinGAIA definition (steps · tools)</th><th>Queries</th><th>Example here</th></tr></thead><tbody>
+  <tr><td>T1</td><td>L1 Basic Business Analysis — "structurally simple, typically requiring no more than five steps and the use of only one or two tools"</td><td>{tier_n["T1"]}</td><td>q10 – quantify overdue recoverability</td></tr>
+  <tr><td>T2</td><td>L2 Asset Decision Support — "increased reasoning steps from 5 to 7, and the integration of more than two tools"</td><td>{tier_n["T2"]}</td><td>q9 – aggressive recovery plan</td></tr>
+  <tr><td>T3</td><td>L3 Strategic Risk Management — "a greater number of steps around 10 and require coordinated use of multiple tools, including sequential tool invocation and parameter tuning"</td><td>{tier_n["T3"]}</td><td>q27 – profitability &amp; cash verdict</td></tr>
   </tbody></table></div>
-  <div class="todo-box"><strong>TODO (FinGAIA definitions &amp; citation):</strong> the workspace has no local
-  copy or notes of the FinGAIA paper (arXiv:2507.17186). Tier and error-code definitions above are quoted
-  from the local eval artifacts (VALUE_SCORECARD_phase1.md, VALUE_JUDGE_phase2.md, VALUE_GRADE_phase3.md),
-  which cite the paper — they were NOT invented here, but the paper's own wording must be verified and
-  cited before the definitions are treated as authoritative.</div>
+  <div class="note-box"><strong>Adapted from FinGAIA, not FinGAIA itself:</strong> the paper's tiers are defined
+  by measured <em>steps and tool counts</em> over 407 expert-validated tasks with ground-truth answers. This run
+  has <strong>no ground-truth answers and no tool events</strong> (the finance stream is backend SQL), so the tier
+  tags above reflect the question's intended business depth per the user's labels, mapped onto the paper's ladder —
+  not a measured step/tool count. Definition text and the error taxonomy below are quoted from the paper
+  (arXiv:2507.17186v2, Appendix B "Examples for Error Analysis"); the local artifacts, not the paper, assigned the
+  per-query tags. The paper's own evaluation "primarily relied on manual review" of every answer; this run is
+  LLM-only with 0 human-reviewed ratings (see §6).</div>
   <h3>Error-code taxonomy (as used by the judge)</h3>
   <div class="table-wrap"><table><thead><tr><th>Code</th><th>Meaning here</th></tr></thead><tbody>{err_html}</tbody></table></div>
+  <div class="desc"><strong>DataTypeHandling discrepancy (surfaced, not resolved):</strong> the paper defines
+  Data Type Handling Error as input types/formats outside the supported range (video, executables). The single
+  local hit is <strong>q1</strong>, where the judge tagged the literal <code>[unverified]</code> placeholder —
+  a grounding/format artifact, not an unsupported input file (this run had no file inputs at all). Under the
+  paper's definition that hit is a Craft-class format defect, and the paper-defined count here is 0. Kept as
+  the judge recorded it; the taxonomy note above is the correction.</div>
   <h3>Disputed labels (surfaced, not resolved)</h3>
   <div class="note-box">
   <strong>Tier conflict:</strong> VALUE_SCORECARD_phase1.md tagged q2 T1, q15 T2, q16 T2, q27 T1; the
@@ -885,9 +937,12 @@ def section_limits(b):
   </div>
   <div class="info-card">
     <strong>What this page does not claim:</strong> no claim that figures are ground-truth correct;
-    no fabrication <em>guarantee</em> — "no fabricated figures detected (20 answers judged)" is the
+    no fabrication <em>guarantee</em> — "no fabricated figures detected (1 judge, 20 answers)" is the
     honest form; no estimate of run-to-run variance; no coverage of multi-turn behavior or other
     workspaces. The "44.2s average" of the old readout is not used — latency is shown by outcome.
+    FinGAIA (arXiv:2507.17186v2) relied primarily on <em>manual review</em> of every answer,
+    supplemented by LLM-as-judge; this run is the opposite — LLM-only grading, <strong>0/20
+    human-reviewed</strong> — so label, tier and error-code values here carry that confidence gap.
   </div>
 </section>""".format(prov=prov, judged=j["judged"])
 
@@ -955,6 +1010,16 @@ def shell(b, sections_html):
         ("reproduce", "7 · Reproduce"),
     ]
     nav_html = "".join(f'<a href="#{a}">{t}</a>' for a, t in nav)
+    # Plain (non-f) string so the JS braces don't collide with the shell f-string.
+    hash_js = ("<script>\n"
+               "// open a <details> row/finding/label card when its id arrives via #fragment\n"
+               "// (browsers scroll to the element but do NOT open a closed details natively)\n"
+               "(function(){function o(){var h=location.hash.slice(1);if(!h)return;\n"
+               "var e=document.getElementById(h);\n"
+               "if(e&&e.tagName==='DETAILS'&&!e.open)e.open=true;}\n"
+               "window.addEventListener('DOMContentLoaded',o);\n"
+               "window.addEventListener('hashchange',o);})();\n"
+               "</script>")
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -984,6 +1049,7 @@ def shell(b, sections_html):
     </div>
   </main>
 </div>
+{hash_js}
 </body>
 </html>"""
 

@@ -57,8 +57,20 @@ HEDGE_MARKERS = [
 
 RULE_PATTERNS = {
     "workspace_ref": re.compile(r".{0,60}\bworkspace\b.{0,60}", re.I | re.S),
+    "data_availability": re.compile(r".{0,50}\b(supplied|returned|provided)\s+(rows|results)\b.{0,50}", re.I | re.S),
+    "requested_ref": re.compile(r".{0,50}\brequested\b.{0,50}", re.I | re.S),
     "ui_component": re.compile(r".{0,60}\b(card|result preview|show more)\b.{0,60}", re.I | re.S),
     "tool_capability": re.compile(r".{0,60}\b(available tools|current tools|i have access to)\b.{0,60}", re.I | re.S),
+}
+
+# Per-rule note explaining WHY a hit is (or is not) a real leak. The finance
+# answers carry several harmless literal phrases; each hit shows its note.
+RULE_NOTES = {
+    "workspace_ref": "reconcile banner (intentional user-facing warning, review allowlist) \u2014 likely FALSE POSITIVE",
+    "data_availability": "agent references the supplied/returned/provided rows it was given (process transparency) \u2014 expect FALSE POSITIVE",
+    "requested_ref": "agent echoes what the question requested (mirrors the ask, not internal state) \u2014 expect FALSE POSITIVE",
+    "ui_component": "agent names a UI component (card/preview/show more) \u2014 surface phrasing, not internal state \u2014 likely FALSE POSITIVE",
+    "tool_capability": "agent mentions tool capability in prose (available tools / i have access to) \u2014 interface chatter \u2014 likely FALSE POSITIVE",
 }
 
 
@@ -136,7 +148,7 @@ def derive(version):
                     "query_index": qi, "rule": rule,
                     "matched": m.group(0).strip(),
                     "context": f"q{qi} {'answered' if out == 'answered' else out}",
-                    "note": "reconcile banner (intentional user-facing warning) \u2014 review allowlist",
+                    "note": RULE_NOTES[rule],
                 })
         rows.append({
             "query_index": qi,

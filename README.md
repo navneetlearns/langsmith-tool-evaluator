@@ -74,6 +74,23 @@ page is verified. Verdict provenance is surfaced on-page: 13 match / 4 partial /
 error (recomputed from the JSONL, not the earlier hand count). Other accounts build byte-identical
 pages (verified head-vs-head). See `accounts/finance/runs/v1/summary.json`.
 
+**FinGAIA grounding + relabels + leak rules (2026-09-19, pass 3):** TODO replaced with the actual
+paper (arXiv:2507.17186v2): tiers now carry the paper's step/tool-count definitions (L1 ≤5 steps
+1-2 tools; L2 5-7 steps >2 tools; L3 ~10 steps coordinated multi-tool) with an explicit
+"adapted from FinGAIA — no ground-truth answers, no tool events" note; error taxonomy updated to
+the paper's five Appendix B types (Data Type Handling, Financial Terminological Bias, Operational
+Process Awareness Barrier, Hallucinatory Financial Reasoning, Entity-Causation Misidentification)
+with Craft flagged as a LOCAL EXTENSION; the single DataTypeHandling hit (q1 placeholder) is
+surfaced as not matching the paper's unsupported-input-type definition; limits note the paper
+relied primarily on manual review vs this run's LLM-only 0-human-reviewed grading. KPI "13/30
+decision-grade" relabeled "L4/L5 by skeleton coverage (element presence)" with a limit note.
+"Zero fabrication" claims reworded to "none detected (1 judge, 20 answers)" and cross-linked to F2.
+Leak section: every hit labeled likely-false-positive with matched strings; new heuristic rules
+`data_availability` (supplied/returned/provided rows|results — 5 hits) and `requested_ref`
+(requested — 1 hit) added to finance_pipeline.py with per-rule notes; new finding F10 covers the
+cookie-cutter data-availability phrasing in q1 q15 q19 q25. Deep links now open the target
+`<details>` row on load (tiny inline hash-opener, verified by QA). QA suite now 25 checks, all pass.
+
 **QA lesson (2026-09-19, user-caught bugs):** structural checks (row counts, section markers, zero
 console errors) do NOT catch wrong cell values or dead links — they passed while the behavior matrix
 showed all-zeros and the banner JSON links 404'd. Hard build failures now: (1) cross-source
