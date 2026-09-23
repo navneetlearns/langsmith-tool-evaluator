@@ -1,19 +1,72 @@
 {
-  "workspace": "hirafoods (c331ac11-c3e8-4d42-a8d6-b8b04127354c, phone 4040505050)",
-  "harvested": "2026-09-18 live discovery probes",
-  "source_notes": "10 customer accounts + 9 products from HiraFoods_Synthetic_WhatsApp_Groups_Report.md v1.1 (grounded in Tally sales view + product master); Silver Body Lotion Classic + Golden Shampoo Premium from live finance top_products probe; invoices 12851-12859 from live order_to_dispatch list_invoices probe (239 invoices total in workspace); GST-0 zero-rate slab dominant (live finance gst_by_rate: Rs.0 GST on Rs.16,01,31,807 taxable value).",
+  "workspace": "d53279c2-0f92-42ea-876d-1c57770f5184",
+  "seller": "Zainab Enterprises",
+  "harvested": "2026-09-23",
+  "harvest_sources": [
+    "accounts/ar-agent/harvest_results_v1.json (round 1: balances, invoices, position, alias resolution)",
+    "accounts/ar-agent/harvest_results_v2.json (round 2: invoice numbers, chat claims, promises, reported-not-in-ERP)",
+    "accounts/ask-groups/RECON_DATA_INVENTORY.md (group-side aliases)"
+  ],
+  "scope_note": "ANCHORED entity set for the eval queries — NOT a full ERP dump. ERP itself holds 1,632 customers (545 with outstanding). Every name here was either resolved by the agent or surfaced in its answers.",
+  "position": {
+    "as_of": "2026-09-21",
+    "total_outstanding_cr": 233.22,
+    "overdue_cr": 228.95,
+    "customers_with_outstanding": 545,
+    "ageing_90plus_cr": 100.33,
+    "ageing_31_60_cr": 48.07,
+    "worklist_as_of": "2026-09-22",
+    "worklist_ranked": 10,
+    "worklist_held": 32
+  },
   "customers": [
-    "Om Enterprises Traders 421", "Sai Agencies & Co 1051", "Ganesh Wholesalers Pvt Ltd 955",
-    "Krishna Traders LLP 125", "Durga Traders Traders 811", "Sri Retail & Co 196",
-    "Lakshmi Distributors LLP 20", "Jai Wholesalers & Co 918", "Radha Agencies LLP 552",
-    "Shree Retail Pvt Ltd 581", "Radha Agencies Pvt Ltd 787"
+    {"name": "Interworld Furnishings (I) Pvt. Ltd.", "aliases": ["Interworld Furnishings", "INTERWORLD + ZAINAB"], "outstanding_cr": 7.24, "ageing_days": 91, "source": "ar_worklist"},
+    {"name": "PURPLE PATCH STUDIO", "aliases": ["Purple Patch purchase team"], "outstanding_cr": 5.54, "ageing_days": 91, "source": "ar_worklist", "note": "no promise recorded"},
+    {"name": "HOMZ COUTURE", "outstanding_cr": 4.98, "ageing_days": 91, "source": "ar_worklist", "note": "no promise recorded"},
+    {"name": "EMBELLISH", "outstanding_cr": 4.69, "ageing_days": 91, "source": "ar_worklist", "note": "no promise recorded"},
+    {"name": "RICH DECOR", "outstanding_cr": 4.59, "ageing_days": 91, "source": "ar_worklist", "note": "no promise recorded"},
+    {"name": "ONCE & AGAIN", "source": "ar_promises", "note": "payment commitment/acknowledgement found, promised by <date>"},
+    {"name": "KRISHNA COATED FABRICS", "source": "ar_payments_reported", "note": "WhatsApp-reported payment NOT in ERP (10-claim set, total ₹7,41,130)"},
+    {"name": "POPULAR MATTRESS & CLOTH STORE", "source": "ar_payments_reported", "note": "WhatsApp-reported payment NOT in ERP"},
+    {"name": "TRENDS FURNISHING", "aliases": ["Trends Furnishings", "TRENDS FURNITURES + ZE"], "source": "ar_payments_reported", "note": "WhatsApp-reported payment NOT in ERP"},
+    {"name": "TENON", "source": "ar_payments_reported", "note": "WhatsApp-reported payment NOT in ERP"},
+    {"name": "R DECOR SPACE", "source": "ar_payments_reported", "note": "WhatsApp-reported payment NOT in ERP"},
+    {"name": "HARI OM FURNISHING HOUSE", "source": "ar_payments_reported", "note": "WhatsApp-reported payment NOT in ERP"}
   ],
-  "products": [
-    "Silver Body Lotion Classic", "Golden Shampoo Premium", "Golden Biscuits Lite",
-    "Fresh Shampoo Fresh", "Classic Toothpaste Strong", "Sunrise Juice Max",
-    "Diamond Pasta Regular", "Diamond Namkeen Classic", "Ultra Biscuits Regular",
-    "Diamond Juice Strong", "Power Soap Strong"
+  "unresolved_in_balance_window": [
+    {"name": "Casa Walls", "note": "group alias; agent could not locate in balance records (used get_receivables window, not search_customers_master)"},
+    {"name": "Palette", "note": "agent could not verify in balance records; may exist in master"},
+    {"name": "Whistling Wood Enterprises", "note": "group alias; not reliably located"},
+    {"name": "MOHANLAL COMPANY FURNISHINGS", "note": "group alias; not verified"}
   ],
-  "invoices": [12851, 12852, 12853, 12854, 12855, 12856, 12857, 12858, 12859],
-  "gst": {"dominant_slab": "GST-0 (zero rate)", "zero_rate_taxable_value": 160131807}
+  "invoices": [
+    {"number": "17369", "amount_inr": 580.26},
+    {"number": "17371", "amount_inr": 3.75},
+    {"number": "17353", "amount_inr": 66.84},
+    {"number": "17348", "amount_inr": 137.73},
+    {"number": "17346", "amount_inr": 27.73}
+  ],
+  "invoice_notes": {
+    "window_total": 2716,
+    "mismatch_anchor": {"number": "15293", "source": "WhatsApp (B NO 15293, NEFT ₹880 claim by hiteshvthakkar)", "erp_status": "NOT FOUND in ERP — genuine WhatsApp-vs-ERP mismatch anchor"},
+    "cheque_anchor": "Vicky Jain: 'Chq leke gaya tha 2nd sept ko. Not deposited yet??' — 02-Sep cheque, deposit status unknown"
+  },
+  "amount_anchors": [
+    {"what": "top customer balance", "value": "₹1.22Cr"},
+    {"what": "Zainab Enterprises mentioned pending", "values": ["₹2,02,578", "₹15,245"], "source": "search_threads"},
+    {"what": "group-side payment amount", "value": "₹5,192", "source": "ask-groups recon"},
+    {"what": "reported-not-in-ERP total", "value": "₹7,41,130", "source": "ar_payments_reported"}
+  ],
+  "gst": {},
+  "tools_observed": [
+    "get_receivables (mode=customers|invoice)",
+    "list_invoices (start_date/end_date/doc_number/page)",
+    "ar_position",
+    "ar_worklist (limit/include_held)",
+    "ar_promises",
+    "ar_payments_reported",
+    "search_threads",
+    "search_customers_master"
+  ],
+  "tools_not_observed": ["query_ar*", "query_ar_financials", "get_ar_evidence", "resolve_ar_identity", "get_paid_collections", "get_ar_conversation_snapshot"]
 }

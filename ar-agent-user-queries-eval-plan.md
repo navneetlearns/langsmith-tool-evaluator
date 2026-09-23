@@ -52,19 +52,29 @@ grade against expected labels, report to owners.
   unlike finance (so tool grading applies here).
 - Sources: **ERP + WhatsApp groups**. User: anyone in **upper management**, plain business
   language. Answers "who owes what and what they said about it".
-- Tool family: `query_ar` (position | worklist | objects | activity),
-  `query_ar_financials` (invoices | customer_balances), `get_ar_evidence`,
-  `get_ar_schema`, `resolve_ar_identity`, `get_paid_collections`,
-  `get_ar_conversation_snapshot`, whatsapp resolve/prepare (drafts never send).
+- Tool family (design-notes era): `query_ar` / `query_ar_financials` / `get_ar_evidence` /
+  `resolve_ar_identity` / `get_paid_collections` / `get_ar_conversation_snapshot`.
+  **2026-09-23 live discovery on Zainab — the DEPLOYED surface differs:** `get_receivables`
+  (mode customers|invoice), `list_invoices` (start/end date, doc_number, page),
+  `ar_position`, `ar_worklist` (limit/include_held), `ar_promises` (payment
+  commitments/acknowledgements), `ar_payments_reported` (WhatsApp-reported payments NOT in
+  ERP — the reconciliation core; live answer: 10 claims, ₹7,41,130), `search_threads`
+  (WhatsApp conversations), `search_customers_master` (identity resolution). The `query_ar*`
+  family and `resolve_ar_identity` were NOT observed. Resolver inconsistency: named lookups
+  sometimes fall back to windowed `get_receivables` instead of `search_customers_master`
+  (Casa Walls/Palette/Whistling Wood/Mohanlal failed this way; Interworld Furnishings
+  resolved via search_customers_master).
 - Presentation contract: ONE short plain-language sentence per result (the APP renders the
   table/cards); NEVER tool names/dataset names/SQL/run IDs/source metadata in response text;
   max 5 rows; empty = what was searched + useful next step; stale snapshot → "the latest list
   is from <date>" (never the word "stale"); hedged wording for unconfirmed claims
   (reported ≠ bank-verified, kept/entered ≠ settled, unknown amount ≠ zero); no forecasts
   (DSO, credit limits, bank matching, cash).
-- identity CLARIFY: `resolve_ar_identity` shortlist ALWAYS requires explicit user selection
-  (even a one-row list) — a named-customer query with ambiguous/truncated name parks for
-  selection = CLARIFY turn (two-turn run).
+- identity CLARIFY (design-notes era): `resolve_ar_identity` shortlist required selection.
+  **2026-09-23 on Zainab: NO shortlist tool observed** — referent-less/ambiguous rows get an
+  ask-back or an honest not-found ANSWER; user set labels CLARIFY only for the 2 truly
+  referent-less rows (expected_tool ASK_BACK), everything named → ANSWER with resolution via
+  search_customers_master when the name is close to master.
 **Real entities: hirafoods INVALID for this eval.** The committed entities.json (harvested
   2026-09-18 from hirafoods: 11 customers incl. the two-Radha pair, 11 products, invoices
   12851–12859, GST-0) is workspace-specific and must NOT seed this eval. Phase 1 harvests the
@@ -131,7 +141,20 @@ driven by the same group conversations.
 - Known gap reproduced: "how many groups i have" still intro-fallbacks (scope gap) — an
   ask-groups eval finding; does not block AR.
 
-## Phase 1 — Ingest & label the user query set
+## Phase 1 — Ingest & label the user query set (EXECUTED 2026-09-23, awaiting label review)
+
+Round-1 + round-2 harvest probes (probe_ar_harvest.py, probe_ar_harvest2.py →
+harvest_results_v1.json + v2.json) run on Zainab: **data-presence gate PASSED**
+(ar_position ₹233.22Cr across 545 customers, ₹228.95Cr overdue, worklist 10 ranked / 32
+held; list_invoices 2,716 in window; ar_payments_reported 10 claims ₹7,41,130).
+`entities.json` REBUILT for Zainab (anchored set: worklist top accounts, reported-claim
+customers, ONCE & AGAIN promise, invoices 17369/17371/17353/17348/17346, mismatch anchor
+B NO 15293; hirafoods values gone). User's 55 queries ENRICHED per instruction (Palette →
+TRENDS FURNISHING; Bill 12798 → B NO 15293; pronouns anchored on real invoices/customers;
+2 rows kept referent-less as CLARIFY/ask-back tests) + 1 identity-resolution gate row =
+**56 queries** in `scripts/gen_ar_user_queries.py` (gates: placeholder, anchor↔entities,
+≥1 CLARIFY, ≥1 invoice-anchored) → queries.xlsx; generated-70 draft backed up as
+queries.generated-70.xlsx. **BLOCKED on user label review before the live run** (plan rule).
 
 **Files:**
 - Input: user's query list (verbatim).
@@ -225,11 +248,11 @@ chatTemplateCode: "collection_and_account_receivables"   # REAL code, not ""
 
 ## Phase 3 — Probe gate (interface-changed rule; BEFORE the run)
 
-- [ ] **Step 0 (HARD data-presence gate):** the new workspace must have AR signal data to eval
-  at all. One `query_ar` objects probe (payment claims) + one worklist/position probe. BOTH
-  empty → STOP and report "workspace has no AR signal/WhatsApp data — cannot eval AR here";
-  do not run. (No-data is a workspace finding, never an eval failure — same frame as the
-  hirafoods HiraFoods v2/v3 product-data findings.)
+- [x] **Step 0 (HARD data-presence gate): PASSED 2026-09-23 via the Phase-1 harvest** —
+  ar_position/ar_worklist returned rows (₹233.22Cr / 545 customers / 10 ranked), ar_promises
+  found commitments, ar_payments_reported found the 10-claim mismatch set, search_threads
+  pulled WhatsApp conversations. Zainab has AR signal data; no 402 quota errors on 13 live
+  queries.
 - [ ] **Step 1:** ONE cheap live query via the runner (`--only <1 cheap index>`) and dump the
   RAW SSE (event:+data: split) for `collection_and_account_receivables`. Verify and RECORD:
   - init 200; agentic events present (`status.phase tool_start/tool_done`); response now
