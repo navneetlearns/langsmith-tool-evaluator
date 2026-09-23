@@ -1,0 +1,17 @@
+# Ask Groups Agent — Copilot Eval Account Config (Zainab Enterprises)
+# Workspace: d53279c2-0f92-42ea-876d-1c57770f5184 (the trace workspace: 570 groups, fabric trading)
+# Credentials provided 2026-09-23 by user for eval testing (NOT a prod account — eval workspace).
+account_name: "AskGroups"
+phone: "9029012960"
+workspace_id: "d53279c2-0f92-42ea-876d-1c57770f5184"
+seller_details:
+  firstName: "Zainab"
+  mobile: "919029012960"
+wa_config_id: "d53279c2-0f92-42ea-876d-1c57770f5184_919029012960"
+llm_provider: "gpt-5.4-nano"   # informational — parse/supervisor pins are nano-family per traces
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+# REAL lane for this agent (chatTemplateCode "ask_chats" -> threads_search -> chats_agent).
+# Trace-verified init; do NOT fall back to "" (empty string routes to the general lane).
+chatTemplateCode: "ask_chats"

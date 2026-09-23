@@ -1,0 +1,18 @@
+# AR Agent — Copilot Eval Account Config (Zainab Enterprises)
+# Workspace: d53279c2-0f92-42ea-876d-1c57770f5184 — the eval workspace (NOT hirafoods).
+# hirafoods (c331ac11) has NO WhatsApp data -> AR value surface (claims/commitments/evidence)
+# would be empty there. Zainab has the tagged group corpus (570 groups) the AR WhatsApp leg derives from.
+# Credentials provided 2026-09-23 by user for eval testing.
+account_name: "AR Agent"
+phone: "9029012960"
+workspace_id: "d53279c2-0f92-42ea-876d-1c57770f5184"
+seller_details:
+  firstName: "Zainab"
+  mobile: "919029012960"
+wa_config_id: "d53279c2-0f92-42ea-876d-1c57770f5184_919029012960"
+llm_provider: "gpt-5.6-luna"   # informational — AR ReAct loop runs luna per design notes
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+# REAL code, not "" — empty string routes to the general lane. AR = collection_and_account_receivables.
+chatTemplateCode: "collection_and_account_receivables"
