@@ -36,6 +36,8 @@ python3 build_dashboard.py --account finance
 | HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v4 rerun (79/80, 13.5s) |
 | Collections (AR agent) | 80 | 10 | Receivables + WhatsApp confirmation (get_receivables) | v2 (80/80, 16.9s) |
 | Finance Agent | 30 | 1 | CFO insight questions, ERP-only, clarify gate | v1 (2026-09-18): 20 answered / 9 clarify-parks / 1 fail |
+| Ask Groups Agent | 12 (recon) | 1 | WhatsApp-group message traffic (Zainab, ask_chats lane) | recon v1 (2026-09-23): 12/12, ~14s — RECON, not graded; data inventory only |
+| AR Agent | 56 (user set, ready) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | NOT YET RUN (awaiting label review) |
 
 **Agent-template evals (2026-09-18):** deployed `chatTemplateCode` agents (finance,
 collection_and_account_receivables, order_to_dispatch, general) run through
@@ -45,8 +47,25 @@ expected_behavior + expected_tool). Parser fixes landed this session: full answe
 (402 quota hits no longer misread as no_data). build_dashboard.py is clarify-aware: parks render
 as a CLARIFY bucket (not fail), plus an expected-vs-observed behavior matrix and a refusal-trust
 banner when records carry expected_behavior. Live: https://navneetlearns.github.io/langsmith-tool-evaluator/finance/
-Queries are generator-owned (scripts/gen_finance_queries.py, scripts/gen_ar_agent_queries.py —
-AR set of 70 real-entity queries ready, not yet run).
+
+**AR agent eval prep — Zainab workspace (2026-09-23):** the AR agent (collection_and_account_receivables)
+is evaluated on Zainab Enterprises (workspace d53279c2-0f92-42ea-876d-1c57770f5184, login 9029012960) —
+hirafoods is unusable (no WhatsApp data). Sequence per user decision: ask-groups recon FIRST
+(accounts/ask-groups/, lane ask_chats — 12 probes 12/12, avg 14s, RECON not graded;
+RECON_DATA_INVENTORY.md: 257 active groups/7d, tagged corpus ~10k msgs/week, 61% untagged
+disclosed, payment chatter sparse (9 payment requests/7d, ₹5,192), customer aliases harvested),
+then AR Phase-1 harvest (scripts/probe_ar_harvest.py + probe_ar_harvest2.py, 13 probes →
+harvest_results_v1/v2.json): data-presence gate PASSED (ar_position ₹233.22Cr / 545 customers,
+₹228.95Cr overdue, worklist 10 ranked/32 held), deployed tool surface DISCOVERED
+(get_receivables, list_invoices, ar_position, ar_worklist, ar_promises, ar_payments_reported,
+search_threads, search_customers_master — the design-notes query_ar family is NOT deployed;
+no identity-shortlist tool; resolver inconsistency flagged: named lookups sometimes fall back
+to windowed get_receivables and fail), entities.json rebuilt for Zainab (hirafoods values
+gone), and the user's 55-question set enriched + labeled into queries.xlsx.
+Plan: ar-agent-user-queries-eval-plan.md (Phase 1 executed; blocked on label review).
+NOT pushed — 2 local commits (99feba3, 4d16f5c) pending the user's go.Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
+superseded on 2026-09-23 by the user's own set — scripts/gen_ar_user_queries.py, 56 rows,
+54 ANSWER / 2 CLARIFY, 8 sections, enriched on live Zainab anchors).
 
 **Derived-artifact pipeline + eval CLI + static dashboard (2026-09-19):**
 `scripts/finance_pipeline.py` derives a single source of truth from the raw JSONL
