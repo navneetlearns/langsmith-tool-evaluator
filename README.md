@@ -63,7 +63,14 @@ no identity-shortlist tool; resolver inconsistency flagged: named lookups someti
 to windowed get_receivables and fail), entities.json rebuilt for Zainab (hirafoods values
 gone), and the user's 55-question set enriched + labeled into queries.xlsx.
 Plan: ar-agent-user-queries-eval-plan.md (Phase 1 executed; blocked on label review).
-NOT pushed — 2 local commits (99feba3, 4d16f5c) pending the user's go.Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
+AR v1 RUN (2026-09-24): 56/56 queries executed on Zainab (runs/query_results_v2.jsonl,
+EVAL_READOUT_v1.md) — 24 success/14 no_data/14 clarify-parks/4 marginal raw, judged 38
+answered-with-value; see readout. AR page = docs/ar-agent/index.html, TWO-TAB build via
+scripts/render_ar_dashboard.py (plain-language Overview + For-developers; quotes pulled
+from the run file at build time; hand-graded scorecard 9/21/7/2/3/14, footnote'd). Use
+render_ar_dashboard.py, NOT build_dashboard.py, to rebuild the ar-agent page (build_dashboard
+still builds the other accounts).
+NOT pushed — 3 local commits (99feba3, 4d16f5c, 4a1b262…) pending the user's go.Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
 superseded on 2026-09-23 by the user's own set — scripts/gen_ar_user_queries.py, 56 rows,
 54 ANSWER / 2 CLARIFY, 8 sections, enriched on live Zainab anchors).
 

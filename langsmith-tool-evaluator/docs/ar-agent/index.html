@@ -1,847 +1,199 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copilot Eval — AR Agent Test Suite v2</title>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AR agent — accounts-receivable answers, 56-question test</title>
 <style>
-:root {
-  --bg: #f8f9fb;
-  --card: #ffffff;
-  --primary: #2563eb;
-  --primary-light: #dbeafe;
-  --text: #1e293b;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
-  --green: #16a34a;
-  --green-light: #dcfce7;
-  --red: #dc2626;
-  --red-light: #fee2e2;
-  --amber: #d97706;
-  --amber-light: #fef3c7;
-  --purple: #7c3aed;
-  --purple-light: #ede9fe;
-  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
-  --radius: 10px;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-}
-header {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  color: white;
-  padding: 48px 24px 40px;
-  text-align: center;
-}
-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-header p { font-size: 15px; opacity: 0.88; }
-header .badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.2);
-  padding: 4px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  margin-top: 12px;
-}
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-
-/* STATS GRID */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-  gap: 14px;
-  margin: -32px 0 40px;
-}
-.stat-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 20px 16px;
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-.stat-card .number { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
-.stat-card .label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
-.stat-card.green .number { color: var(--green); }
-.stat-card.red .number { color: var(--red); }
-.stat-card.amber .number { color: var(--amber); }
-.stat-card.blue .number { color: var(--primary); }
-.stat-card.purple .number { color: var(--purple); }
-
-/* SECTION */
-section { margin-bottom: 40px; }
-section h2 {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--border);
-}
-
-/* TABLE */
-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
-th, td { padding: 10px 14px; text-align: left; font-size: 13px; }
-th { background: #f1f5f9; font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
-tr { border-bottom: 1px solid var(--border); }
-tr:last-child { border-bottom: none; }
-tr:hover { background: #f8fafc; }
-
-/* QUALITY BUCKETS */
-.quality-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
-.quality-card { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); text-align: center; }
-.quality-card .icon { font-size: 36px; margin-bottom: 8px; }
-.quality-card .count { font-size: 32px; font-weight: 700; margin-bottom: 4px; }
-.quality-card .desc { font-size: 13px; color: var(--text-muted); }
-.quality-card .pct { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
-.quality-card.success { border-top: 4px solid var(--green); }
-.quality-card.success .count { color: var(--green); }
-.quality-card.marginal { border-top: 4px solid var(--amber); }
-.quality-card.marginal .count { color: var(--amber); }
-.quality-card.fail { border-top: 4px solid var(--red); }
-.quality-card.fail .count { color: var(--red); }
-.quality-card.no-data { border-top: 4px solid var(--amber); }
-.quality-card.no-data .count { color: var(--amber); }
-
-/* INFO LEAK */
-.leak-banner {
-  background: var(--amber-light);
-  border: 1px solid #fcd34d;
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  margin-bottom: 20px;
-}
-.leak-banner .summary { font-size: 15px; font-weight: 600; color: #92400e; }
-.leak-banner .types { display: flex; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
-.leak-type-badge {
-  background: white;
-  border: 1px solid #fcd34d;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  color: #92400e;
-}
-.leak-type-badge strong { font-weight: 700; }
-
-/* BAR */
-.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.bar-row .label { width: 180px; font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
-.bar-track { flex: 1; background: #f1f5f9; border-radius: 6px; height: 24px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; color: white; font-size: 11px; font-weight: 600; }
-
-/* STacked quality bar */
-.qbar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; }
-.qbar .seg-success { background: var(--green); }
-.qbar .seg-marginal { background: var(--amber); }
-.qbar .seg-fail { background: var(--red); }
-.qbar .seg { display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; font-weight: 600; }
-
-/* TOOL GRID */
-.tool-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
-.tool-card { background: var(--card); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); border-left: 4px solid var(--primary); }
-.tool-card .tool-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-.tool-card .tool-count { font-size: 20px; font-weight: 700; color: var(--primary); }
-.tool-card .tool-bar { margin-top: 6px; height: 5px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
-.tool-card .tool-bar-fill { height: 100%; background: var(--primary); border-radius: 3px; }
-
-/* QUERY TABLE */
-.search-box { width: 100%; padding: 10px 16px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; margin-bottom: 12px; background: var(--card); }
-.filter-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-.filter-tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); font-size: 13px; cursor: pointer; transition: all 0.2s; }
-.filter-tab:hover { border-color: var(--primary); }
-.filter-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
-.query-table th { cursor: pointer; user-select: none; }
-.query-table th:hover { background: #e2e8f0; }
-.query-table th .sort-arrow { font-size: 10px; margin-left: 3px; opacity: 0.4; }
-.query-table th.sorted .sort-arrow { opacity: 1; }
-.query-table .q-num { font-weight: 600; color: var(--text-muted); }
-.query-table .q-tools .tool-tag { display: inline-block; background: var(--primary-light); color: var(--primary); padding: 2px 7px; border-radius: 4px; margin: 1px; font-size: 11px; }
-.query-table .q-tools .no-tool { color: var(--text-muted); font-style: italic; font-size: 11px; }
-.query-table tr.clickable { cursor: pointer; }
-.query-table .expand-row { display: none; }
-.query-table .expand-row.show { display: table-row; }
-.query-table .expand-content { background: #f8fafc; padding: 16px 20px; font-size: 13px; }
-.query-table .expand-content .section-label { font-weight: 600; margin-bottom: 4px; margin-top: 12px; }
-.query-table .expand-content .section-label:first-child { margin-top: 0; }
-.query-table .expand-content pre { background: #f1f5f9; padding: 10px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; }
-.q-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
-.q-badge.success { background: var(--green-light); color: var(--green); }
-.q-badge.marginal { background: var(--amber-light); color: var(--amber); }
-.q-badge.fail { background: var(--red-light); color: var(--red); }
-.leak-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #f59e0b; margin-left: 4px; title: "Info leak"; }
-.leak-dot.clean { background: #e2e8f0; }
-
-/* PRINCIPLES */
-.principles { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
-.principles ol { padding-left: 20px; }
-.principles li { margin-bottom: 8px; font-size: 14px; }
-.principles li strong { color: var(--primary); }
-
-/* RAW DATA */
-.raw-data { background: var(--card); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); }
-.raw-data a { color: var(--primary); font-weight: 600; font-size: 14px; text-decoration: none; }
-.raw-data a:hover { text-decoration: underline; }
-.raw-data .link-row { margin-bottom: 10px; }
-.raw-data .link-row .desc { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
-
-footer { background: #1e293b; color: #94a3b8; text-align: center; padding: 32px 20px; margin-top: 40px; }
-footer a { color: #60a5fa; text-decoration: none; }
-footer a:hover { text-decoration: underline; }
-
-/* COMPARISON SNAPSHOT */
-.comparison-snapshot {
-  margin: 0 0 40px;
-}
-.snapshot-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  gap: 16px;
-}
-.snapshot-card {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 20px 24px;
-  box-shadow: var(--shadow);
-}
-
-
-.snapshot-card h3 { font-size: 15px; margin-bottom: 12px; }
-
-
-.snapshot-metrics {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px 16px;
-}
-.snapshot-metric {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 4px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
-.snapshot-metric .label { color: var(--text-muted); }
-.snapshot-metric .value { font-weight: 700; }
-
-
-
-
-
-.snapshot-card.v1 .snapshot-metric .value { color: var(--amber); }
-.snapshot-card.v2 { border-top: 4px solid var(--primary); }
-.snapshot-card.v2 h3 { color: var(--primary); }
-.snapshot-card.v2 .snapshot-metric .value { color: var(--primary); }
-.snapshot-card.v3 { border-top: 4px solid var(--primary); }
-.snapshot-card.v3 h3 { color: var(--primary); }
-.snapshot-card.v3 .snapshot-metric .value { color: var(--primary); }
-.snapshot-card.v4 { border-top: 4px solid var(--green); }
-.snapshot-card.v4 h3 { color: var(--green); }
-.snapshot-card.v4 .snapshot-metric .value { color: var(--green); }
-
-.snapshot-improvement {
-  grid-column: 1 / -1;
-  background: var(--green-light);
-  border: 1px solid #86efac;
-  border-radius: 8px;
-  padding: 14px 20px;
-  text-align: center;
-  font-size: 14px;
-  color: #166534;
-}
-.snapshot-improvement strong { font-size: 18px; }
-
-
-/* NEW: Tool Accuracy + Avg Steps stat cards */
-.stat-card.green { border-left: 4px solid var(--green); }
-.stat-card.purple { border-left: 4px solid var(--purple); }
-
-/* NEW: Mini bar for accuracy / step count tables */
-.mini-bar { height: 8px; background: var(--border); border-radius: 4px; min-width: 60px; overflow: hidden; }
-.mini-bar-fill { height: 100%; border-radius: 4px; }
-.mini-bar-fill.green { background: var(--green); }
-.mini-bar-fill.amber { background: var(--amber); }
-.mini-bar-fill.red { background: var(--red); }
-.mini-bar-fill.blue { background: var(--primary); }
-.mini-bar-fill.purple { background: var(--purple); }
-.mini-bar-fill.teal { background: #0d9488; }
-.mini-bar-fill.orange { background: #ea580c; }
-.mini-bar-fill.pink { background: #db2777; }
-.mini-bar-fill.indigo { background: #4f46e5; }
-
-/* NEW: Section spacing */
-#tool-accuracy-section, #step-count-section { margin-top: 32px; }
-
-/* No Data quality card */
-.quality-card.no-data { background: var(--surface); border-left: 4px solid var(--amber); border-radius: 8px; padding: 16px; }
-.quality-card.no-data .count { font-size: 28px; font-weight: 700; color: var(--amber); }
-.quality-card.no-data .pct { font-size: 13px; color: var(--text-secondary); margin: 4px 0; }
-.quality-card.no-data .desc { font-size: 12px; color: var(--text-tertiary); }
-
-/* Per-query table: color no_data responses */
-tr.row-no-data { background: rgba(245, 158, 11, 0.04); }
-tr.row-no-data .response-text { color: var(--amber); font-style: italic; }
-
-</style>
-</head>
-<body>
+:root{ --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --mut:#475569; --line:#e2e8f0;
+ --acc:#2563eb; --ok:#15803d; --bad:#b91c1c; --warn:#b45309; --none:#64748b; --soft:#f1f5f9; }
+@media (prefers-color-scheme: dark){ :root{ --bg:#0b1220; --card:#111a2e; --ink:#e2e8f0;
+ --mut:#94a3b8; --line:#1e293b; --acc:#60a5fa; --ok:#4ade80; --bad:#f87171; --warn:#fbbf24;
+ --none:#94a3b8; --soft:#172033; } }
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);
+ font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 18px 60px}
+header h1{font-size:24px;margin:0 0 4px} header p{color:var(--mut);margin:2px 0}
+.tabs{display:flex;gap:8px;margin:22px 0 4px;border-bottom:2px solid var(--line)}
+.tabs button{background:none;border:none;padding:10px 16px;font-size:15px;cursor:pointer;
+ color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px}
+.tabs button.on{color:var(--acc);border-color:var(--acc);font-weight:600}
+.pane{display:none} .pane.on{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.verdict{font-size:17px;background:var(--card);border:1px solid var(--line);
+ border-left:4px solid var(--acc);border-radius:10px;padding:16px 18px;margin:16px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 12px;text-align:center}
+.tile-icon{font-size:20px} .tile-n{font-size:30px;font-weight:700;margin:2px 0}
+.tile-l{font-size:12px;color:var(--mut);line-height:1.3}
+.tile-ok .tile-icon{color:var(--ok)} .tile-bad .tile-icon{color:var(--bad)}
+.tile-partial .tile-icon{color:var(--warn)} .tile-none .tile-icon{color:var(--none)}
+h2{font-size:20px;margin:34px 0 10px} h3{font-size:16px;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+.qq{color:var(--mut);font-style:italic;margin:2px 0 10px} .qi{font-style:normal;font-size:12px;color:var(--mut)}
+.qmark{display:inline-block;background:var(--soft);border-radius:6px;padding:0 7px;font-weight:700;color:var(--acc)}
+.ans{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;overflow-x:auto}
+.ans table{border-collapse:collapse;margin:6px 0;font-size:13px}
+.ans th,.ans td{border:1px solid var(--line);padding:4px 9px;text-align:left}
+.ans th{background:var(--card)} .note{color:var(--mut);font-size:13.5px;margin:10px 0 0}
+ul{margin:6px 0;padding-left:22px} .quote{color:var(--mut)}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:760px){.compare{grid-template-columns:1fr} .grid{grid-template-columns:repeat(2,1fr)}}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;align-items:center}
+.filters select{background:var(--card);color:var(--ink);border:1px solid var(--line);
+ border-radius:8px;padding:7px 10px;font-size:14px}
+.tblwrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:12px}
+table.tbl{border-collapse:collapse;width:100%;font-size:13.5px;min-width:720px}
+.tbl th{text-align:left;background:var(--soft);padding:9px 12px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+.qcol{font-weight:600;max-width:270px} .acol{color:var(--mut);max-width:380px}
+.s{white-space:nowrap;color:var(--mut)}
+.chip{display:inline-block;border-radius:99px;padding:2px 10px;font-size:12px;border:1px solid}
+.chip-answered{color:var(--ok);border-color:var(--ok)}
+.chip-partial{color:var(--warn);border-color:var(--warn)}
+.chip-no-data{color:var(--none);border-color:var(--none)}
+.chip-asked-a-follow-up{color:var(--acc);border-color:var(--acc)}
+.chip-no-answer{color:var(--bad);border-color:var(--bad)}
+.rowcount{color:var(--mut);font-size:13px}
+.fn{color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);margin-top:34px;padding-top:12px}
+ol{margin:6px 0;padding-left:24px} ol li{margin:4px 0}
+.fm{margin:10px 0} .fm h3{margin-bottom:4px} .fm p{margin:3px 0;color:var(--mut);font-size:14px}
+code{background:var(--soft);border:1px solid var(--line);border-radius:5px;padding:0 5px;font-size:12.5px}
+table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
+.numt th,.numt td{border:1px solid var(--line);padding:7px 11px;text-align:left}
+.numt th{background:var(--soft)} .flag{color:var(--bad);font-weight:600}
+</style></head><body><div class="wrap">
 
 <header>
-  <h1>Copilot Eval Dashboard</h1>
-  <p>AR Agent Test Suite &mdash; Seller Copilot Agent Tool-Selection Evaluation</p>
-  <span class="badge">Run v2 &middot; September 24, 2026 &middot; 56 queries &middot; 22.7 min</span>
+  <h1>Accounts-receivable assistant — 56-question test</h1>
+  <p>Answers about who owes what, and what customers said on WhatsApp about paying · Zainab Enterprises · 2026-09-24</p>
 </header>
 
-<div class="container">
-
-  <!-- COMPARISON SNAPSHOT: v1..v2 -->
-  <div class="comparison-snapshot">
-    <div class="snapshot-grid">
-      <div class="snapshot-card v1">
-        <h3>Run v1 &mdash; September 24, 2026</h3>
-        <div class="snapshot-metrics">
-          <div class="snapshot-metric"><span class="label">Queries</span><span class="value">1</span></div>
-          <div class="snapshot-metric"><span class="label">API Success</span><span class="value">1</span></div>
-          <div class="snapshot-metric"><span class="label">Failed</span><span class="value">0</span></div>
-          <div class="snapshot-metric"><span class="label">Avg Response</span><span class="value">14.3s</span></div>
-          <div class="snapshot-metric"><span class="label">Total Time</span><span class="value">0.3 min</span></div>
-        </div>
-      </div>
-      <div class="snapshot-card v2">
-        <h3>Run v2 &mdash; September 24, 2026</h3>
-        <div class="snapshot-metrics">
-          <div class="snapshot-metric"><span class="label">Queries</span><span class="value">56</span></div>
-          <div class="snapshot-metric"><span class="label">API Success</span><span class="value">42</span></div>
-          <div class="snapshot-metric"><span class="label">Failed</span><span class="value">14</span></div>
-          <div class="snapshot-metric"><span class="label">Avg Response</span><span class="value">23.4s</span></div>
-          <div class="snapshot-metric"><span class="label">Total Time</span><span class="value">22.7 min</span></div>
-        </div>
-      </div>
-      <div class="snapshot-improvement">
-        <strong>&#9888;&#65039; 14 failure(s) this run (v1 had 0) &mdash; Avg response 23.4s vs 14.3s in v1 (63% slower)</strong>
-      </div>
-    </div>
-  </div>
-
-  <!-- TOP STATS --><!-- TOP STATS --><!-- TOP STATS -->
-  <div class="stats-grid">
-    <div class="stat-card blue"><div class="number">56</div><div class="label">Total Queries</div></div>
-    <div class="stat-card green"><div class="number">42</div><div class="label">API Success</div></div>
-    <div class="stat-card red"><div class="number">0</div><div class="label">API Failed</div></div>
-    <div class="stat-card blue"><div class="number">23.4s</div><div class="label">Avg Response</div></div>
-    <div class="stat-card amber"><div class="number">10</div><div class="label">No Tool Called</div></div>
-    <div class="stat-card blue"><div class="number">6</div><div class="label">Tools Used</div></div>
-  </div>
-          <div class="stat-card green">
-            <div class="number">0.0%</div>
-            <div class="label">Tool Accuracy</div>
-          </div>
-          <div class="stat-card purple">
-            <div class="number">10.1</div>
-            <div class="label">Avg Steps</div>
-          </div>
-
-  <!-- RESPONSE QUALITY BUCKETS -->
-  <section>
-    <h2>Response Quality — Does the Response Add Value to the User?</h2>
-    <div class="quality-grid">
-      <div class="quality-card success">
-        <div class="icon">&#9989;</div>
-        <div class="count">24</div>
-        <div class="desc"><strong>Success</strong> &mdash; Response contains real data, numbers, customer names, or actionable insights</div>
-        <div class="pct">43% of queries</div>
-      </div>
-      <div class="quality-card marginal">
-        <div class="icon">&#9888;&#65039;</div>
-        <div class="count">4</div>
-        <div class="desc"><strong>Marginal</strong> &mdash; Partial data or hedged response; copilot found something but couldn't fully answer</div>
-        <div class="pct">7% of queries</div>
-      </div>
-      <div class="quality-card fail">
-        <div class="icon">&#10060;</div>
-        <div class="count">0</div>
-        <div class="desc"><strong>Fail</strong> &mdash; Error, empty response, or generic "try again" with no data at all</div>
-        <div class="pct">0% of queries</div>
-      </div>
-      <div class="quality-card no-data">
-        <div class="icon">&#9898;</div>
-        <div class="count">14</div>
-        <div class="desc"><strong>No Data</strong> &mdash; API responded but returned zero useful data to the user</div>
-        <div class="pct">25% of queries</div>
-      </div>
-    </div>
-      <div class="quality-card clarify" style="background:var(--surface);border-left:4px solid #7c3aed;border-radius:8px;padding:16px;"><div class="icon">&#10067;</div><div class="count" style="color:#7c3aed;">14</div><div class="desc"><strong>Clarify</strong> &mdash; Agent asked a clarifying question (interrupt) and parked the turn; no answer on turn 1 (finance/AR clarify gate)</div><div class="pct">25% of queries</div></div>
-  </section>
-
-  
-  <!-- CLARIFY + BEHAVIOR MATRIX (finance/AR agents) -->
-  <section>
-    <h2>&#10067; Clarify Gate &amp; Behavior Matrix (expected vs observed)</h2>
-    <p class="section-desc" style="font-size:13px;color:#6b7280;">expected_behavior is the label from
-    the query set; observed is what the live agent did. Parks = the agent asked a clarifying
-    question (interrupt, no tools, no answer).</p>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Expected</th><th>Answered</th><th>Clarified (park)</th><th>Failed</th></tr></thead>
-      <tbody><tr><td><strong>ANSWER</strong></td><td>42</td><td>12</td><td>0</td></tr><tr><td><strong>CLARIFY</strong></td><td>0</td><td>2</td><td>0</td></tr></tbody>
-    </table></div>
-    <div class="leak-banner" style="margin-top:14px;">
-      <div class="summary">&#128273; Refusal trust: 0 hard refusals + 0 hedged
-      boundary-named answers, 0 fabricated figures &middot; reconcile/ageing guard fired on
-      0 answers &middot; finance streams no tool events (backend SQL) — tool-accuracy N/A</div>
-    </div>
-  </section>
-<!-- INFO LEAK DETECTION -->
-  <section>
-    <h2>Information Leak Detection</h2>
-    <div class="leak-banner">
-      <div class="summary">&#128274; 0 out of 56 responses expose internal system details</div>
-      <p style="font-size:13px;color:#92400e;margin-top:6px;">These responses mention tool names, UI components, workspace references, auth session issues, or internal data models that a real user should never see.</p>
-      <div class="types" id="leak-types"></div>
-    </div>
-    <table>
-      <thead>
-        <tr><th>#</th><th>Category</th><th>Query</th><th>Leak Type</th></tr>
-      </thead>
-      <tbody id="leak-tbody"></tbody>
-    </table>
-  </section>
-
-  <!-- QUALITY BY CATEGORY -->
-  <section>
-    <h2>Response Quality by Category</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Category</th>
-          <th>Success</th>
-          <th>Marginal</th>
-          <th>Fail</th>
-          <th>Distribution</th>
-          <th>Avg Time</th>
-        </tr>
-      </thead>
-      <tbody id="qual-cat-tbody"></tbody>
-    </table>
-  </section>
-    <section>
-      <h2>&#127919; Tool Selection Accuracy by Category</h2>
-      <p class="section-desc">Percentage of queries where the agent called the expected tool (only queries with expected_tool specified in test data).</p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Category</th><th>Expected Tool Queries</th><th>Correct</th><th>Accuracy</th><th></th></tr></thead>
-          <tbody id="tool-acc-tbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-  <!-- RESPONSE TIME BY CATEGORY -->
-  <section>
-    <h2>Response Time by Category</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Category</th><th>Avg</th><th>Min</th><th>Max</th><th>Queries</th><th>Visual (avg)</th>
-        </tr>
-      </thead>
-      <tbody id="cat-tbody"></tbody>
-    </table>
-  </section>
-    <section>
-      <h2>&#128260; Step Count per Completion</h2>
-      <p class="section-desc">Number of SSE status transitions per query (thinking → analyzing → tool_start → ... → done). Higher = more complex interactions.</p>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Category</th><th>Queries</th><th>Avg Steps</th><th>Min</th><th>Max</th><th></th></tr></thead>
-          <tbody id="step-tbody"></tbody>
-        </table>
-      </div>
-    </section>
-
-  <!-- TOOL USAGE -->
-  <section>
-    <h2>Tool Usage Frequency</h2>
-    <div class="tool-grid" id="tool-grid"></div>
-  </section>
-
-  <!-- QUERY RESULTS -->
-  <section>
-    <h2>Per-Query Results</h2>
-    <input type="text" class="search-box" id="search" placeholder="Search queries, tools, responses...">
-    <div class="filter-tabs" id="filter-tabs">
-      <div class="filter-tab active" data-cat="all">All (56)</div>
-    </div>
-    <table class="query-table">
-      <thead>
-        <tr>
-          <th class="sortable" data-sort="query_index"># <span class="sort-arrow">&#9660;</span></th>
-          <th>Category</th>
-          <th>Query</th>
-          <th>Quality</th>
-          <th>Tools Called</th>
-          <th class="sortable" data-sort="response_time_seconds">Time <span class="sort-arrow"></span></th>
-          <th>Response</th>
-          <th class="sortable" data-sort="info_leak">Leak <span class="sort-arrow"></span></th>
-          <th class="sortable" data-sort="response_quality">Status <span class="sort-arrow"></span></th>
-        </tr>
-      </thead>
-      <tbody id="query-tbody"></tbody>
-    </table>
-  </section>
-
-  <!-- RAW DATA -->
-  <section>
-    <h2>Raw Data</h2>
-    <div class="raw-data">
-      <div class="link-row">
-        <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/ar-agent/runs/query_results_v2.jsonl" target="_blank">&#128206; query_results_v2.jsonl</a>
-        <div class="desc">Full JSONL with all 80 query traces (tool calls, SSE status, response text, timing, quality classification, leak detection) — v4 run (July 23, 2026)</div>
-      </div>
-      <div class="link-row">
-        <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/accounts/ar-agent/runs/query_results_v2.jsonl" target="_blank">&#128206; query_results_v2.jsonl</a>
-        <div class="desc">v1 baseline &mdash; 50 query traces (July 11, 2026)</div>
-      </div>
-      <div class="link-row">
-        <a href="https://raw.githubusercontent.com/navneetlearns/langsmith-tool-evaluator/main/runs/manifest.json" target="_blank">&#128206; manifest.json</a>
-        <div class="desc">Versioned run manifest for tracking improvement across reruns</div>
-      </div>
-      <div class="link-row">
-        <a href="https://github.com/navneetlearns/langsmith-tool-evaluator" target="_blank">&#128187; GitHub Repository</a>
-        <div class="desc">Source code, pipeline script, HEART.md principles, eval plan</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HEART PRINCIPLES -->
-  <section>
-    <h2>Eval Testing Principles (HEART.md)</h2>
-    <div class="principles">
-      <ol>
-        <li><strong>Think like a user</strong> &mdash; send the query, capture what comes back. Errors are real results.</li>
-        <li><strong>Wait patiently</strong> &mdash; SSE timeout 300s. Multi-turn, data-driven responses take time.</li>
-        <li><strong>Measure response time</strong> &mdash; every query records response_time_seconds.</li>
-        <li><strong>Versioned reruns</strong> &mdash; query_results_v{N}.jsonl. Never overwrites. Compare across versions.</li>
-        <li><strong>No retry, no masking</strong> &mdash; if a query fails, that IS the result.</li>
-        <li><strong>Full trace capture</strong> &mdash; tool calls, SSE status sequence, response, suggestions, errors, timing.</li>
-      </ol>
-    </div>
-  </section>
-
+<div class="tabs">
+  <button class="on" data-tab="ov">Overview</button>
+  <button data-tab="dev">For developers</button>
 </div>
 
-<footer>
-  <p>Copilot Eval Pipeline &middot; <a href="https://github.com/navneetlearns/langsmith-tool-evaluator">langsmith-tool-evaluator</a> &middot; Run v2 &middot; AR Agent</p>
-</footer>
+<section class="pane on" id="pane-ov">
+  <div class="verdict">Strong when the question is specific and the customer is already resolved —
+  but a large share of questions (14 of 56) get no answer at all, and several answers are
+  wrong or reuse the same canned payment list.</div>
 
-<script>
-const records = [
-{"query_index":1,"query":"Which customers said payment is done on WhatsApp but it is still outstanding in ERP?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"0c2f395f-cc57-474b-80b9-514545923d68","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "customer_balances", "filters": {"customer_ids": ["1873b8d1-eb60-4895-a345-2e5b430ac080", "a18fbc95-e8c6-4ae1-a70e-805a1298d3d9", "8cbd2cfa-0843-49a2-a285-ad3a612891b2", "fd889247-5db1-41b7-944e-7fd72f4c0e59", "f0ec41c3-5f58-4930-ae4d-c064b7e9987e"], "ledger_balance_gt": "0"}, "metric": "rows", "limit": 5, "sort_by": "ledger_balance", "descending": true}}}],"response":"💡 **The customers who reported payment on WhatsApp but still have a positive ERP ledger balance are: \\- \\*\\*MOHANLAL &amp; CO\\. NX\\*\\* \\- \\*\\*HARI OM FURNISHING HOUSE\\*\\* \\- \\*\\*R DECOR SPACE\\*\\* \\- \\*\\*TENON\\*\\* \\- \\*\\*KRISHNA COATED FABRICS PVT LTD\\*\\* \\- \\*\\*POPULAR MATTRESS &amp; CLOTH STORE\\*\\* These are reported payment claims, not independently bank\\-verified receipts\\. The ERP balance confirms they remain outstanding, but it does not prove whether the reported payment is awaiting allocation or reconciliation\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Account balances\n\n| Customer | Ledger balance |\n| :--- | ---: |\n| R DECOR SPACE | ₹26,280 |\n| TENON | ₹15,716 |\n| KRISHNA COATED FABRICS PVT LTD | ₹13,996 |\n| POPULAR MATTRESS &amp; CLOTH STORE | ₹10,749 |\n\n### 📊 Account balances\n\n| Customer | Ledger balance |\n| :--- | ---: |\n| MOHANLAL &amp; CO\\. NX | ₹3,33,258\\.28 |\n| HARI OM FURNISHING HOUSE | ₹25,437 |\n\n_How I worked this out (3 steps) · 22 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":29.63,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":2,"query":"Which payments were claimed on WhatsApp but I can't find in ERP?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"feb61c4f-5a1d-4291-af4e-8936b373dedc","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}],"response":"💡 **These are WhatsApp payment claims currently marked \\*\\*reported\\*\\* but not confirmed as entered or matched in ERP: These are customer\\-reported claims, not proof of bank settlement; the remaining reported claims are available in the full list\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (1 step) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":11.06,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":3,"query":"Check the payment claims in WhatsApp against the ERP receipts.","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"d24b66f0-657a-4bba-9048-a13d186cd429","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":5.54,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":4,"query":"Who says they paid, but we haven't received it in our books?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"d4e61ed1-7247-472c-842a-ace917fe25a4","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}],"response":"💡 **These customers have reported payments that are not yet confirmed as received or matched in the books\\. The latest list shows five records; reported claims are not proof of settlement\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (1 step) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":7.03,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":5,"query":"Find payment claims with no matching ERP receipt — like KRISHNA COATED FABRICS, POPULAR MATTRESS & CLOTH STORE, TRENDS FURNISHING.","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"9389c371-c218-4b6d-9500-9d14dc6345e1","tool_calls":[{"tool": "resolve_ar_customer", "input": {"queries": ["KRISHNA COATED FABRICS", "POPULAR MATTRESS & CLOTH STORE", "TRENDS FURNISHING"]}}],"response":"No matching customer was found. Please check the customer name and try again.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":4.06,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":6,"query":"Which WhatsApp payments are still unreconciled?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"56b4448e-9455-4d8d-aa1b-9081454e228c","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":5.6,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":7,"query":"Show me payments where the WhatsApp amount doesn't match the ERP amount.","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"fdfe98cd-080d-4128-ac39-143b34359371","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}, {"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "invoices", "metric": "rows", "filters": {"status_scope": "all", "invoice_ids": []}}}}],"response":"💡 **One payment is flagged for a WhatsApp\\-versus\\-ERP mismatch and needs review\\. The WhatsApp evidence contains multiple receipt amounts, so the intended payment cannot be determined confidently; the other two payments with explicit amounts in the displayed results match the ERP record\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Invoices\n\nThere are no invoices matching this request.\n\n_How I worked this out (5 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":40.67,"step_count":16,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":8,"query":"Who paid partially in ERP even though they said full payment on WhatsApp?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"a51fe986-39fe-40bb-a210-8ef312440ad0","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "customer_balances", "filters": {"customer_ids": ["1873b8d1-eb60-4895-a345-2e5b430ac080", "a18fbc95-e8c6-4ae1-a70e-805a1298d3d9", "8cbd2cfa-0843-49a2-a285-ad3a612891b2", "fd889247-5db1-41b7-944e-7fd72f4c0e59", "f0ec41c3-5f58-4930-ae4d-c064b7e9987e"]}, "metric": "rows", "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"💡 **I found account balances matching your request. The relevant records are shown below.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Account balances\n\n| Customer | Ledger balance |\n| :--- | ---: |\n| KRISHNA COATED FABRICS PVT LTD | ₹13,996 |\n| POPULAR MATTRESS &amp; CLOTH STORE | ₹10,749 |\n| R DECOR SPACE | ₹26,280 |\n| TENON | ₹15,716 |\n| TRENDS FURNISHING | −₹3,64,163 |\n\n_How I worked this out (4 steps) · 17 figures verified from your data_\n\n**Ask next:** Show more payment updates\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":45.02,"step_count":14,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":9,"query":"Which customers shared a UTR on WhatsApp but there is no matching receipt in ERP?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"search_threads","thread_id":"e89cb0f9-a253-440d-a26a-269ade058e55","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"💡 **The preview includes: \\- KRISHNA COATED FABRICS PVT LTD \\- POPULAR MATTRESS &amp; CLOTH STORE \\- TRENDS FURNISHING \\- TENON \\- R DECOR SPACE These are \\*\\*unmatched payment claims, not confirmed missing receipts\\*\\*; an ERP receipt may exist under another customer identity or still require review\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (3 steps) · 20 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":22.65,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":10,"query":"Any payment claims from WhatsApp that need verification?","copilot_response":"","remarks":"","category":"WhatsApp vs ERP Reconciliation","expected_tool":"ar_payments_reported","thread_id":"1a353d5e-e329-4956-a6dd-0daf2fce001d","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"💡 **Yes\\. The WhatsApp evidence includes a ledger showing receipts with that reference, but this is still a reported claim—not confirmation of bank settlement or invoice allocation\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (2 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":11.39,"step_count":8,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":11,"query":"Who promised to pay this week but still has an outstanding balance?","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"dcd6385b-af3a-47cf-8216-5aa03af97173","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "commitment"}, {"field": "expected_date", "op": "gte", "value": "2026-09-21"}, {"field": "expected_date", "op": "lt", "value": "2026-09-28"}], "sort_by": "expected_date", "descending": false, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "0009992c29ea"}}],"response":"💡 **These are the receivable balances from your accounts.**\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Expected on | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- | :--- |\n| CRYSTAL WALLPAPER | Commitment | Broken | Unknown | 21 Sep 2026 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Customer balances\n\n| Customer | Outstanding invoice balance | Overdue balance | Not yet due | 1–30 days | 31–60 days | 61–90 days | Over 90 days |\n| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| CRYSTAL WALLPAPER | ₹1,24,31,900 | ₹1,24,31,900 | ₹0 | ₹1,09,33,500 | ₹0 | ₹0 | ₹14,98,400 |\n\n> These balances may not cover every customer\\.\n>\n> This is an older list from 21 Sep 2026; it may have changed since then\\.\n\n_How I worked this out (3 steps) · 7 figures verified from your data_\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":20.01,"step_count":10,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":12,"query":"Who said on WhatsApp they'll pay tomorrow?","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"952e373b-1428-49b7-a671-56107a93fe0e","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "commitment"}, {"field": "expected_date", "op": "gte", "value": "2026-09-25"}, {"field": "expected_date", "op": "lt", "value": "2026-09-26"}], "sort_by": "expected_date", "descending": false, "limit": 5, "requested_day": "2026-09-25"}}}],"response":"### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (4 steps) · 0 figures verified from your data_\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":26.71,"step_count":13,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":13,"query":"Which promised payments are overdue now — like the ONCE & AGAIN commitment?","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"8835ec85-85a5-4894-9427-a25124f743e5","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "commitment"}, {"field": "status", "op": "eq", "value": "open"}, {"field": "expected_date", "op": "lt", "value": "2026-09-24"}], "sort_by": "expected_date", "descending": false, "limit": 5}}}, {"tool": "get_ar_schema", "input": {}}],"response":"💡 **No overdue promised payments are currently recorded, including for ONCE &amp; AGAIN\\.**\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (4 steps) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":19.35,"step_count":14,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":14,"query":"Show me customers whose committed payment date has passed.","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"ce957a99-e49f-4bb9-9b78-48c97f71d1a9","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "acknowledgement"}, {"field": "expected_date", "op": "lt", "value": "2026-09-24"}, {"field": "status", "op": "eq", "value": "open"}], "metric": "rows", "sort_by": "expected_date", "descending": true, "limit": 5}}}],"response":"💡 **Two customers have past committed payment dates: \\*\\*CRYSTAL WALLPAPER\\*\\* and \\*\\*ONCE &amp; AGAIN\\*\\*\\. Both commitments are marked \\*\\*broken\\*\\*, not open\\.**\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Expected on | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- | :--- |\n| CRYSTAL WALLPAPER | Commitment | Broken | Unknown | 21 Sep 2026 | 15 Sep 2026 | Unknown |\n| ONCE &amp; AGAIN | Commitment | Broken | Unknown | 15 Sep 2026 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (5 steps) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":29.26,"step_count":14,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":15,"query":"Who keeps promising payment but hasn't cleared the dues?","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"ea59dae0-f00b-46d2-a717-5a69116382c9","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "commitment"}], "metric": "rows", "group_by": "customer_id", "sort_by": "opened_at", "descending": true, "limit": 5}}}],"response":"💡 **These are the receivable balances from your accounts.**\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Expected on | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- | :--- |\n| CRYSTAL WALLPAPER | Commitment | Broken | Unknown | 21 Sep 2026 | 15 Sep 2026 | Unknown |\n| ONCE &amp; AGAIN | Commitment | Broken | Unknown | 15 Sep 2026 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Customer balances\n\n| Customer | Outstanding invoice balance | Overdue balance | Not yet due | 1–30 days | 31–60 days | 61–90 days | Over 90 days |\n| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| CRYSTAL WALLPAPER | ₹1,24,31,900 | ₹1,24,31,900 | ₹0 | ₹1,09,33,500 | ₹0 | ₹0 | ₹14,98,400 |\n| ONCE &amp; AGAIN | ₹44,57,100 | ₹43,09,700 | ₹1,47,400 | ₹12,55,800 | ₹0 | ₹1,61,000 | ₹28,92,900 |\n\n> These balances may not cover every customer\\.\n>\n> This is an older list from 21 Sep 2026; it may have changed since then\\.\n\n_How I worked this out (2 steps) · 17 figures verified from your data_\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":18.89,"step_count":9,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":16,"query":"Which WhatsApp payment commitments are still pending in ERP?","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"9f66c1ff-3d86-4afe-ac09-16e850104975","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "acknowledgement"}, {"field": "status", "op": "eq", "value": "open"}], "metric": "rows", "sort_by": "expected_date", "descending": false, "limit": 5}}}, {"tool": "get_ar_schema", "input": {}}],"response":"💡 **The ERP shows \\*\\*two WhatsApp payment\\-related commitments still pending\\*\\*: \\- \\*\\*DESIGN ELEMENTS\\*\\* — amount not specified, no expected payment date\\. No open payment or payment\\-claim records were found; these are open acknowledgements, so they indicate pending commitments rather than confirmed receipts\\.**\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- |\n| DESIGN ELEMENTS | Acknowledgement | Open | Unknown | 21 Sep 2026 | Unknown |\n| CREART | Acknowledgement | Open | ₹1,00,000 | 19 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (3 steps) · 1 figure verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":20.12,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":17,"query":"Who gave a payment date on WhatsApp but no payment has been posted in ERP yet?","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"26b31ae2-ffee-40c8-b83d-7bdcb145b0eb","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "expected_date", "op": "is_null", "value": null}, {"field": "status", "op": "eq", "value": "reported"}], "sort_by": "expected_date", "descending": false, "limit": 5, "metric": "rows"}}}, {"tool": "get_ar_evidence", "input": {"object_id": "f9fe8b9e8e0d"}}],"response":"### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Expected on | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- | :--- |\n| ONCE &amp; AGAIN | Commitment | Broken | Unknown | 15 Sep 2026 | 15 Sep 2026 | Unknown |\n| CRYSTAL WALLPAPER | Commitment | Broken | Unknown | 21 Sep 2026 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (6 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates\n\nStopped at the tool limit; this answer may be incomplete.\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":28.61,"step_count":19,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":18,"query":"Show me customers who said payment is scheduled but ERP still shows outstanding.","copilot_response":"","remarks":"","category":"Payment Commitment Follow-up","expected_tool":"ar_promises","thread_id":"f2a017de-8bdd-44b8-85fa-e82c43f82619","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "expected_date", "op": "is_null", "value": false}], "sort_by": "expected_date", "descending": false, "limit": 5, "metric": "rows"}}}, {"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "customer_balances", "filters": {"ledger_balance_gt": "0"}, "metric": "rows", "limit": 5, "sort_by": "ledger_balance", "descending": true}}}],"response":"💡 **I found account balances matching your request. The relevant records are shown below.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Account balances\n\n| Customer | Ledger balance |\n| :--- | ---: |\n| R R DECOR PVT LTD | ₹1,20,00,000 |\n| Interworld Furnishings \\(I\\) Pvt\\. Ltd | ₹40,19,329 |\n| THEMES HOME FURNISHINGS | ₹22,01,914 |\n| HOMZ COUTURE LLP | ₹21,67,790\\.60 |\n| PURPLE PATCH STUDIO LLP\\. | ₹19,04,749 |\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Expected on | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- | :--- |\n| ONCE &amp; AGAIN | Commitment | Broken | Unknown | 15 Sep 2026 | 15 Sep 2026 | Unknown |\n| CRYSTAL WALLPAPER | Commitment | Broken | Unknown | 21 Sep 2026 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (4 steps) · 18 figures verified from your data_\n\n**Ask next:** Show more payment updates\n\nStopped at the tool limit; this answer may be incomplete.\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":41.88,"step_count":17,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":19,"query":"Which invoices were mentioned as paid on WhatsApp but are still open in ERP?","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"ar_payments_reported","thread_id":"fa806961-ede3-4f90-91fb-f3ae2ab9d889","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}, {"tool": "resolve_ar_customer", "input": {"queries": ["KRISHNA COATED FABRICS PVT LTD", "POPULAR MATTRESS & CLOTH STORE", "TRENDS FURNISHING", "TENON"]}}],"response":"No matching customer was found. Please check the customer name and try again.\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":28.32,"step_count":16,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":20,"query":"Bill 15293 was claimed as paid on WhatsApp (NEFT ₹880) — is it in ERP?","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"list_invoices","thread_id":"8e4009e4-e644-43b1-95a1-7e3e0fc7e89d","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "invoices", "filters": {"invoice_ids": ["15293"], "status_scope": "all"}, "metric": "rows", "limit": 5}}}],"response":"💡 **The WhatsApp message remains a payment claim, not proof of ERP settlement; please verify the bill number or bank/ERP entry\\.**\n\n### 📊 Invoices\n\nI couldn't find invoice 15293 in your records. Please check the invoice number.\n\n_How I worked this out (1 step) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":15.35,"step_count":8,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":21,"query":"Which bills have payment claims but no receipt entry?","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"ar_payments_reported","thread_id":"e2fb121b-2bfa-4ac6-b0cc-a866c9be5e31","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}],"response":"💡 **The current payment claims without a matching receipt entry are shown for the listed customers\\. However, none of these claims has an invoice or bill reference, so the specific bills cannot be identified reliably; they remain customer\\-level payment claims only\\. A reported claim indicates that payment was claimed, not that it has been verified or entered in the ledger\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| VARUN SYNTEX INDIA | Unknown | Payment | Entered | ₹23,443 | 17 Sep 2026 | Unknown |\n| Palette | KKBKH26259731033 | Payment | Entered | ₹2,00,000 | 16 Sep 2026 | Unknown |\n| DREAM DECOR MATTRESS AND FURNISHING CO\\. | HDFC BANK\\-50200065744791\\(0\\) | Payment | Entered | ₹662 | 15 Sep 2026 | Unknown |\n| VARUN SYNTEX INDIA | Unknown | Payment | Entered | ₹1,27,035 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (2 steps) · 18 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":25.05,"step_count":10,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":22,"query":"Show me the overdue bills where the customer has already promised payment — e.g. the 91-day worklist accounts.","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"ar_worklist","thread_id":"a9acf8fb-0b51-4a0b-8142-1905c9ec8e5b","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "worklist", "filters": [{"field": "days_past_due", "op": "eq", "value": 91}], "metric": "rows", "sort_by": "rank", "descending": false, "limit": 5}}}, {"tool": "get_ar_schema", "input": {}}],"response":"💡 **The list is from 22 September, and the 91\\-day figure is an ageing\\-bucket approximation; I can check the remaining 91\\-day accounts if needed\\.**\n\n### 🎯 Customers to follow up with\n\n| Priority | Customer | Chaseable balance | Why follow up |\n| :--- | :--- | ---: | :--- |\n| 1 | Interworld Furnishings \\(I\\) Pvt\\. Ltd | ₹72,36,78,400 | Largest chaseable balance |\n| 2 | PURPLE PATCH STUDIO LLP\\. | ₹55,44,82,800 | 91 days past due, no promise on record |\n| 3 | HOMZ COUTURE LLP | ₹49,84,33,660 | 91 days past due, no promise on record |\n| 4 | EMBELLISH | ₹46,85,34,690 | 91 days past due, no promise on record |\n| 5 | RICH DECOR | ₹45,90,15,200 | 91 days past due, no promise on record |\n\n> This is an older list from 22 Sep 2026; it may have changed since then\\.\n>\n> Overdue ages on this list are approximate\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (2 steps) · 13 figures verified from your data_\n\n**Ask next:** Show more customers to follow up with","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":25.16,"step_count":10,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":23,"query":"Which invoice payments are pending despite customer confirmation on WhatsApp?","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"ar_payments_reported","thread_id":"ff9c42c0-2612-4057-9329-ba1550f8f4a8","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "6df5cf00cfef"}}],"response":"### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (2 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":30.64,"step_count":11,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":24,"query":"Find bills where the WhatsApp amount and the ERP receipt don't match.","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"ar_payments_reported","thread_id":"5822848b-75f0-4f35-8964-969f97b24c9e","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}, {"tool": "get_paid_collections", "input": {"breakdown": "transaction"}}],"response":"💡 **I found one clear amount mismatch: No invoice number is linked to this payment, so the exact bill allocation is unknown\\. The other reviewed records either matched, had no corresponding ERP receipt available, or did not have an invoice link\\. The latest ERP collection list is from \\*\\*23 September 2026\\*\\*\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payments received\n\n| Customer | Date | Mode | Reference | Payments received |\n| :--- | :--- | :--- | :--- | ---: |\n| YASH DESIGNER STUDIO | 23 Sep 2026 | ONLINE | 2835 | ₹55,554 |\n| POSH PARERA | 23 Sep 2026 | ONLINE | 2832 | ₹19,938 |\n| RICH DECOR | 23 Sep 2026 | ONLINE | 2815 | ₹799 |\n| MODERN SURFACE DECOR | 23 Sep 2026 | ONLINE | 2837 | ₹1,50,000 |\n| EUREKA INTERIO SOLUTIONS | 23 Sep 2026 | ONLINE | 2820 | ₹1,50,000 |\n\n> Updated 24 Sep 2026\\.\n>\n> Total collected: ₹2,51,73,556\\.\n\n_How I worked this out (5 steps) · 24 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":60.96,"step_count":18,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":25,"query":"Which customers mentioned specific invoice numbers while discussing payment — like 15293 or the ₹880 NEFT claim?","copilot_response":"","remarks":"","category":"Invoice / Bill Level","expected_tool":"search_threads","thread_id":"bd9c4ba5-6c3c-47bd-99c8-a788b0efc5ca","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (5 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates\n\nStopped at the tool limit; this answer may be incomplete.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":35.92,"step_count":20,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":26,"query":"Check the UTRs shared on WhatsApp against the ERP receipts.","copilot_response":"","remarks":"","category":"UTR / Reference Matching","expected_tool":"search_threads","thread_id":"46a07c17-dc86-4c0d-bad9-e94f5998ebf4","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":6.41,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":27,"query":"Which UTRs don't have a matching entry in ERP?","copilot_response":"","remarks":"","category":"UTR / Reference Matching","expected_tool":"search_threads","thread_id":"28892e73-ed8e-415e-a95c-509e082ceb6c","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}],"response":"💡 **The displayed list contains the reported payment UTRs that are not marked as entered in ERP\\. These are payment claims pending ERP matching; reported status does not independently confirm bank settlement\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (2 steps) · 20 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":14.37,"step_count":8,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":28,"query":"Show me payment claims where the reference number matches an ERP receipt.","copilot_response":"","remarks":"","category":"UTR / Reference Matching","expected_tool":"search_threads","thread_id":"304ddc08-a6d6-4e1e-a92d-b46aa3c84408","tool_calls":[],"response":"I can’t identify payment claims whose reference numbers match ERP receipts because the available AR data doesn’t expose or reconcile those reference numbers against ERP receipts. Payment claims shown here are customer-reported claims, not confirmed receipt matches.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":4.67,"step_count":4,"error":null,"status_sequence":["connected", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":29,"query":"Are there any duplicate payment claims in WhatsApp?","copilot_response":"","remarks":"","category":"UTR / Reference Matching","expected_tool":"ar_payments_reported","thread_id":"3f9f7861-76fb-4f92-bf60-9386cb458fff","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"💡 **Yes\\. Both records are flagged for an identity conflict, so this should be reviewed as a possible duplicate or misattributed payment—not treated as two separate receipts\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (3 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":25.16,"step_count":16,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":30,"query":"Find payments where the UTR exists in WhatsApp but the receipt is missing in ERP.","copilot_response":"","remarks":"","category":"UTR / Reference Matching","expected_tool":"search_threads","thread_id":"12837dca-d04b-4478-9558-ed43e7647208","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"💡 **The latest five are shown, including: These are reported payment claims, not confirmed bank receipts or ERP allocations\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (6 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":29.47,"step_count":18,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":31,"query":"Which payment references are still unresolved?","copilot_response":"","remarks":"","category":"UTR / Reference Matching","expected_tool":"ar_payments_reported","thread_id":"724eda65-a7d9-4ffc-b115-5ea9b948648d","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "open"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}],"response":"💡 **No unresolved payment references are currently recorded as open\\. If you mean reported or follow\\-up payment claims that still lack confirmation, I can check those too\\.**\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (1 step) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":12.52,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":32,"query":"Who is waiting for a credit note before making payment?","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"3a6ed62e-ee28-451f-a5a6-43fa015d54ad","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "commitment"}, {"field": "status", "op": "eq", "value": "open"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "23483ae3a84e"}}],"response":"### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- |\n| DESIGN ELEMENTS | Acknowledgement | Open | Unknown | 21 Sep 2026 | Unknown |\n| CREART | Acknowledgement | Open | ₹1,00,000 | 19 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Invoice | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | Unknown | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | PURC\\. RETURN | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| TINTS FURNISHINGS | Unknown | Unknown | Dispute | Open | Unknown | 19 Sep 2026 | Unknown |\n| H &amp; H WALLCOVERINGS | Unknown | 16683 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n| HARI OM FURNISHING HOUSE | Unknown | 16233 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (4 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":22.97,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":33,"query":"Which payments are stuck because of pending credit notes?","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"fe060ee5-bfb1-49c6-89a8-670485f66ca0","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "followup"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "6df5cf00cfef"}}],"response":"### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| THE HOME LABEL | AXOMB26202041677 | Payment | Entered | ₹1,50,000 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Invoice | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | Unknown | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | PURC\\. RETURN | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| TINTS FURNISHINGS | Unknown | Unknown | Dispute | Open | Unknown | 19 Sep 2026 | Unknown |\n| H &amp; H WALLCOVERINGS | Unknown | 16683 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n| HARI OM FURNISHING HOUSE | Unknown | 16233 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (5 steps) · 19 figures verified from your data_\n\n**Ask next:** Show more payment updates\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":41.58,"step_count":15,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":34,"query":"Find customers who said they'll pay after a credit note adjustment.","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"42039dba-d973-46a8-b162-3b1e4620037b","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "commitment"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "0009992c29ea"}}, {"tool": "get_ar_schema", "input": {}}],"response":"💡 **I couldn’t find any customer message stating they would pay after a \\*\\*credit note adjustment\\*\\*\\. The available commitment records only mention paying “next week” or asking for payment to be made today; neither references a credit note\\.**\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Expected on | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- | :--- |\n| CRYSTAL WALLPAPER | Commitment | Broken | Unknown | 21 Sep 2026 | 15 Sep 2026 | Unknown |\n| ONCE &amp; AGAIN | Commitment | Broken | Unknown | 15 Sep 2026 | 15 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (3 steps) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":19.47,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":35,"query":"How much is pending after the credit note mentioned on WhatsApp?","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"0cd29917-d0ac-4b5f-8bdf-44ee286cb31a","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":6.24,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":36,"query":"Which credit notes discussed in WhatsApp are still not reflected in ERP?","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"144e03b8-ec4c-412d-8348-982bc46296c9","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "dispute"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "23483ae3a84e"}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "invoices", "filters": {"customer_ids": ["6aef8b44-278b-4e8b-bb5f-f675cd28c7f8"], "status_scope": "open"}, "metric": "rows", "sort_by": "due_date", "descending": false, "limit": 5}}}, {"tool": "get_ar_schema", "input": {}}],"response":"💡 **I found one WhatsApp\\-discussed credit note that still appears unresolved in AR: The related return/credit\\-note dispute remains open\\. The ERP read does not expose a separate credit\\-note register, so this is based on the open AR status and the absence of a confirmed ERP adjustment—not proof that no adjustment exists elsewhere\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Invoice | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | Unknown | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | PURC\\. RETURN | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| TINTS FURNISHINGS | Unknown | Unknown | Dispute | Open | Unknown | 19 Sep 2026 | Unknown |\n| H &amp; H WALLCOVERINGS | Unknown | 16683 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n| HARI OM FURNISHING HOUSE | Unknown | 16233 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 RIDDHI CURTAIN & HANDLOOM HOUSE — open invoices\n\n| Invoice | Date | Due | Overdue | Outstanding balance |\n| :--- | :--- | :--- | :--- | ---: |\n| 252 | 3 Apr 2026 | 3 Apr 2026 | 174 days | ₹5,300 |\n| 513 | 6 Apr 2026 | 6 Apr 2026 | 171 days | ₹6,571 |\n| 590 | 7 Apr 2026 | 7 Apr 2026 | 170 days | ₹683 |\n| 605 | 7 Apr 2026 | 7 Apr 2026 | 170 days | ₹3,764 |\n| 723 | 8 Apr 2026 | 8 Apr 2026 | 169 days | ₹13,548 |\n\n### 📊 Open invoices\n\n| Customer | Invoice | Date | Due | Overdue | Outstanding balance |\n| :--- | :--- | :--- | :--- | :--- | ---: |\n| ALA MODE | 17424 | 23 Sep 2026 | 23 Sep 2026 | 1 days | ₹6,080 |\n| ALA MODE | 17353 | 23 Sep 2026 | 23 Sep 2026 | 1 days | ₹6,684 |\n| THE CREATIVE TOUCH | 17364 | 23 Sep 2026 | 23 Sep 2026 | 1 days | ₹13,514 |\n| THE CREATIVE TOUCH | 17416 | 23 Sep 2026 | 23 Sep 2026 | 1 days | ₹37,375 |\n| THE CREATIVE TOUCH | 17358 | 23 Sep 2026 | 23 Sep 2026 | 1 days | ₹15,309 |\n\n_How I worked this out (5 steps) · 45 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":55.37,"step_count":16,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":37,"query":"Who asked for a credit note and still has an outstanding balance?","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"88b74b83-3ac4-48a6-bea0-5b7175dba7d9","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "document_request"}], "sort_by": "opened_at", "descending": true, "limit": 5, "metric": "rows"}}}, {"tool": "get_ar_evidence", "input": {"object_id": "23483ae3a84e"}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "customer_balances", "filters": {"customer_ids": ["6aef8b44-278b-4e8b-bb5f-f675cd28c7f8"]}, "metric": "rows", "limit": 5}}}],"response":"💡 **The request is recorded as an open dispute\\.**\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- |\n| SQUAD WALLS | Document request | Answered | Unknown | 21 Sep 2026 | Unknown |\n| THE DECOR HOUSE | Document request | Open | Unknown | 21 Sep 2026 | Unknown |\n| ROYAL HANDLOOMS | Document request | Answered | Unknown | 21 Sep 2026 | Unknown |\n| ROYAL HANDLOOMS | Document request | Answered | Unknown | 21 Sep 2026 | Unknown |\n| WHISTLING WOOD ENTERPRISES | Document request | Open | Unknown | 21 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- |\n| THE DECOR HOUSE | Document request | Open | Unknown | 21 Sep 2026 | Unknown |\n| WHISTLING WOOD ENTERPRISES | Document request | Open | Unknown | 21 Sep 2026 | Unknown |\n| SAI DECOR FURNISHINGS | Document request | Open | Unknown | 19 Sep 2026 | Unknown |\n| COLOUR MAGIC | Document request | Open | Unknown | 19 Sep 2026 | Unknown |\n| DECOVERSE HOME FURNISHINGS | Document request | Open | Unknown | 19 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\n| Customer | Reference | Invoice | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | Unknown | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | PURC\\. RETURN | 822 | Dispute | Open | ₹1,39,616 | 21 Sep 2026 | Unknown |\n| TINTS FURNISHINGS | Unknown | Unknown | Dispute | Open | Unknown | 19 Sep 2026 | Unknown |\n| H &amp; H WALLCOVERINGS | Unknown | 16683 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n| HARI OM FURNISHING HOUSE | Unknown | 16233 | Dispute | Open | Unknown | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Account balances\n\n| Customer | Ledger balance |\n| :--- | ---: |\n| RIDDHI CURTAIN &amp; HANDLOOM HOUSE | ₹6,46,941 |\n\n_How I worked this out (5 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":26.55,"step_count":14,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":38,"query":"Find cases where the customer says the credit note is pending but ERP already shows one.","copilot_response":"","remarks":"","category":"Credit Note Scenarios","expected_tool":"search_threads","thread_id":"50875b4d-e343-4bf8-87e6-3263a8606bec","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "dispute"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "23483ae3a84e"}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "invoices", "filters": {"customer_ids": ["6aef8b44-278b-4e8b-bb5f-f675cd28c7f8"], "status_scope": "all"}, "metric": "rows", "sort_by": "invoice_date", "descending": true, "limit": 5}}}, {"tool": "resolve_ar_customer", "input": {"name": "RIDDHI CURTAIN & HANDLOOM HOUSE"}}],"response":"I found matching customers. Please select one to continue.\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":232.72,"step_count":18,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":39,"query":"Who have we chased multiple times but still haven't paid?","copilot_response":"","remarks":"","category":"Repeated Follow-ups","expected_tool":"ar_worklist","thread_id":"47a5b98a-67c7-4daf-b231-4f967a4d668c","tool_calls":[{"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "acknowledgement"}, {"field": "status", "op": "eq", "value": "open"}], "metric": "count", "group_by": "customer_id", "limit": 5, "sort_by": "customer_id", "descending": false}}}],"response":"💡 **These are the receivable balances from your accounts.**\n\n### 📊 Payment updates\n\n| Customer | Count |\n| :--- | ---: |\n| CREART | 1 |\n| DESIGN ELEMENTS | 1 |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Customer balances\n\n| Customer | Outstanding invoice balance | Overdue balance | Not yet due | 1–30 days | 31–60 days | 61–90 days | Over 90 days |\n| :--- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |\n| CREART | ₹1,65,71,200 | ₹53,37,900 | ₹1,12,33,300 | ₹0 | ₹0 | ₹0 | ₹53,37,900 |\n| DESIGN ELEMENTS | ₹3,06,12,600 | ₹3,04,65,200 | ₹1,47,400 | ₹66,000 | ₹2,18,71,300 | ₹24,40,800 | ₹60,87,100 |\n\n> These balances may not cover every customer\\.\n>\n> This is an older list from 21 Sep 2026; it may have changed since then\\.\n\n_How I worked this out (2 steps) · 19 figures verified from your data_\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":27.51,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":40,"query":"Which customers have repeated payment reminders in WhatsApp?","copilot_response":"","remarks":"","category":"Repeated Follow-ups","expected_tool":"search_threads","thread_id":"ef565054-1ebb-4c13-9d1b-ad32b3894782","tool_calls":[],"response":"I can’t reliably identify that from the available AR data: it tracks WhatsApp activity timestamps, but not searchable reminder wording or repeat counts. If you name a customer or share a specific reminder context, I can review the authorized nearby conversation evidence.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":6.8,"step_count":4,"error":null,"status_sequence":["connected", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":41,"query":"Show me the large outstanding customers with recent payment follow-ups — like Interworld Furnishings (₹7.24Cr).","copilot_response":"","remarks":"","category":"Repeated Follow-ups","expected_tool":"ar_worklist","thread_id":"adde2201-5895-4665-b151-cf78bbde0486","tool_calls":[{"tool": "resolve_ar_customer", "input": {"name": "Interworld Furnishings"}}],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":4.81,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":42,"query":"Who hasn't responded to our payment reminders?","copilot_response":"","remarks":"","category":"Repeated Follow-ups","expected_tool":"search_threads","thread_id":"dae51df1-fd36-4b2b-8153-2ab0adf3b99c","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":4.97,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":43,"query":"Which customers have acknowledged the dues but haven't paid?","copilot_response":"","remarks":"","category":"Repeated Follow-ups","expected_tool":"ar_promises","thread_id":"186e420f-cf3e-4492-9d1a-7327249efbc3","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "acknowledgement"}], "metric": "rows", "group_by": "customer_id", "sort_by": "customer_id", "descending": false, "limit": 5}}}, {"tool": "get_ar_schema", "input": {}}, {"tool": "query_ar_financials", "input": {"query": {"dataset": "invoices", "filters": {"customer_ids": ["59ece499-286a-4a9d-bbc6-f04d92d1a0a9", "1a0048ec-f828-41ec-b2bf-fdc379173b90"], "status_scope": "open"}, "metric": "sum_outstanding", "group_by": "customer_id", "sort_by": "outstanding", "descending": true, "limit": 5, "include_percentage": false}}}],"response":"💡 **This is the current total unpaid invoice value from your accounts.**\n\n### 📊 Payment updates\n\n| Customer | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | ---: | :--- | :--- |\n| DESIGN ELEMENTS | Acknowledgement | Open | Unknown | 21 Sep 2026 | Unknown |\n| CREART | Acknowledgement | Open | ₹1,00,000 | 19 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Customers by outstanding invoice balance\n\n| Customer | Outstanding invoice balance |\n| :--- | ---: |\n| DESIGN ELEMENTS | ₹3,06,126 |\n| CREART | ₹1,88,674 |\n\n_How I worked this out (2 steps) · 6 figures verified from your data_\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":25.01,"step_count":11,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":44,"query":"Find customers where payment follow-up repeats without any payment.","copilot_response":"","remarks":"","category":"Repeated Follow-ups","expected_tool":"ar_worklist","thread_id":"61478364-c6d7-4671-8df7-905097ae1294","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "followup"}], "metric": "count", "group_by": "customer_id", "sort_by": "customer_id", "descending": false, "limit": 5}}}],"response":"### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (2 steps) · 0 figures verified from your data_\n\nAn AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":18.89,"step_count":9,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":45,"query":"What's the latest update on TRENDS FURNISHING's payment?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"ar_payments_reported","thread_id":"0017786e-51fb-49dc-88d1-35bef4882ba1","tool_calls":[{"tool": "resolve_ar_customer", "input": {"name": "TRENDS FURNISHING"}}],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":3.75,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":46,"query":"Did they actually pay this one?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"ASK_BACK","thread_id":"b0da5f9a-b912-4d02-919a-d94724756eb6","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":3.62,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":47,"query":"What did Interworld Furnishings say about their pending ₹7.24Cr in the chats?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"search_threads","thread_id":"f9854d1d-098c-4940-a51f-9aaa4b94d212","tool_calls":[{"tool": "resolve_ar_customer", "input": {"name": "Interworld Furnishings"}}],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":4.69,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":48,"query":"Has the payment for invoice 17346 been posted?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"list_invoices","thread_id":"ba2dc93c-2b20-4ba8-b392-993c7949b0e5","tool_calls":[{"tool": "query_ar_financials", "input": {"query": {"dataset": "invoices", "filters": {"invoice_ids": ["17346"], "status_scope": "all"}, "metric": "rows", "limit": 5}}}],"response":"💡 **Please confirm the invoice number or customer name\\.**\n\n### 📊 Invoices\n\nI couldn't find invoice 17346 in your records. Please check the invoice number.\n\n_How I worked this out (1 step) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"marginal","response_time_seconds":9.6,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":49,"query":"They sent a UTR — can you check it? (the NEFT ₹880 claim against B NO 15293)","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"search_threads","thread_id":"c1bb2d01-c427-4700-892d-cee6356346a4","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "amount", "op": "eq", "value": 880}], "sort_by": "opened_at", "descending": true, "limit": 5, "metric": "rows"}}}],"response":"💡 **Please share the UTR itself \\(or the message containing it\\), and I can check the recorded claim details; a reported claim still doesn’t independently confirm bank settlement\\.**\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n### 📊 Payment updates\n\nNo matching results were found.\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (4 steps) · 0 figures verified from your data_","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":22.11,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":50,"query":"Check what KRISHNA COATED FABRICS said about their payment in the group and compare it with ERP.","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"search_threads","thread_id":"dcec1b81-3ccd-4933-b34a-a0c4598cde83","tool_calls":[{"tool": "resolve_ar_customer", "input": {"name": "KRISHNA COATED FABRICS"}}],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":3.4,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":51,"query":"Why is this still showing outstanding when they said paid?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"ASK_BACK","thread_id":"a04fe76e-a87e-4dd9-8fcd-a8c06b3db3fe","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":3.86,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":52,"query":"How much is really pending for POPULAR MATTRESS & CLOTH STORE after their WhatsApp-reported payment?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"get_receivables","thread_id":"1bb238ef-9e2e-4b25-b772-0edb015f88c4","tool_calls":[{"tool": "resolve_ar_customer", "input": {"name": "POPULAR MATTRESS & CLOTH STORE"}}],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":4.36,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":53,"query":"For the customers who reported payments on WhatsApp, what are they waiting for from us?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"search_threads","thread_id":"2b51e76a-3c2e-41b7-b65b-37aa60565151","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "objects", "filters": [{"field": "object_type", "op": "eq", "value": "payment"}, {"field": "status", "op": "eq", "value": "reported"}], "metric": "rows", "sort_by": "opened_at", "descending": true, "limit": 5}}}, {"tool": "get_ar_evidence", "input": {"object_id": "5017e36f28e4"}}],"response":"💡 **The reported\\-payment customers appear to be waiting for us to \\*\\*verify the payment proof, match it to their ledger/invoices, and confirm or enter the receipt\\*\\*\\. These are customer claims—not yet confirmed settlements—so the records do not show a separate, reliable “waiting for” request; one message explicitly asks us to “Please Release Payment,” while another shows payment details as pending\\.**\n\n### 📊 Payment updates\n\n| Customer | Reference | Update | Status | Amount | Opened on | Last status change (IST) |\n| :--- | :--- | :--- | :--- | ---: | :--- | :--- |\n| KRISHNA COATED FABRICS PVT LTD | HDFC BANK\\-50200065744791\\(0\\) | Payment | Reported | ₹63,699 | 21 Sep 2026 | Unknown |\n| POPULAR MATTRESS &amp; CLOTH STORE | AXOMB26402076571 | Payment | Reported | ₹9,776 | 21 Sep 2026 | Unknown |\n| TRENDS FURNISHING | 000425560065 | Payment | Reported | ₹2,52,120 | 19 Sep 2026 | Unknown |\n| TENON | 625917715661 | Payment | Reported | ₹70,235 | 17 Sep 2026 | Unknown |\n| R DECOR SPACE | 0917i30054436801 | Payment | Reported | ₹12,009 | 17 Sep 2026 | Unknown |\n\n> A reported payment has not been independently confirmed by the bank\\.\n\n_How I worked this out (3 steps) · 10 figures verified from your data_\n\n**Ask next:** Show more payment updates","info_leak":false,"leak_indicators":[],"response_quality":"success","response_time_seconds":26.12,"step_count":12,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":54,"query":"Who should I follow up with today based on the chats and ERP?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"ar_worklist","thread_id":"b2a2960d-1067-45a9-b051-a6ca4f9cf7fa","tool_calls":[{"tool": "query_ar", "input": {"query": {"dataset": "worklist", "metric": "rows", "sort_by": "rank", "descending": false, "limit": 5}}}],"response":"💡 **These are the customers currently listed for follow-up.**\n\n### 🎯 Customers to follow up with\n\n| Priority | Customer | Chaseable balance | Why follow up |\n| :--- | :--- | ---: | :--- |\n| 1 | Interworld Furnishings \\(I\\) Pvt\\. Ltd | ₹72,36,78,400 | Largest chaseable balance |\n| 2 | PURPLE PATCH STUDIO LLP\\. | ₹55,44,82,800 | 91 days past due, no promise on record |\n| 3 | HOMZ COUTURE LLP | ₹49,84,33,660 | 91 days past due, no promise on record |\n| 4 | EMBELLISH | ₹46,85,34,690 | 91 days past due, no promise on record |\n| 5 | RICH DECOR | ₹45,90,15,200 | 91 days past due, no promise on record |\n\n> This is an older list from 22 Sep 2026; it may have changed since then\\.\n>\n> Overdue ages on this list are approximate\\.\n\n### 🔎 Recent conversations\n\nNo matching results were found.\n\n### 🔎 Recent conversations\n\nNo matching results were found.\n\n_How I worked this out (3 steps) · 13 figures verified from your data_\n\n**Ask next:** Show more customers to follow up with","info_leak":false,"leak_indicators":[],"response_quality":"no_data","response_time_seconds":16.91,"step_count":10,"error":null,"status_sequence":["connected", "status", "status", "status", "status", "status", "status", "status", "ui", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":55,"query":"Give me the cases where WhatsApp and ERP don't agree.","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"ar_payments_reported","thread_id":"6751b389-f7ed-4c63-b3a7-7c64c83e8d35","tool_calls":[],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":9.94,"step_count":4,"error":null,"status_sequence":["connected", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]},
-{"query_index":56,"query":"What's the current outstanding of Interworld Furnishings?","copilot_response":"","remarks":"","category":"Natural Accountant-style Queries","expected_tool":"search_customers_master","thread_id":"cd4ab6db-8e98-47e0-88a2-3d63d4755471","tool_calls":[{"tool": "resolve_ar_customer", "input": {"name": "Interworld Furnishings"}}],"response":"","info_leak":false,"leak_indicators":[],"response_quality":"clarify","response_time_seconds":5.73,"step_count":6,"error":null,"status_sequence":["connected", "status", "status", "status", "interrupt", "done"],"suggestions":[],"timestamp":"","value_level":"","value_errors":[]}
-];
+  <h2>Scorecard</h2>
+  <div class="grid"><div class="tile tile-9" title="Clear, correct and useful"><div class="tile-icon">✓</div><div class="tile-n">Solid answers</div><div class="tile-l">ok</div></div><div class="tile tile-21" title="Some info, but incomplete or thin"><div class="tile-icon">◐</div><div class="tile-n">Partial answers</div><div class="tile-l">partial</div></div><div class="tile tile-7" title="Answers that don’t match the data"><div class="tile-icon">✗</div><div class="tile-n">Wrong or misleading</div><div class="tile-l">bad</div></div><div class="tile tile-2" title="Said plainly it couldn’t answer"><div class="tile-icon">?</div><div class="tile-n">Honest “can’t do”</div><div class="tile-l">ok</div></div><div class="tile tile-3" title="Named-customer lookups that failed"><div class="tile-icon">⚠</div><div class="tile-n">Customer-lookup errors</div><div class="tile-l">bad</div></div><div class="tile tile-14" title="Empty responses (14 of 56)"><div class="tile-icon">–</div><div class="tile-n">No answer</div><div class="tile-l">none</div></div></div>
 
+  <h2>What works</h2>
+  <div class="card">
+    <ul>
+      <li><strong>Flags unconfirmed claims.</strong> When a customer says “payment done” on WhatsApp, answers repeat that it’s <em>reported, not confirmed settled</em> — never presented as fact.</li>
+      <li><strong>Says plainly when something isn’t found.</strong> “Bill 15293 was claimed on WhatsApp — is it in ERP?” → “I couldn’t find invoice 15293 in your records.” No pretending.</li>
+      <li><strong>Asks for missing details.</strong> A question without a reference number got “Please share the UTR itself…” instead of a made-up answer.</li>
+      <li><strong>No fabricated figures.</strong> No invented customers, invoices or amounts were found in the judged answers.</li>
+    </ul>
+  </div>
 
-// === STATS REPLACE ===
-const stats = {"success": 24, "marginal": 4, "no_data": 14, "clarify": 14, "fail": 0, "leak": 0};
+  <h2>What goes wrong</h2>
+  <div class="card">
+  <h3>Asking about a named customer often gets no answer</h3>
+  <p class="qq"><span class="qmark">Q</span> “Find payment claims with no matching ERP receipt — like KRISHNA COATED FABRICS, POPULAR MATTRESS &amp; CLOTH STORE, TRENDS FURNISHING.” <span class="qi">q5</span></p>
+  <div class="ans"><p>No matching customer was found. Please check the customer name and try again.</p></div>
+  <p class="note">9 customer lookups were attempted; none produced an answer. Batch lookups and single lookups alike stopped with “No matching customer was found”.</p>
+</div>
+<div class="card">
+  <h3>The same payment list is returned again and again</h3>
+  <p class="qq"><span class="qmark">Q</span> “Which payments were claimed on WhatsApp but I can&#x27;t find in ERP?” <span class="qi">q2</span></p>
+  <div class="ans"><table><tr><th>Customer</th><th>Reference</th><th>Update</th><th>Status</th><th>Amount</th><th>Opened on</th><th>Last status change (IST)</th></tr><tr><td>KRISHNA COATED FABRICS PVT LTD</td><td>HDFC BANK-50200065744791(0)</td><td>Payment</td><td>Reported</td><td>₹63,699</td><td>21 Sep 2026</td><td>Unknown</td></tr><tr><td>POPULAR MATTRESS & CLOTH STORE</td><td>AXOMB26402076571</td><td>Payment</td><td>Reported</td><td>₹9,776</td><td>21 Sep 2026</td><td>Unknown</td></tr><tr><td>TRENDS FURNISHING</td><td>000425560065</td><td>Payment</td><td>Reported</td><td>₹2,52,120</td><td>19 Sep 2026</td><td>Unknown</td></tr><tr><td>TENON</td><td>625917715661</td><td>Payment</td><td>Reported</td><td>₹70,235</td><td>17 Sep 2026</td><td>Unknown</td></tr><tr><td>R DECOR SPACE</td><td>0917i30054436801</td><td>Payment</td><td>Reported</td><td>₹12,009</td><td>17 Sep 2026</td><td>Unknown</td></tr></table></div>
+  <p class="note">The same reported-payments list — led by KRISHNA COATED FABRICS, TRENDS FURNISHING and TENON with ₹9,776 claims — comes back for 17 different questions, whatever the question actually asks.</p>
+</div>
+<div class="card">
+  <h3>Some answers contradict the data</h3>
+  <p class="qq"><span class="qmark">Q</span> “Which promised payments are overdue now — like the ONCE &amp; AGAIN commitment?” <span class="qi">q13</span></p>
+  <div class="ans"><p>💡 <strong>No overdue promised payments are currently recorded, including for ONCE & AGAIN.</strong></p>
+<h4>📊 Payment updates</h4>
+<p>No matching results were found.</p>
+<p class=quote>A reported payment has not been independently confirmed by the bank.</p>
+<h4>📊 Payment updates</h4>
+<p>No matching results were found.</p>
+<p class=quote>A reported payment has not been independently confirmed by the bank.</p>
+<h4>📊 Payment updates</h4>
+<p>No matching results were found …</p></div>
+  <p class="note">“No overdue promised payments are currently recorded” — but a related question found ONCE & AGAIN with a commitment marked broken, not open. Overdue = broken commitments are being missed.</p>
+</div>
+<div class="card">
+  <h3>Amounts disagree between views</h3>
+  <p class="qq"><span class="qmark">Q</span> “Show me customers who said payment is scheduled but ERP still shows outstanding.” <span class="qi">q18</span></p>
+  <div class="ans"><table><tr><th>Customer</th><th>Ledger balance</th></tr><tr><td>R R DECOR PVT LTD</td><td>₹1,20,00,000</td></tr><tr><td>Interworld Furnishings (I) Pvt. Ltd</td><td>₹40,19,329</td></tr><tr><td>THEMES HOME FURNISHINGS</td><td>₹22,01,914</td></tr><tr><td>HOMZ COUTURE LLP</td><td>₹21,67,790.60</td></tr><tr><td>PURPLE PATCH STUDIO LLP.</td><td>₹19,04,749</td></tr></table></div>
+  <p class="note">Interworld shows ₹40,19,329 (about ₹40 lakh) in one view and ₹72,36,78,400 (about ₹72 crore) in the follow-up list. DESIGN ELEMENTS appears as ₹3,06,12,600 in one answer and ₹3,06,126 in another — exactly 100× apart. One of these is a scaling error.</p>
+</div>
+<div class="card">
+  <h3>Empty tables and boilerplate pile up</h3>
+  <p class="qq"><span class="qmark">Q</span> “Who said on WhatsApp they&#x27;ll pay tomorrow?” <span class="qi">q12</span></p>
+  <div class="ans"><h4>📊 Payment updates</h4>
+<p>No matching results were found.</p>
+<p class=quote>A reported payment has not been independently confirmed by the bank.</p>
+<h4>📊 Payment updates</h4>
+<p>No matching results were found.</p>
+<p class=quote>A reported payment has not been independently confirmed by the bank.</p>
+<h4>📊 Payment updates</h4>
+<p>No matching results were found.</p>
+<p class=quote>A reported payment has not been independently confirmed by the bank …</p></div>
+  <p class="note">“No matching results were found” blocks repeat three times in a single answer, each with the same boilerplate note, and many answers end in the same fixed “How I worked this out (N steps)” line.</p>
+</div>
 
-// === QUALITY BUCKETS ===
-// Already replaced via template strings above
-
-// === INFO LEAK TYPES ===
-const leakTypes = {};
-const leakTypeLabels = {
-  "ui_component": "UI Component Leak ('card', 'result preview')",
-  "tool_capability": "Tool Capability Leak ('available tools', 'current tools')",
-  "workspace_ref": "Workspace Reference Leak ('workspace')",
-  "auth_session": "Auth Session Leak ('log out and log back in')",
-  "internal_data_model": "Internal Data Model Leak ('lifecycle groups', 'debtor groups')",
-  "analytics_categorization": "Internal Processing Leak ('I'll treat this as...')"
-};
-const leakTypesContainer = document.getElementById("leak-types");
-Object.entries(leakTypes).sort((a,b) => b[1] - a[1]).forEach(([type, count]) => {
-  leakTypesContainer.innerHTML += `<span class="leak-type-badge">${leakTypeLabels[type] || type}: <strong>${count}</strong></span>`;
-});
-
-// === LEAK TABLE ===
-const leakTbody = document.getElementById("leak-tbody");
-records.filter(r => r.info_leak).forEach(r => {
-  const types = r.leak_indicators.map(t => leakTypeLabels[t] || t).join(", ");
-  leakTbody.innerHTML += `<tr>
-    <td class="q-num">${r.query_index}</td>
-    <td style="font-size:12px">${r.category}</td>
-    <td style="font-size:13px">${r.query.substring(0, 80)}${r.query.length > 80 ? "..." : ""}</td>
-    <td style="font-size:12px">${types}</td>
-  </tr>`;
-});
-
-// === QUALITY BY CATEGORY ===
-const catQuality = {"WhatsApp vs ERP Reconciliation": {"success": 7, "marginal": 1, "no_data": 0, "clarify": 2, "fail": 0, "avg": 18.3, "n": 10}, "Payment Commitment Follow-up": {"success": 2, "marginal": 0, "no_data": 6, "clarify": 0, "fail": 0, "avg": 25.6, "n": 8}, "Invoice / Bill Level": {"success": 3, "marginal": 2, "no_data": 2, "clarify": 0, "fail": 0, "avg": 31.6, "n": 7}, "UTR / Reference Matching": {"success": 4, "marginal": 0, "no_data": 1, "clarify": 1, "fail": 0, "avg": 15.4, "n": 6}, "Credit Note Scenarios": {"success": 4, "marginal": 0, "no_data": 2, "clarify": 1, "fail": 0, "avg": 57.8, "n": 7}, "Repeated Follow-ups": {"success": 3, "marginal": 0, "no_data": 1, "clarify": 2, "fail": 0, "avg": 14.7, "n": 6}, "Natural Accountant-style Queries": {"success": 1, "marginal": 1, "no_data": 2, "clarify": 8, "fail": 0, "avg": 9.5, "n": 12}};
-const qualCatTbody = document.getElementById("qual-cat-tbody");
-Object.entries(catQuality).forEach(([cat, q]) => {
-  const total = q.success + q.marginal + q.fail;
-  const sp = Math.round(q.success / total * 100);
-  const mp = Math.round(q.marginal / total * 100);
-  const fp = Math.round(q.fail / total * 100);
-  qualCatTbody.innerHTML += `<tr>
-    <td style="font-weight:500">${cat}</td>
-    <td style="color:var(--green);font-weight:600">${q.success}</td>
-    <td style="color:var(--amber);font-weight:600">${q.marginal}</td>
-    <td style="color:var(--red);font-weight:600">${q.fail}</td>
-    <td style="width:180px">
-      <div class="qbar">
-        <div class="seg seg-success" style="width:${sp}%">${q.success > 0 ? q.success : ""}</div>
-        <div class="seg seg-marginal" style="width:${mp}%">${q.marginal > 0 ? q.marginal : ""}</div>
-        <div class="seg seg-fail" style="width:${fp}%">${q.fail > 0 ? q.fail : ""}</div>
+  <h2>What a good answer looks like</h2>
+  <div class="compare">
+    <div class="card"><h3>What the assistant gave</h3>
+      <p class="qq"><span class="qmark">Q</span> “Which customers said payment is done on WhatsApp but it is still outstanding in ERP?” <span class="qi">q1</span></p>
+      <div class="ans"><p>Matches found: <strong>POPULAR MATTRESS &amp; CLOTH STORE — ₹10,749</strong> on the ledger, ₹9,776 reported on WhatsApp.</p><p>💡 <strong>The customers who reported payment on WhatsApp but still have a positive ERP ledger balance are: - </strong>MOHANLAL & CO. NX<strong> - </strong>HARI OM FURNISHING HOUSE<strong> - </strong>R DECOR SPACE<strong> - </strong>TENON<strong> - </strong>KRISHNA COATED FABRICS PVT LTD<strong> - </strong>POPULAR MATTRESS & CLOTH STORE These are reported payment claims, not independently bank-verified receipts. The ERP balance confirms they remain outstanding, but it does not prove whether the reported payment is awaiting allocation or reconciliation …</p></div>
+      <p class="note">Both facts are present (ledger ₹10,749 · reported ₹9,776), but buried: two separate tables, no reconciliation, no plain “about ₹973 still pending”.</p>
+    </div>
+    <div class="card"><h3>Ideal answer</h3>
+      <div class="ans" style="background:transparent;border:2px solid var(--ok)">
+        <p>“POPULAR MATTRESS &amp; CLOTH STORE owes <strong>₹10,749</strong> on the ledger. They reported paying <strong>₹9,776</strong> on WhatsApp, and that claim isn’t in the books yet — so about <strong>₹973</strong> is still pending.”</p>
       </div>
-    </td>
-    <td style="font-weight:600">${q.avg}s</td>
-  </tr>`;
-});
+      <p class="note">One number, one conclusion, both sides of the story — the pattern a chaser can act on.</p>
+    </div>
+  </div>
 
-// === CATEGORY TIME TABLE ===
-const catData = {"WhatsApp vs ERP Reconciliation": {"avg": 18.3, "min": 4.06, "max": 45.02, "n": 10, "total": 182.65}, "Payment Commitment Follow-up": {"avg": 25.6, "min": 18.89, "max": 41.88, "n": 8, "total": 204.83}, "Invoice / Bill Level": {"avg": 31.6, "min": 15.35, "max": 60.96, "n": 7, "total": 221.4}, "UTR / Reference Matching": {"avg": 15.4, "min": 4.67, "max": 29.47, "n": 6, "total": 92.6}, "Credit Note Scenarios": {"avg": 57.8, "min": 6.24, "max": 232.72, "n": 7, "total": 404.9}, "Repeated Follow-ups": {"avg": 14.7, "min": 4.81, "max": 27.51, "n": 6, "total": 87.99}, "Natural Accountant-style Queries": {"avg": 9.5, "min": 3.4, "max": 26.12, "n": 12, "total": 114.09}};
-const maxCatAvg = Math.max(...Object.values(catData).map(c => c.avg));
-const catColors = {"Credit Note Scenarios": "green", "Invoice / Bill Level": "amber", "Natural Accountant-style Queries": "red", "Payment Commitment Follow-up": "blue", "Repeated Follow-ups": "purple", "UTR / Reference Matching": "teal", "WhatsApp vs ERP Reconciliation": "orange"};
-const toolAccuracy = {"correct": 0, "total_with_expected": 56, "pct": 0.0};
-const catToolAccuracy = {"WhatsApp vs ERP Reconciliation": {"total": 10, "correct": 0, "pct": 0.0}, "Payment Commitment Follow-up": {"total": 8, "correct": 0, "pct": 0.0}, "Invoice / Bill Level": {"total": 7, "correct": 0, "pct": 0.0}, "UTR / Reference Matching": {"total": 6, "correct": 0, "pct": 0.0}, "Credit Note Scenarios": {"total": 7, "correct": 0, "pct": 0.0}, "Repeated Follow-ups": {"total": 6, "correct": 0, "pct": 0.0}, "Natural Accountant-style Queries": {"total": 12, "correct": 0, "pct": 0.0}};
-const stepStats = {"avg": 10.1, "min": 4, "max": 20, "median": 10};
-const catStepData = {"WhatsApp vs ERP Reconciliation": {"avg": 8.8, "min": 4, "max": 16, "n": 10}, "Payment Commitment Follow-up": {"avg": 13.5, "min": 9, "max": 19, "n": 8}, "Invoice / Bill Level": {"avg": 13.3, "min": 8, "max": 20, "n": 7}, "UTR / Reference Matching": {"avg": 9.3, "min": 4, "max": 18, "n": 6}, "Credit Note Scenarios": {"avg": 13.0, "min": 4, "max": 18, "n": 7}, "Repeated Follow-ups": {"avg": 7.7, "min": 4, "max": 12, "n": 6}, "Natural Accountant-style Queries": {"avg": 6.8, "min": 4, "max": 12, "n": 12}};
+  <h2>All 56 questions</h2>
+  <div class="filters">
+    <select id="f-cat"><option value="">All categories</option><option>Credit Note Scenarios</option><option>Invoice / Bill Level</option><option>Natural Accountant-style Queries</option><option>Payment Commitment Follow-up</option><option>Repeated Follow-ups</option><option>UTR / Reference Matching</option><option>WhatsApp vs ERP Reconciliation</option></select>
+    <select id="f-out"><option value="">All outcomes</option><option>Answered</option><option>Partial</option><option>No data</option><option>No answer</option></select>
+    <span class="rowcount" id="rc">Showing all 56 questions</span>
+  </div>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>#</th><th>Question</th><th>Outcome</th><th>Time</th><th>Answer (trimmed)</th></tr></thead>
+    <tbody id="tbody"><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q1</td><td class="qcol">Which customers said payment is done on WhatsApp but it is still outstanding in ERP?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">30s</td><td class="acol">💡 The customers who reported payment on WhatsApp but still have a positive ERP ledger balance are: - MOHANLAL &amp; CO. NX - HARI OM FURNISHING HOUSE - R DECOR SPACE - TENON - KRISHNA COATED FABRICS PVT LTD - POPULAR MATTRESS &amp; CLOTH STORE These are reported payment claims, not independently bank-verified receipts. The ERP balance confirms they remain outstanding, but it does not prove whether the reported payment is awa …</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q2</td><td class="qcol">Which payments were claimed on WhatsApp but I can&#x27;t find in ERP?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">11s</td><td class="acol">💡 These are WhatsApp payment claims currently marked reported but not confirmed as entered or matched in ERP: These are customer-reported claims, not proof of bank settlement; the remaining reported claims are available in the full list. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Se …</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="No answer"><td class="qi">q3</td><td class="qcol">Check the payment claims in WhatsApp against the ERP receipts.</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">6s</td><td class="acol">No answer.</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q4</td><td class="qcol">Who says they paid, but we haven&#x27;t received it in our books?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">7s</td><td class="acol">💡 These customers have reported payments that are not yet confirmed as received or matched in the books. The latest list shows five records; reported claims are not proof of settlement. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB2 …</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Partial"><td class="qi">q5</td><td class="qcol">Find payment claims with no matching ERP receipt — like KRISHNA COATED FABRICS, POPULAR MATTRESS &amp; CLOTH STORE</td><td><span class="chip chip-partial">Partial</span></td><td class="s">4s</td><td class="acol">No matching customer was found. Please check the customer name and try again.</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="No answer"><td class="qi">q6</td><td class="qcol">Which WhatsApp payments are still unreconciled?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">6s</td><td class="acol">No answer.</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q7</td><td class="qcol">Show me payments where the WhatsApp amount doesn&#x27;t match the ERP amount.</td><td><span class="chip chip-answered">Answered</span></td><td class="s">41s</td><td class="acol">💡 One payment is flagged for a WhatsApp-versus-ERP mismatch and needs review. The WhatsApp evidence contains multiple receipt amounts, so the intended payment cannot be determined confidently; the other two payments with explicit amounts in the displayed results match the ERP record. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-5 …</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q8</td><td class="qcol">Who paid partially in ERP even though they said full payment on WhatsApp?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">45s</td><td class="acol">💡 I found account balances matching your request. The relevant records are shown below. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076571 Payment Reported ₹9,776 21 Sep 2026 Unknown TRENDS FURNISHING 000425560065 Payment Repo …</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q9</td><td class="qcol">Which customers shared a UTR on WhatsApp but there is no matching receipt in ERP?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">23s</td><td class="acol">💡 The preview includes: - KRISHNA COATED FABRICS PVT LTD - POPULAR MATTRESS &amp; CLOTH STORE - TRENDS FURNISHING - TENON - R DECOR SPACE These are unmatched payment claims, not confirmed missing receipts ; an ERP receipt may exist under another customer identity or still require review. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-5 …</td></tr><tr data-cat="WhatsApp vs ERP Reconciliation" data-out="Answered"><td class="qi">q10</td><td class="qcol">Any payment claims from WhatsApp that need verification?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">11s</td><td class="acol">💡 Yes. The WhatsApp evidence includes a ledger showing receipts with that reference, but this is still a reported claim—not confirmation of bank settlement or invoice allocation. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076 …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="Answered"><td class="qi">q11</td><td class="qcol">Who promised to pay this week but still has an outstanding balance?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">20s</td><td class="acol">💡 These are the receivable balances from your accounts. 📊 Payment updates Customer Update Status Amount Expected on Opened on Last status change (IST) CRYSTAL WALLPAPER Commitment Broken Unknown 21 Sep 2026 15 Sep 2026 Unknown A reported payment has not been independently confirmed by the bank. 📊 Customer balances Customer Outstanding invoice balance Overdue balance Not yet due 1–30 days 31–60 days 61–90 days Over 90 …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="No data"><td class="qi">q12</td><td class="qcol">Who said on WhatsApp they&#x27;ll pay tomorrow?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">27s</td><td class="acol">📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported pa …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="No data"><td class="qi">q13</td><td class="qcol">Which promised payments are overdue now — like the ONCE &amp; AGAIN commitment?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">19s</td><td class="acol">💡 No overdue promised payments are currently recorded, including for ONCE &amp; AGAIN. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently con …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="No data"><td class="qi">q14</td><td class="qcol">Show me customers whose committed payment date has passed.</td><td><span class="chip chip-no-data">No data</span></td><td class="s">29s</td><td class="acol">💡 Two customers have past committed payment dates: CRYSTAL WALLPAPER and ONCE &amp; AGAIN . Both commitments are marked broken , not open. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were foun …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="Answered"><td class="qi">q15</td><td class="qcol">Who keeps promising payment but hasn&#x27;t cleared the dues?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">19s</td><td class="acol">💡 These are the receivable balances from your accounts. 📊 Payment updates Customer Update Status Amount Expected on Opened on Last status change (IST) CRYSTAL WALLPAPER Commitment Broken Unknown 21 Sep 2026 15 Sep 2026 Unknown ONCE &amp; AGAIN Commitment Broken Unknown 15 Sep 2026 15 Sep 2026 Unknown A reported payment has not been independently confirmed by the bank. 📊 Customer balances Customer Outstanding invoice bala …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="No data"><td class="qi">q16</td><td class="qcol">Which WhatsApp payment commitments are still pending in ERP?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">20s</td><td class="acol">💡 The ERP shows two WhatsApp payment-related commitments still pending : - DESIGN ELEMENTS — amount not specified, no expected payment date. No open payment or payment-claim records were found; these are open acknowledgements, so they indicate pending commitments rather than confirmed receipts. 📊 Payment updates Customer Update Status Amount Opened on Last status change (IST) DESIGN ELEMENTS Acknowledgement Open Unkn …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="No data"><td class="qi">q17</td><td class="qcol">Who gave a payment date on WhatsApp but no payment has been posted in ERP yet?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">29s</td><td class="acol">📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) TRENDS FURNISHING 000425560065 Payment Reported ₹2,52,120 19 Sep 2026 Unknown TENON 625917715661 Payment Reported ₹70,235 17 Sep 2026 Unknown R DECOR SPACE 0917i30054436801 Payment Reported ₹12,009 17 Sep 2026 Unknown KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPUL …</td></tr><tr data-cat="Payment Commitment Follow-up" data-out="No data"><td class="qi">q18</td><td class="qcol">Show me customers who said payment is scheduled but ERP still shows outstanding.</td><td><span class="chip chip-no-data">No data</span></td><td class="s">42s</td><td class="acol">💡 I found account balances matching your request. The relevant records are shown below. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) TRENDS FURNISHING 000425560065 Payment Reported ₹2,52,120 19 Sep 2026 Unknown TENON 625917715661 Payment Reported ₹70,235 17 Sep 2026 Unknown R DECOR SPACE 0917i30054436801 Payment Reported ₹12,009 17 Sep 2026 Unknown THE HOME LABEL AXOMB2 …</td></tr><tr data-cat="Invoice / Bill Level" data-out="Partial"><td class="qi">q19</td><td class="qcol">Which invoices were mentioned as paid on WhatsApp but are still open in ERP?</td><td><span class="chip chip-partial">Partial</span></td><td class="s">28s</td><td class="acol">No matching customer was found. Please check the customer name and try again. An AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.</td></tr><tr data-cat="Invoice / Bill Level" data-out="Partial"><td class="qi">q20</td><td class="qcol">Bill 15293 was claimed as paid on WhatsApp (NEFT ₹880) — is it in ERP?</td><td><span class="chip chip-partial">Partial</span></td><td class="s">15s</td><td class="acol">💡 The WhatsApp message remains a payment claim, not proof of ERP settlement; please verify the bill number or bank/ERP entry. 📊 Invoices I couldn&#x27;t find invoice 15293 in your records. Please check the invoice number. _How I worked this out (1 step) · 0 figures verified from your data_</td></tr><tr data-cat="Invoice / Bill Level" data-out="Answered"><td class="qi">q21</td><td class="qcol">Which bills have payment claims but no receipt entry?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">25s</td><td class="acol">💡 The current payment claims without a matching receipt entry are shown for the listed customers. However, none of these claims has an invoice or bill reference, so the specific bills cannot be identified reliably; they remain customer-level payment claims only. A reported claim indicates that payment was claimed, not that it has been verified or entered in the ledger. 📊 Payment updates Customer Reference Update Stat …</td></tr><tr data-cat="Invoice / Bill Level" data-out="No data"><td class="qi">q22</td><td class="qcol">Show me the overdue bills where the customer has already promised payment — e.g. the 91-day worklist accounts.</td><td><span class="chip chip-no-data">No data</span></td><td class="s">25s</td><td class="acol">💡 The list is from 22 September, and the 91-day figure is an ageing-bucket approximation; I can check the remaining 91-day accounts if needed. 🎯 Customers to follow up with Priority Customer Chaseable balance Why follow up 1 Interworld Furnishings (I) Pvt. Ltd ₹72,36,78,400 Largest chaseable balance 2 PURPLE PATCH STUDIO LLP. ₹55,44,82,800 91 days past due, no promise on record 3 HOMZ COUTURE LLP ₹49,84,33,660 91 day …</td></tr><tr data-cat="Invoice / Bill Level" data-out="Answered"><td class="qi">q23</td><td class="qcol">Which invoice payments are pending despite customer confirmation on WhatsApp?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">31s</td><td class="acol">📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076571 Payment Reported ₹9,776 21 Sep 2026 Unknown TRENDS FURNISHING 000425560065 Payment Reported ₹2,52,120 19 Sep 2026 Unknown TENON 625917715661 Payment Reported ₹70,235 17 Sep 20 …</td></tr><tr data-cat="Invoice / Bill Level" data-out="Answered"><td class="qi">q24</td><td class="qcol">Find bills where the WhatsApp amount and the ERP receipt don&#x27;t match.</td><td><span class="chip chip-answered">Answered</span></td><td class="s">61s</td><td class="acol">💡 I found one clear amount mismatch: No invoice number is linked to this payment, so the exact bill allocation is unknown. The other reviewed records either matched, had no corresponding ERP receipt available, or did not have an invoice link. The latest ERP collection list is from 23 September 2026 . 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PV …</td></tr><tr data-cat="Invoice / Bill Level" data-out="No data"><td class="qi">q25</td><td class="qcol">Which customers mentioned specific invoice numbers while discussing payment — like 15293 or the ₹880 NEFT clai</td><td><span class="chip chip-no-data">No data</span></td><td class="s">36s</td><td class="acol">📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076571 Payment Reported ₹9,776 21 Sep 2026 Unknown TRENDS FURNISHING 000425560065 Payment Reported ₹2,52,120 19 Sep 2026 Unknown THE HOME LABEL AXOMB26202041677 Payment Entered ₹1,50 …</td></tr><tr data-cat="UTR / Reference Matching" data-out="No answer"><td class="qi">q26</td><td class="qcol">Check the UTRs shared on WhatsApp against the ERP receipts.</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">6s</td><td class="acol">No answer.</td></tr><tr data-cat="UTR / Reference Matching" data-out="Answered"><td class="qi">q27</td><td class="qcol">Which UTRs don&#x27;t have a matching entry in ERP?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">14s</td><td class="acol">💡 The displayed list contains the reported payment UTRs that are not marked as entered in ERP. These are payment claims pending ERP matching; reported status does not independently confirm bank settlement. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS  …</td></tr><tr data-cat="UTR / Reference Matching" data-out="Answered"><td class="qi">q28</td><td class="qcol">Show me payment claims where the reference number matches an ERP receipt.</td><td><span class="chip chip-answered">Answered</span></td><td class="s">5s</td><td class="acol">I can’t identify payment claims whose reference numbers match ERP receipts because the available AR data doesn’t expose or reconcile those reference numbers against ERP receipts. Payment claims shown here are customer-reported claims, not confirmed receipt matches.</td></tr><tr data-cat="UTR / Reference Matching" data-out="Answered"><td class="qi">q29</td><td class="qcol">Are there any duplicate payment claims in WhatsApp?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">25s</td><td class="acol">💡 Yes. Both records are flagged for an identity conflict, so this should be reviewed as a possible duplicate or misattributed payment—not treated as two separate receipts. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076571 Pay …</td></tr><tr data-cat="UTR / Reference Matching" data-out="Answered"><td class="qi">q30</td><td class="qcol">Find payments where the UTR exists in WhatsApp but the receipt is missing in ERP.</td><td><span class="chip chip-answered">Answered</span></td><td class="s">29s</td><td class="acol">💡 The latest five are shown, including: These are reported payment claims, not confirmed bank receipts or ERP allocations. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076571 Payment Reported ₹9,776 21 Sep 2026 Unknown TRENDS F …</td></tr><tr data-cat="UTR / Reference Matching" data-out="No data"><td class="qi">q31</td><td class="qcol">Which payment references are still unresolved?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">13s</td><td class="acol">💡 No unresolved payment references are currently recorded as open. If you mean reported or follow-up payment claims that still lack confirmation, I can check those too. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. _How I worked this out (1 step) · 0 figures verified from your data_</td></tr><tr data-cat="Credit Note Scenarios" data-out="No data"><td class="qi">q32</td><td class="qcol">Who is waiting for a credit note before making payment?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">23s</td><td class="acol">📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates Customer Update Status Amount Opened on Last status change (IST) DESIGN ELEMENTS Acknowledgement Open Unknown 21 Sep 2026 Unknown CREART Acknowledgement Open ₹1,00,000 19 Sep 2026 Unknown A reported payment has not been independently confirmed by the bank. 📊 Payment updates Customer …</td></tr><tr data-cat="Credit Note Scenarios" data-out="No data"><td class="qi">q33</td><td class="qcol">Which payments are stuck because of pending credit notes?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">42s</td><td class="acol">📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates Customer Reference Update Status Amount Opened on Last status change (IST) KRISHNA COATED FABRICS PVT LTD HDFC BANK-50200065744791(0) Payment Reported ₹63,699 21 Sep 2026 Unknown POPULAR MATTRESS &amp; CLOTH STORE AXOMB26402076571 Payment Reported ₹9,776 21 Sep 2026 Unknown TRENDS FURNI …</td></tr><tr data-cat="Credit Note Scenarios" data-out="Answered"><td class="qi">q34</td><td class="qcol">Find customers who said they&#x27;ll pay after a credit note adjustment.</td><td><span class="chip chip-answered">Answered</span></td><td class="s">19s</td><td class="acol">💡 I couldn’t find any customer message stating they would pay after a credit note adjustment . The available commitment records only mention paying “next week” or asking for payment to be made today; neither references a credit note. 📊 Payment updates Customer Update Status Amount Expected on Opened on Last status change (IST) CRYSTAL WALLPAPER Commitment Broken Unknown 21 Sep 2026 15 Sep 2026 Unknown ONCE &amp; AGAIN Co …</td></tr><tr data-cat="Credit Note Scenarios" data-out="No answer"><td class="qi">q35</td><td class="qcol">How much is pending after the credit note mentioned on WhatsApp?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">6s</td><td class="acol">No answer.</td></tr><tr data-cat="Credit Note Scenarios" data-out="Answered"><td class="qi">q36</td><td class="qcol">Which credit notes discussed in WhatsApp are still not reflected in ERP?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">55s</td><td class="acol">💡 I found one WhatsApp-discussed credit note that still appears unresolved in AR: The related return/credit-note dispute remains open. The ERP read does not expose a separate credit-note register, so this is based on the open AR status and the absence of a confirmed ERP adjustment—not proof that no adjustment exists elsewhere. 📊 Payment updates Customer Reference Invoice Update Status Amount Opened on Last status cha …</td></tr><tr data-cat="Credit Note Scenarios" data-out="Answered"><td class="qi">q37</td><td class="qcol">Who asked for a credit note and still has an outstanding balance?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">27s</td><td class="acol">💡 The request is recorded as an open dispute. 📊 Payment updates Customer Update Status Amount Opened on Last status change (IST) SQUAD WALLS Document request Answered Unknown 21 Sep 2026 Unknown THE DECOR HOUSE Document request Open Unknown 21 Sep 2026 Unknown ROYAL HANDLOOMS Document request Answered Unknown 21 Sep 2026 Unknown ROYAL HANDLOOMS Document request Answered Unknown 21 Sep 2026 Unknown WHISTLING WOOD ENTE …</td></tr><tr data-cat="Credit Note Scenarios" data-out="Answered"><td class="qi">q38</td><td class="qcol">Find cases where the customer says the credit note is pending but ERP already shows one.</td><td><span class="chip chip-answered">Answered</span></td><td class="s">233s</td><td class="acol">I found matching customers. Please select one to continue. An AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry the failed request.</td></tr><tr data-cat="Repeated Follow-ups" data-out="Answered"><td class="qi">q39</td><td class="qcol">Who have we chased multiple times but still haven&#x27;t paid?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">28s</td><td class="acol">💡 These are the receivable balances from your accounts. 📊 Payment updates Customer Count CREART 1 DESIGN ELEMENTS 1 A reported payment has not been independently confirmed by the bank. 📊 Customer balances Customer Outstanding invoice balance Overdue balance Not yet due 1–30 days 31–60 days 61–90 days Over 90 days CREART ₹1,65,71,200 ₹53,37,900 ₹1,12,33,300 ₹0 ₹0 ₹0 ₹53,37,900 DESIGN ELEMENTS ₹3,06,12,600 ₹3,04,65,200 …</td></tr><tr data-cat="Repeated Follow-ups" data-out="Answered"><td class="qi">q40</td><td class="qcol">Which customers have repeated payment reminders in WhatsApp?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">7s</td><td class="acol">I can’t reliably identify that from the available AR data: it tracks WhatsApp activity timestamps, but not searchable reminder wording or repeat counts. If you name a customer or share a specific reminder context, I can review the authorized nearby conversation evidence.</td></tr><tr data-cat="Repeated Follow-ups" data-out="No answer"><td class="qi">q41</td><td class="qcol">Show me the large outstanding customers with recent payment follow-ups — like Interworld Furnishings (₹7.24Cr)</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">5s</td><td class="acol">No answer.</td></tr><tr data-cat="Repeated Follow-ups" data-out="No answer"><td class="qi">q42</td><td class="qcol">Who hasn&#x27;t responded to our payment reminders?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">5s</td><td class="acol">No answer.</td></tr><tr data-cat="Repeated Follow-ups" data-out="Answered"><td class="qi">q43</td><td class="qcol">Which customers have acknowledged the dues but haven&#x27;t paid?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">25s</td><td class="acol">💡 This is the current total unpaid invoice value from your accounts. 📊 Payment updates Customer Update Status Amount Opened on Last status change (IST) DESIGN ELEMENTS Acknowledgement Open Unknown 21 Sep 2026 Unknown CREART Acknowledgement Open ₹1,00,000 19 Sep 2026 Unknown A reported payment has not been independently confirmed by the bank. 📊 Customers by outstanding invoice balance Customer Outstanding invoice bala …</td></tr><tr data-cat="Repeated Follow-ups" data-out="No data"><td class="qi">q44</td><td class="qcol">Find customers where payment follow-up repeats without any payment.</td><td><span class="chip chip-no-data">No data</span></td><td class="s">19s</td><td class="acol">📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. _How I worked this out (2 steps) · 0 figures verified from your data_ An AR read failed; only successfully retrieved records are shown, and the answer may be incomplete. Please retry …</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q45</td><td class="qcol">What&#x27;s the latest update on TRENDS FURNISHING&#x27;s payment?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">4s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q46</td><td class="qcol">Did they actually pay this one?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">4s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q47</td><td class="qcol">What did Interworld Furnishings say about their pending ₹7.24Cr in the chats?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">5s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="Partial"><td class="qi">q48</td><td class="qcol">Has the payment for invoice 17346 been posted?</td><td><span class="chip chip-partial">Partial</span></td><td class="s">10s</td><td class="acol">💡 Please confirm the invoice number or customer name. 📊 Invoices I couldn&#x27;t find invoice 17346 in your records. Please check the invoice number. _How I worked this out (1 step) · 0 figures verified from your data_</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No data"><td class="qi">q49</td><td class="qcol">They sent a UTR — can you check it? (the NEFT ₹880 claim against B NO 15293)</td><td><span class="chip chip-no-data">No data</span></td><td class="s">22s</td><td class="acol">💡 Please share the UTR itself (or the message containing it), and I can check the recorded claim details; a reported claim still doesn’t independently confirm bank settlement. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Payment updates No matching results were found. A reported payment has not been independently confirmed by the bank. 📊 Paym …</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q50</td><td class="qcol">Check what KRISHNA COATED FABRICS said about their payment in the group and compare it with ERP.</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">3s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q51</td><td class="qcol">Why is this still showing outstanding when they said paid?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">4s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q52</td><td class="qcol">How much is really pending for POPULAR MATTRESS &amp; CLOTH STORE after their WhatsApp-reported payment?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">4s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="Answered"><td class="qi">q53</td><td class="qcol">For the customers who reported payments on WhatsApp, what are they waiting for from us?</td><td><span class="chip chip-answered">Answered</span></td><td class="s">26s</td><td class="acol">💡 The reported-payment customers appear to be waiting for us to verify the payment proof, match it to their ledger/invoices, and confirm or enter the receipt . These are customer claims—not yet confirmed settlements—so the records do not show a separate, reliable “waiting for” request; one message explicitly asks us to “Please Release Payment,” while another shows payment details as pending. 📊 Payment updates Custome …</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No data"><td class="qi">q54</td><td class="qcol">Who should I follow up with today based on the chats and ERP?</td><td><span class="chip chip-no-data">No data</span></td><td class="s">17s</td><td class="acol">💡 These are the customers currently listed for follow-up. 🎯 Customers to follow up with Priority Customer Chaseable balance Why follow up 1 Interworld Furnishings (I) Pvt. Ltd ₹72,36,78,400 Largest chaseable balance 2 PURPLE PATCH STUDIO LLP. ₹55,44,82,800 91 days past due, no promise on record 3 HOMZ COUTURE LLP ₹49,84,33,660 91 days past due, no promise on record 4 EMBELLISH ₹46,85,34,690 91 days past due, no promi …</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q55</td><td class="qcol">Give me the cases where WhatsApp and ERP don&#x27;t agree.</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">10s</td><td class="acol">No answer.</td></tr><tr data-cat="Natural Accountant-style Queries" data-out="No answer"><td class="qi">q56</td><td class="qcol">What&#x27;s the current outstanding of Interworld Furnishings?</td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">6s</td><td class="acol">No answer.</td></tr></tbody>
+  </table></div>
+</section>
 
-const catTbody = document.getElementById("cat-tbody");
-Object.entries(catData).sort((a,b) => b[1].avg - a[1].avg).forEach(([cat, s]) => {
-  const pct = (s.avg / maxCatAvg * 100).toFixed(0);
-  const color = catColors[cat] || "blue";
-  const fillMap = { red: "background:linear-gradient(90deg,#f87171,#dc2626)", amber: "background:linear-gradient(90deg,#fbbf24,#d97706)", blue: "background:linear-gradient(90deg,#3b82f6,#2563eb)", green: "background:linear-gradient(90deg,#22c55e,#16a34a)", purple: "background:linear-gradient(90deg,#a78bfa,#7c3aed)" };
-  catTbody.innerHTML += `<tr>
-    <td style="font-weight:500">${cat}</td>
-    <td style="font-weight:600">${s.avg}s</td>
-    <td>${s.min}s</td>
-    <td>${s.max}s</td>
-    <td>${s.n}</td>
-    <td style="width:200px"><div class="bar-track"><div class="bar-fill" style="width:${pct}%;${fillMap[color]}">${s.avg}s</div></div></td>
-  </tr>`;
-});
+<section class="pane" id="pane-dev">
+  <h2>Failure map, ordered by impact</h2>
+  <div class="fm"><h3>Customer lookup: 9 calls, 0 answers</h3><p>resolve_ar_customer was called 9× (q5, q19, q38, q41, q45, q47, q50, q52, q56); none produced an answer.</p><p>Batch `queries` calls (q5, q19) returned “No matching customer was found” for exact names.</p><p>Single `name` calls (q41, q45, q47, q50, q52, q56) ended in a picker.</p><p>q38 — a 5-tool chain including resolve_ar_customer — took 233 s.</p></div><div class="fm"><h3>5 queries interrupted with no tool call</h3><p>q3, q6, q26, q35, q55: status interrupt, empty response, no tool call.</p><p>q3 and q6 are paraphrases of q2 and q4, which were answered on the same data.</p></div><div class="fm"><h3>search_threads never called</h3><p>0 calls; 19 queries were labeled with it as the expected tool.</p><p>One evidence object (5017e36f28e4) was re-read in 10 queries.</p></div><div class="fm"><h3>Same 5-row payments table, no totals</h3><p>18 queries returned the same reported-payments rows (₹9,776 family).</p><p>Every query used limit=5 (46 tool inputs); no totals were ever computed.</p></div>
+  <h2>Bug list</h2>
+  <table class="numt"><thead><tr><th>Queries</th><th>Issue</th></tr></thead><tbody><tr><td>q13</td><td>status=open misses broken commitments — “no overdue promises” while ONCE &amp; AGAIN’s is broken</td></tr><tr><td>q17</td><td>inverted is_null filter</td></tr><tr><td>q18</td><td>unrelated balances table attached to the answer</td></tr><tr><td>q31</td><td>false “none open” for unresolved references</td></tr><tr><td>q2, 16, 24, 30, 36</td><td>dangling headlines — headline promises more than the rows show</td></tr><tr><td>many</td><td>Entered rows leak into unmatched lists</td></tr><tr><td>many</td><td>literal \* and &amp;amp; appear in rendered answers</td></tr></tbody></table>
+  <h2>Number consistency</h2>
+  <table class="numt"><thead><tr><th>Entity</th><th>View / source</th><th>Amount</th></tr></thead><tbody><tr><td>Interworld Furnishings</td><td>Ledger view (q18)</td><td>₹40,19,329 ≈ ₹40 lakh</td></tr><tr><td>Interworld Furnishings</td><td>Follow-up worklist (q22, q54)</td><td>₹72,36,78,400 ≈ ₹72.37 crore</td></tr><tr><td>Interworld Furnishings</td><td>Query text (q46)</td><td>₹7.24 crore (user-entered anchor)</td></tr><tr><td>DESIGN ELEMENTS</td><td>Answer q39</td><td>₹3,06,12,600</td></tr><tr><td>DESIGN ELEMENTS</td><td>Answer q43</td><td>₹3,06,126 — exactly 100× smaller</td></tr></tbody></table>
+  <p class="note"><span class="flag">Suspected scaling bug:</span> DESIGN ELEMENTS differs by exactly 100× between q39 and q43; Interworld differs 10-180× across views.</p>
+  <h2>Harness notes</h2>
+  <ul><li>Interrupts are recorded as empty responses — auto-select or log the picker payload (finance P1 same).</li><li>expected_tool labels don’t match real tool names (labels from the 09-23 harvest surface; the run calls the query_ar family).</li><li>tool_calls under-reports steps — q13 shows 4 steps in the UI but only 2 tool calls.</li><li>3 queries cite a “Bill 15293 / ₹880 NEFT” claim that is not found in the data (q20, q25, q49).</li><li>~8 queries embed the answer in the query text itself.</li></ul>
+  <h2>Latency</h2>
+  <table class="tbl" style="min-width:0"><thead><tr><th>Outcome</th><th>Count</th><th>Mean (s)</th><th>Median (s)</th></tr></thead><tbody><tr><td>Answered</td><td>24</td><td>34.0</td><td>25.1</td></tr><tr><td>Partial</td><td>4</td><td>14.3</td><td>12.5</td></tr><tr><td>No data</td><td>14</td><td>25.9</td><td>24.1</td></tr><tr><td>Asked a follow-up / no answer</td><td>14</td><td>5.2</td><td>4.9</td></tr></tbody></table>
+  <p class="note">Overall mean 23.4 s, median 19.4 s (56 queries; min 3.4 s, max 232.7 s — q38 is the outlier: a 5-tool chain that includes the customer lookup).</p>
+  <h2>Suggested fix order</h2>
+  <ol><li>Resolver + harness interrupt handling (the two largest failure classes).</li><li>search_threads wiring (19 labels, 0 calls).</li><li>Scale inconsistencies (the 100× pair; Interworld 40 lakh vs 72 crore).</li><li>Collapse empty blocks and boilerplate out of rendered answers.</li><li>Headlines that name the rows actually shown.</li></ol>
+  <p class="fn">Hand-graded, no ground-truth baseline exists. Judgment is a human reviewer’s, not the file’s; machine counts in the developer tab are computed from the run file.</p>
+</section>
 
-// === TOOL GRID ===
-const toolCounts = {"query_ar": 37, "get_ar_evidence": 19, "get_ar_schema": 15, "query_ar_financials": 10, "resolve_ar_customer": 9, "get_paid_collections": 1};
-const maxToolCount = Math.max(...Object.values(toolCounts));
-const toolGrid = document.getElementById("tool-grid");
-Object.entries(toolCounts).sort((a,b) => b[1] - a[1]).forEach(([tool, count]) => {
-  const pct = (count / maxToolCount * 100).toFixed(0);
-  toolGrid.innerHTML += `<div class="tool-card">
-    <div class="tool-name">${tool}</div>
-    <div class="tool-count">${count}x</div>
-    <div class="tool-bar"><div class="tool-bar-fill" style="width:${pct}%"></div></div>
-  </div>`;
-});
-
-// === FILTER TABS ===
-const filterTabs = document.getElementById("filter-tabs");
-const categories = [...new Set(records.map(r => r.category))];
-categories.forEach(cat => {
-  const count = records.filter(r => r.category === cat).length;
-  const tab = document.createElement("div");
-  tab.className = "filter-tab";
-  tab.dataset.cat = cat;
-  tab.textContent = `${cat} (${count})`;
-  filterTabs.appendChild(tab);
-});
-filterTabs.addEventListener("click", e => {
-  if (!e.target.classList.contains("filter-tab")) return;
-  document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
-  e.target.classList.add("active");
-  renderQueries();
-});
-
-// === SEARCH ===
-let searchTerm = "";
-document.getElementById("search").addEventListener("input", e => {
-  searchTerm = e.target.value.toLowerCase();
-  renderQueries();
-});
-
-// === SORTING ===
-let sortCol = "query_index";
-let sortDir = 1;
-document.querySelectorAll(".sortable").forEach(th => {
-  th.addEventListener("click", () => {
-    const col = th.dataset.sort;
-    if (sortCol === col) sortDir *= -1;
-    else { sortCol = col; sortDir = 1; }
-    document.querySelectorAll(".sortable").forEach(t => { t.classList.remove("sorted"); t.querySelector(".sort-arrow").textContent = ""; });
-    th.classList.add("sorted");
-    th.querySelector(".sort-arrow").textContent = sortDir === 1 ? "\u25BC" : "\u25B2";
-    renderQueries();
-  });
-});
-
-// === QUERY TABLE ===
-function timeClass(t) { if (t > 60) return "color:var(--red);font-weight:600"; if (t > 20) return "color:var(--amber);font-weight:600"; return "color:var(--green);font-weight:600"; }
-
-function renderQueries() {
-  const activeCat = document.querySelector(".filter-tab.active").dataset.cat;
-  const tbody = document.getElementById("query-tbody");
-  let filtered = records.filter(r => activeCat === "all" || r.category === activeCat);
-  if (searchTerm) {
-    filtered = filtered.filter(r =>
-      r.query.toLowerCase().includes(searchTerm) ||
-      (r.response || "").toLowerCase().includes(searchTerm) ||
-      JSON.stringify(r.tool_calls || []).toLowerCase().includes(searchTerm) ||
-      (r.error || "").toLowerCase().includes(searchTerm)
-    );
-  }
-  filtered.sort((a, b) => {
-    let va, vb;
-    if (sortCol === "query_index") { va = a.query_index; vb = b.query_index; }
-    else if (sortCol === "response_time_seconds") { va = a.response_time_seconds; vb = b.response_time_seconds; }
-    else if (sortCol === "response_quality") { va = a.response_quality === "success" ? 2 : a.response_quality === "marginal" ? 1 : 0; vb = b.response_quality === "success" ? 2 : b.response_quality === "marginal" ? 1 : 0; }
-    else if (sortCol === "info_leak") { va = a.info_leak ? 1 : 0; vb = b.info_leak ? 1 : 0; }
-    return (va - vb) * sortDir;
-  });
-
-  tbody.innerHTML = "";
-  filtered.forEach(r => {
-    const tools = (r.tool_calls || []).map(t => `<span class="tool-tag">${t.tool || "?"}</span>`).join("");
-    const toolsHtml = tools || `<span class="no-tool">no tool</span>`;
-    const time = r.response_time_seconds || 0;
-    const q = r.response_quality || "fail";
-    const respPreview = (r.response || "").substring(0, 100) || (r.error ? "[error: " + r.error.substring(0, 80) + "]" : "[empty]");
-    const expandId = `expand-${r.query_index}`;
-    const leakDot = r.info_leak ? `<span class="leak-dot" title="${r.leak_indicators.join(", ")}"></span>` : `<span class="leak-dot clean"></span>`;
-
-    tbody.innerHTML += `<tr class="clickable" onclick="toggleRow('${expandId}')">
-      <td class="q-num">${r.query_index}</td>
-      <td style="font-size:12px">${r.category}</td>
-      <td style="font-size:13px;max-width:220px">${r.query.substring(0, 80)}${r.query.length > 80 ? "..." : ""}</td>
-      <td><span class="q-badge ${q}">${q}</span></td>
-      <td class="q-tools">${toolsHtml}</td>
-      <td style="${timeClass(time)}">${time.toFixed(1)}s</td>
-      <td style="font-size:12px;color:var(--text-muted);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${respPreview}</td>
-      <td>${leakDot}</td>
-      <td><span class="q-badge ${q}">${q === "success" ? "OK" : q === "marginal" ? "MARG" : "FAIL"}</span></td>
-    </tr>
-    <tr class="expand-row" id="${expandId}">
-      <td colspan="9" class="expand-content">
-        <div class="section-label">Full Query</div>
-        <pre>${r.query}</pre>
-        <div class="section-label">Quality: ${r.response_quality || "unknown"} ${r.info_leak ? "| Info Leak: " + r.leak_indicators.join(", ") : "| No leak"}</div>
-        <div class="section-label">Tools Called (${(r.tool_calls || []).length})</div>
-        <pre>${JSON.stringify(r.tool_calls || [], null, 2)}</pre>
-        <div class="section-label">SSE Status Sequence</div>
-        <pre>${(r.status_sequence || []).join(" → ") || "[none]"}</pre>
-        <div class="section-label">Response (${(r.response || "").length} chars)</div>
-        <pre>${(r.response || "[empty]")}${r.error ? "\n\nERROR: " + r.error : ""}</pre>
-        <div class="section-label">Suggestions</div>
-        <pre>${JSON.stringify(r.suggestions || [], null, 2)}</pre>
-        <div class="section-label">Timing</div>
-        <pre>Response time: ${time.toFixed(2)}s | Timestamp: ${r.timestamp}</pre>
-      </td>
-    </tr>`;
-  });
-}
-
-function toggleRow(id) { document.getElementById(id).classList.toggle("show"); }
-renderQueries();
-
-    // === NEW: Tool Accuracy by Category Table ===
-    (function() {
-      const tbody = document.getElementById('tool-acc-tbody');
-      if (!tbody) return;
-      const cats = Object.keys(catToolAccuracy).sort();
-      cats.forEach(cat => {
-        const d = catToolAccuracy[cat];
-        const pct = d.pct !== null ? d.pct + '%' : 'N/A';
-        const pctNum = d.pct !== null ? d.pct : 0;
-        const color = catColors[cat] || 'blue';
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td><span class="cat-badge ' + color + '">' + cat + '</span></td>' +
-          '<td>' + d.total + '</td>' +
-          '<td>' + d.correct + '</td>' +
-          '<td><strong>' + pct + '</strong></td>' +
-          '<td><div class="mini-bar"><div class="mini-bar-fill ' + color + '" style="width:' + pctNum + '%"></div></div></td>';
-        tbody.appendChild(tr);
-      });
-    })();
-
-    // === NEW: Step Count by Category Table ===
-    (function() {
-      const tbody = document.getElementById('step-tbody');
-      if (!tbody) return;
-      const cats = Object.keys(catStepData).sort();
-      const maxAvg = Math.max(...cats.map(c => catStepData[c].avg), 1);
-      cats.forEach(cat => {
-        const d = catStepData[cat];
-        const color = catColors[cat] || 'blue';
-        const barPct = (d.avg / maxAvg * 100);
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td><span class="cat-badge ' + color + '">' + cat + '</span></td>' +
-          '<td>' + d.n + '</td>' +
-          '<td><strong>' + d.avg + '</strong></td>' +
-          '<td>' + d.min + '</td>' +
-          '<td>' + d.max + '</td>' +
-          '<td><div class="mini-bar"><div class="mini-bar-fill ' + color + '" style="width:' + barPct + '%"></div></div></td>';
-        tbody.appendChild(tr);
-      });
-    })();
-
-    // === Update per-query table columns for expected_tool + step_count ===
-    // (the existing table render loop in the template already iterates records —
-    //  the new fields will appear if the template references them)
-
+<p class="fn">Scoring is hand-graded by a human reviewer (solid 9 · partial 21 · wrong 7 · honest “can’t do” 2 · lookup errors 3 · no answer 14). There is no ground-truth baseline for these answers; treat the numbers as judgment, and the quoted answers on this page as taken verbatim from the run.</p>
+</div>
+<script>
+var tabs=document.querySelectorAll('.tabs button');tabs.forEach(function(b){b.onclick=function(){
+ tabs.forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+ document.querySelectorAll('.pane').forEach(function(p){p.classList.remove('on')});
+ document.getElementById('pane-'+b.dataset.tab).classList.add('on');window.scrollTo(0,0);}});
+function rep(){var c=document.getElementById('f-cat').value,o=document.getElementById('f-out').value,n=0;
+ document.querySelectorAll('#tbody tr').forEach(function(tr){
+  var ok=(!c||tr.dataset.cat===c)&&(!o||tr.dataset.out===o);tr.style.display=ok?'':'none';if(ok)n++;});
+ document.getElementById('rc').textContent='Showing '+n+' of 56 questions';}
+document.getElementById('f-cat').onchange=rep;document.getElementById('f-out').onchange=rep;
 </script>
-
-</body>
-</html>
+</body></html>
