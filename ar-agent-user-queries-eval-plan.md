@@ -1,7 +1,10 @@
 # AR Agent Eval — User-Provided Query Set — Plan
 
-> **Status: Proposed — NOT approved. Executes only after the user supplies the query list,
-> the new workspace credentials, and confirms the decision gates in §0.**
+> **Status: EXECUTED 2026-09-24 — labels OK'd by user; probe gate passed; full v2 run
+> complete (56/56, 0 errors); analysis + EVAL_READOUT_v1.md + dashboard built; commit
+> 4a1b262 (UNPUSHED — push pending explicit user go). Details: EVAL_READOUT_v1.md +
+> references/ar-agent-v1-run.md (skill). Remaining: push, optional v3 with re-mapped
+> expected_tool labels (see readout action item 4), order-to-dispatch plan (shelved).**
 > Prepared 2026-09-23. Supersedes the AR half of `ar-finance-agent-eval-plan.md` for the
 > query-set source: the user's own queries REPLACE the generated 70-query draft
 > (skill rule: user-provided sets are kept verbatim, in the user's order — never padded with
