@@ -24,7 +24,7 @@ carries the real answer):
 | success (data answer) | 24 | 38 |
 | no_data | 14 | 2 (q12 tomorrow-promises empty = true; q44 + AR-read-failed) |
 | marginal | 4 | 3 (q20 correct-mismatch answer; q48 gap; 2 resolver fails→fail) |
-| clarify parks | 14 | 14 (2 correct ASK_BACK rows q45/q50 + 12 unexpected) |
+| clarify parks | 14 | 14 (2 correct ASK_BACK rows q46/q51 + 12 unexpected) |
 | fail/error | 0 | 3 (q5, q19 resolver/read failures) |
 
 ## Behavior matrix (expected → observed, 56)
@@ -35,7 +35,7 @@ carries the real answer):
 | ANSWER | empty interrupt park | 12 |
 | ANSWER | genuine empty no-data | 2 |
 | ANSWER | resolver/read failure | 2 (q5, q19) |
-| CLARIFY (ASK_BACK) | interrupt park (correct) | 2 (q45, q50) |
+| CLARIFY (ASK_BACK) | interrupt park (correct) | 2 (q46, q51) |
 
 Coverage gap: the user set has NO REFUSE rows — refusal-correctness was not exercised this
 run (finance v1 covered refusals; AR refusals = "hedge more than refuse" per design notes).
@@ -58,10 +58,10 @@ run (finance v1 covered refusals; AR refusals = "hedge more than refuse" per des
 
 ## Clarify behavior (the parks)
 
-- 14 parks total: 2 CORRECT (q45 "Did they actually pay this one?", q50 "Why is this still
+- 14 parks total: 2 CORRECT (query_index q46 "Did they actually pay this one?", q51 "Why is this still
   showing outstanding…" — the intentional referent-less ASK_BACK rows; parked as designed).
-- 12 UNEXPECTED parks on ANSWER-labeled, determinate queries — incl. q46 (Interworld ₹7.24Cr
-  — what did they say in the chats), q47 (invoice 17346 posted?), q55/q56 (reconciliation/
+- 12 UNEXPECTED parks on ANSWER-labeled, determinate queries — incl. q47 (Interworld ₹7.24Cr
+  — what did they say in the chats), q48 (invoice 17346 posted?), q55/q56 (reconciliation/
   follow-up). Pattern: scope-vague or multi-interpretation queries. Suspicion: legitimate
   scope disambiguation ("which period / which customer?"), consistent with the plan's
   upper-management-CLARIFY expectation — BUT the interrupt payload is not on the wire
@@ -122,7 +122,7 @@ P95 45.0s, max 232.7s (q38, 5-tool chain).
    as finance P1; combined fix recommended.
 7. **NUMBER-CONSISTENCY FLAG (user should look):** the live run shows Interworld's chaseable
    balance as **₹72,36,78,400 (₹72.37Cr)** — 10x the ₹7.24Cr anchor in the user query set
-   (q46, which parked so never answered) and nowhere near the harvest's recorded top-balance
+   (q47, which parked so never answered) and nowhere near the harvest's recorded top-balance
    ₹1.22Cr (entities.json amount_anchors). Three different top-customer figures across anchor,
    harvest, and live run. Before trusting q22/q54 numbers, verify: (a) what the true
    outstanding is on the Zainab dashboard, (b) whether the AR render layer mis-scales (a
