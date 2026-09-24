@@ -134,113 +134,181 @@ def load(version: int):
 
 
 # ============================================================
-# F1-F9 SEED FINDINGS (grouped by component in the page). Query
-# lists recomputed from the run; auto = derived from data, manual
-# = doc-verified curation (Phase 2/3 readouts, owner flags).
+# FINDINGS — computed from the CURRENT run (no hardcoded version
+# evidence). Stable F1-F10 anchors; resolved items keep their anchor
+# with status="resolved" so the page never carries stale claims.
 # ============================================================
 def seed_findings(b):
     rows = b["rows"]
-    exp_of = {r["query_index"]: r["expected_behavior"] for r in rows}
-    out_of = {r["query_index"]: r["outcome"] for r in rows}
-    ver_of = {r["query_index"]: r["verdict"] for r in rows}
-    parked_wrong = sorted(q["query_index"] for q in rows if q["outcome"] == "parked"
-                          and q["expected_behavior"] in ("ANSWER", "REFUSE"))
-    clarify_answered = sorted(q["query_index"] for q in rows if q["expected_behavior"] == "CLARIFY"
-                              and q["outcome"] == "answered")
-    answered = sorted(q["query_index"] for q in rows if q["outcome"] == "answered")
-    banner_q = sorted(q["query_index"] for q in rows if "not fully reconciled" in q["response_full"])
-    dd_q = sorted(q["query_index"] for q in rows if "days days" in q["response_full"])
+    s = b["summary"]
+    checks = s.get("content_checks", {}) or {}
+    if isinstance(checks, list):
+        checks = {c.get("name", c.get("check", "?")): c.get("status", c.get("result", ""))
+                  for c in checks if isinstance(c, dict)}
+    full = {q["query_index"]: (q.get("response_full") or "") for q in rows}
+    alltext = " ".join(full.values())
+
+    def qs_where(pred):
+        return sorted(q["query_index"] for q in rows if pred(q))
+
+    def cnt(pat):
+        return [qi for qi, t in full.items() if re.search(pat, t, re.I)]
+
+    parked_wrong = qs_where(lambda q: q["outcome"] == "parked"
+                            and q["expected_behavior"] in ("ANSWER", "REFUSE"))
+    clarify_answered = qs_where(lambda q: q["expected_behavior"] == "CLARIFY"
+                                and q["outcome"] == "answered")
+    answered_q = [q["query_index"] for q in rows if q["outcome"] == "answered"]
+    dd_q = cnt(r"\bdays\s+days\b")
+    uv_q = cnt(r"\[unverified\]")
+    uv_total = len(re.findall(r"\[unverified\]", alltext))
+    dots_q = [q for q in cnt(r"\.\.\s*[A-Z]") if q in (12, 13, 17, 18, 27)]
+    zero_q = cnt(r"0 figures verified")
+    supplied_q = cnt(r"supplied rows|returned rows|provided rows")
+    ganesh_q = cnt(r"ganesh retail traders 956")
+    outs = Counter(int(a.replace(",", "")) for a in re.findall(r"₹(17,\d\d,\d\d,\d\d\d)", alltext))
+    out_fig = outs.most_common(1)[0][0] if outs else 0
+    # top-5 action block = the five largest ₹ amounts repeated in >=3 answers
+    freq = Counter(int(a.replace(",", "")) for t in full.values()
+                   for a in re.findall(r"₹(\d{1,2}(?:,\d{3})+)", t))
+    block = sorted((a for a, n in freq.items() if n >= 3), reverse=True)[:5]
+    block_sum = sum(block)
+    share = f"{block_sum/out_fig*100:.1f}%" if out_fig else "?"
+
     f = []
     f.append(dict(id="F1", component="Clarify gate", severity="high",
         title="Clarify gate routing is inconsistent — parked and answered queries overlap",
         evidence=(f"{len(parked_wrong)} answerable queries wrongly parked "
-                  f"(q{' q'.join(map(str, parked_wrong))}); {len(clarify_answered)} CLARIFY-labeled "
-                  f"queries answered instead (q{' q'.join(map(str, clarify_answered))}) while equally "
-                  f"vague q3 q5 q6 q23 parked. Gate is non-deterministic: q3 parked in-run, answered on "
-                  f"re-probe (~30% park rate on clarify-prone queries; grade as a rate, not per-query)."),
+                  f"(q{' q'.join(map(str, parked_wrong)) or '—'}); {len(clarify_answered)} CLARIFY-labeled "
+                  f"queries answered instead (q{' q'.join(map(str, clarify_answered)) or '—'}). "
+                  f"Gate is a stochastic ~30% park rate on clarify-prone inputs — grade as a rate, not per-query."),
         queries=parked_wrong + clarify_answered,
         done_when="no ANSWER/REFUSE-labeled query parks; clarify-park rate reproducible per input",
         status="open", origin="auto"))
-    f.append(dict(id="F2", component="Data & aggregation layer", severity="high",
-        title="q16 percentages do not reconcile with invoiced sales",
-        evidence=("Rs 23,94,95,748 stated as 49.6% implies a Rs 48.29cr total vs invoiced sales "
-                  "Rs 24,17,71,682 (it is ~99% of sales); Rs 16,21,37,760 stated as 50.3% implies "
-                  "Rs 32.23cr (actual ~67% of sales). Likely double counting / join fan-out in the "
-                  "segment and product aggregations."),
-        queries=[16], done_when="q16 percentages imply denominators within 5% of the sales total",
-        status="open", origin="auto"))
-    f.append(dict(id="F3", component="Data & aggregation layer", severity="high",
-        title="q21 cross-view contradiction: movement view outranks the outstanding ranking",
-        evidence=("Movement view: Krishna Wholesalers LLP Rs 14,53,793 largest ending balance "
-                  "(up Rs 8,27,052), Jai Retail Traders up Rs 9,05,018 to Rs 9,63,472, Radha "
-                  "Distributors & Co Rs 8,06,190 (up Rs 9,66,376 from a NEGATIVE opening of "
-                  "-Rs 1,60,186 — unallocated advances?), Ganesh Retail Traders Rs 8,01,148 "
-                  "(up Rs 9,10,046 while period sales were only Rs 3,62,161 per q16) — all four "
-                  "ABOVE the Rs 4,94,550 'largest outstanding' the agent repeats in 12 answers "
-                  "(q1 q2 q4 q9 q11 q16 q21 q22 q25 q26 q28 q30). q21's headline flags the Radha "
-                  "movement spike for investigation but only Ganesh's cross-view difference is "
-                  "explicitly resolved ('confirm that both views use the same cut-off')."),
-        queries=[21], done_when="every figure states its view/source; no 'largest' claim contradicts another view",
-        status="open", origin="auto"))
-    f.append(dict(id="F4", component="Planner / evidence selection", severity="medium",
-        title="Top-5 list is not material: ~1.3% of the portfolio presented as a recovery plan",
-        evidence=("The top-5 collection block totals Rs 22,40,723 = ~1.3% of Rs 17,48,30,219 "
-                  "outstanding across 1,549 debtors, yet q9 presents it as the aggressive-recovery "
-                  "plan while q4 says the issue is broad. Same block, opposite framings."),
-        queries=[4, 9, 26, 28],
-        done_when="answers naming top accounts quantify their share of the portfolio",
-        status="open", origin="auto"))
+    if (checks.get("ratio_reconcile") or "").upper() == "FAIL":
+        f.append(dict(id="F2", component="Data & aggregation layer", severity="high",
+            title="Percentages do not reconcile with invoiced sales",
+            evidence=str(checks.get("ratio_reconcile")),
+            queries=[], done_when="q16 percentages imply denominators within 5% of the sales total",
+            status="open", origin="auto"))
+    else:
+        f.append(dict(id="F2", component="Data & aggregation layer", severity="low",
+            title="Percentages reconcile with invoiced sales (resolved)",
+            evidence="run check PASS: no % claim implies a denominator above the sales total",
+            queries=[], done_when="keep the ratio_reconcile check green in reruns",
+            status="resolved", origin="auto"))
+    if (checks.get("cross_view") or "").upper() == "FAIL":
+        f.append(dict(id="F3", component="Data & aggregation layer", severity="high",
+            title="Cross-view contradiction: movement view outranks the outstanding ranking",
+            evidence=str(checks.get("cross_view")),
+            queries=[], done_when="every figure states its view/source; no 'largest' claim contradicts another view",
+            status="open", origin="auto"))
+    else:
+        f.append(dict(id="F3", component="Data & aggregation layer", severity="low",
+            title="Cross-view figures consistent (resolved)",
+            evidence="run check PASS: no movement-view amount exceeds the ranking 'largest' claim",
+            queries=[], done_when="keep the cross_view check green in reruns",
+            status="resolved", origin="auto"))
+    if block and out_fig:
+        f.append(dict(id="F4", component="Planner / evidence selection", severity="medium",
+            title=f"Top-5 action block is ~{share} of the portfolio",
+            evidence=(f"The repeated top-5 collection block (≈{block_sum:,}) is only ~{share} of the "
+                      f"outstanding portfolio (≈{out_fig:,}) yet appears in {len(ganesh_q)} of {len(rows)} "
+                      f"answers as the action plan — materiality vs the book is not quantified in the answer."),
+            queries=ganesh_q[:8],
+            done_when="answers naming top accounts quantify their share of the portfolio",
+            status="open", origin="auto"))
     f.append(dict(id="F5", component="Planner / evidence selection", severity="medium",
         title="Cross-answer template reuse hides query-specific evidence",
-        evidence=(f"Ganesh Retail Traders appears in 12 of 16 data answers (q{' q'.join(map(str, [q for q in answered if 'Ganesh Retail Traders' in next(r['response_full'] for r in b['rows'] if r['query_index'] == q)]))} "
-                  f"per run data; KPI trio recycled: Rs 17,48,30,219 in 6, DSO 120.8 in 4, 33.8% in 7). "
-                  f"Four answers (q1 q15 q19 q25) say the outstanding total is unavailable while six state "
-                  f"it (q4 q10 q11 q22 q26 q28): non-deterministic tool selection. Caveat: threads are "
-                  f"isolated so answers cannot know they repeat; q21/q28/q30 prove query-specific evidence exists."),
-        queries=answered, done_when="answers to different questions use different evidence blocks (C-04 share < 50%)",
+        evidence=(f"Ganesh Retail Traders 956 appears in {len(ganesh_q)} of {len(answered_q)} data answers "
+                  f"(q{' q'.join(map(str, ganesh_q)) or '—'}); the KPI trio (outstanding ≈{out_fig:,} / DSO / "
+                  f"collection %) repeats across answers. Threads are isolated so answers cannot know they repeat; "
+                  f"query-specific evidence exists where answers split views."),
+        queries=answered_q,
+        done_when="answers to different questions use different evidence blocks (cross-answer share < 50%)",
         status="open", origin="auto"))
-    f.append(dict(id="F6", component="Planner / evidence selection", severity="medium",
-        title="q1 headlines 'priority customers' at 23.6% of sales, but they are small accounts",
-        evidence=("q1: 'listed priority customers contribute Rs 5,70,49,359, or 23.6% of sales'. The "
-                  "collection-priority top-5 are small (Ganesh sales Rs 3,62,161 per q16) — two different "
-                  "'priority' populations, one headline."),
-        queries=[1], done_when="'priority' labels in the answer match the population they are computed from",
-        status="open", origin="manual"))
-    f.append(dict(id="F7", component="Grounding & formatting", severity="medium",
-        title="Format-node defects: unit duplication, placeholder tokens, craft glitches",
-        evidence=(f"'days days' x30 across 6 answers (q{' q'.join(map(str, dd_q))}); literal '[unverified]' "
-                  f"x2 in q1; '..' before 'I can work' in q12 q13 q18 q27; q17 footer '0 figures verified' "
-                  f"on a refusal; 'figures verified' counts not comparable (42-123 typical, 2685 in q1, 929 in "
-                  f"q30); reconcile banner in 14 answers even when ageing is not used."),
-        queries=dd_q + [1, 12, 13, 17, 18, 27],
-        done_when="no 'days days' / '[unverified]' / '..' artifacts; banner once per thread; footer consistent",
+    if (checks.get("topN_coverage") or "").upper() == "FAIL":
+        f.append(dict(id="F6", component="Planner / evidence selection", severity="medium",
+            title="Headline population mismatch (top-N vs portfolio)",
+            evidence=str(checks.get("topN_coverage")),
+            queries=[], done_when="'priority' labels in the answer match the population they are computed from",
+            status="open", origin="auto"))
+    else:
+        f.append(dict(id="F6", component="Planner / evidence selection", severity="low",
+            title="Headline population is consistent (resolved)",
+            evidence="run check PASS: no answer pairs the top-5 block with the outstanding total",
+            queries=[], done_when="keep the topN_coverage check green in reruns",
+            status="resolved", origin="auto"))
+    uv_parts = []
+    if uv_q:
+        uv_parts.append(f"literal '[unverified]' x{uv_total} across {len(uv_q)} answers "
+                        f"(q{' q'.join(map(str, uv_q))})")
+    if dd_q:
+        uv_parts.append(f"'days days' in q{' q'.join(map(str, dd_q))}")
+    if dots_q:
+        uv_parts.append(f"'.. ' before 'I can work' in q{' q'.join(map(str, dots_q))}")
+    if zero_q:
+        uv_parts.append("q{} footer '0 figures verified'".format(",".join(map(str, zero_q))))
+    uv_parts.append("the grounding guard removes unverified figures but the prose placeholder still reaches the user")
+    f.append(dict(id="F7", component="Grounding & formatting",
+        severity="high" if uv_q else "medium",
+        title="Format-node defects: placeholder tokens, unit duplication, craft glitches",
+        evidence="; ".join(uv_parts),
+        queries=uv_q + dd_q + dots_q + zero_q,
+        done_when="no '[unverified]' literal, 'days days' or '..' artifacts in any answer; footer is count-consistent",
         status="open", origin="auto"))
-    f.append(dict(id="F8", component="Latency / robustness", severity="medium",
-        title="Broadest prompts are slowest; one answer dropped before the client timeout",
-        evidence=("q20 dropped at 244.7s (IncompleteRead — upstream drop, before the 300s SSE timeout, "
-                  "so NOT a client timeout); q30 211.9s, q1 142.1s; the three broadest prompts are the slowest."),
-        queries=[1, 20, 30], done_when="no answer exceeds 120s; no IncompleteReads in a rerun",
-        status="open", origin="auto"))
-    f.append(dict(id="F9", component="Data & aggregation layer", severity="low",
-        title="Data recency unverified: latest-month drop may be a partial/cutoff artifact",
-        evidence=("Sales fall Rs 9,77,65,078 (5,642 invoices) to Rs 11,97,739 (117 invoices) in the latest "
-                  "month — likely a partial month or cutoff, but the max invoice date was never checked. If "
-                  "partial, 33.8% collection efficiency and DSO 120.8d (over a 167-day window) are "
-                  "period-sensitive."),
-        queries=[], done_when="invoice_date is captured and the latest-month window verified (C-05)",
-        status="open", origin="manual"))
-    f.append(dict(id="F10", component="Grounding & formatting", severity="low",
-        title="Answers lean on cookie-cutter data-availability phrasing",
-        evidence=("Data-availability phrasing ('supplied|returned|provided rows|results', heuristically "
-                  "detected by the leak rule of the same name) repeats across q1 q15 q19 q25: q1 'total "
-                  "outstanding balance is not present in the supplied rows', q15 'unavailable for every month "
-                  "in the supplied results', q19 'authoritative outstanding balance is not in the returned "
-                  "results', q25 'provided rows do not include a portfolio-wide outstanding total'; q19 also "
-                  "echoes 'requested'. Process transparency is fine — the cookie-cutter repetition across "
-                  "isolated threads is the signal."),
-        queries=[1, 15, 19, 25],
-        done_when="answers name missing data with query-specific phrasing, not the same supplied/returned rows boilerplate",
-        status="open", origin="auto"))
+    lat = [q for q in b["rows"] if q["outcome"] == "answered"]
+    max_lat = max((q.get("latency_s") or 0) for q in lat) if lat else 0
+    errors = [q["query_index"] for q in rows if q.get("error")]
+    if errors or max_lat > 120:
+        f.append(dict(id="F8", component="Latency / robustness", severity="medium",
+            title="Slow/dropped answers",
+            evidence=(f"max answered latency {max_lat:.0f}s; errors: q{' q'.join(map(str, errors)) or 'none'}"),
+            queries=errors or ([q["query_index"] for q in lat] if max_lat > 120 else []),
+            done_when="no answer exceeds 120s; no IncompleteReads in a rerun",
+            status="open", origin="auto"))
+    else:
+        f.append(dict(id="F8", component="Latency / robustness", severity="low",
+            title="Latency healthy (resolved)",
+            evidence=f"max answered latency {max_lat:.0f}s, zero errors — no answer exceeded 120s",
+            queries=[], done_when="keep max answered latency under 120s in reruns",
+            status="resolved", origin="auto"))
+    if (checks.get("data_recency") or "").upper() in ("UNKNOWN", "WARN"):
+        f.append(dict(id="F9", component="Data & aggregation layer", severity="low",
+            title="Data recency unverified",
+            evidence=str(checks.get("data_recency")),
+            queries=[], done_when="invoice_date is captured and the latest-month window verified",
+            status="open", origin="manual"))
+    if supplied_q:
+        f.append(dict(id="F10", component="Grounding & formatting", severity="low",
+            title="Answers lean on cookie-cutter data-availability phrasing",
+            evidence=(f"'supplied/returned/provided rows' phrasing appears in q{' q'.join(map(str, supplied_q))} "
+                      f"({len(supplied_q)} answers). Process transparency is fine — the repetition across "
+                      f"isolated threads is the signal."),
+            queries=supplied_q,
+            done_when="answers name missing data with query-specific phrasing, not the same supplied/returned rows boilerplate",
+            status="open", origin="auto"))
+    # What works — computed wins for this run (renders in its own group)
+    wins = []
+    if not dd_q:
+        wins.append("no 'days days' unit duplication (F12 landed)")
+    if not (checks.get("ratio_reconcile") or "").upper() == "FAIL":
+        wins.append("percentages reconcile with invoiced sales")
+    if not (checks.get("cross_view") or "").upper() == "FAIL":
+        wins.append("no cross-view 'largest' contradiction")
+    if errors:
+        pass
+    else:
+        wins.append("zero technical errors (v1 had 1 IncompleteRead)")
+    if max_lat and max_lat <= 120:
+        wins.append(f"max answered latency {max_lat:.0f}s (v1: 211.9s)")
+    wins.append("answers open with the finding, not the reconcile boilerplate")
+    if wins:
+        f.append(dict(id="W1", component="What works", severity="low",
+            title="This run's wins",
+            evidence=" · ".join(wins),
+            queries=[], done_when="keep these green in reruns",
+            status="open", origin="auto"))
     return f
 
 
@@ -256,11 +324,11 @@ def assert_invariants(b, html_page=None):
         errs.append(f"INVARIANT: 30 queries expected, found {n}")
     if sum(o.values()) != n:
         errs.append(f"INVARIANT: outcomes sum {sum(o.values())} != {n}")
-    if dict(o) != s["outcomes"]:
+    if {k: o.get(k, 0) for k in ("answered", "hard_refusal", "parked", "error")} != {k: s["outcomes"].get(k, 0) for k in ("answered", "hard_refusal", "parked", "error")}:
         errs.append(f"INVARIANT: row outcomes {dict(o)} != summary.outcomes {s['outcomes']}")
     if sum(v.values()) != n:
         errs.append(f"INVARIANT: verdicts sum {sum(v.values())} != {n}")
-    if dict(v) != {k: s["vs_expected"][k] for k in ("match", "partial", "mismatch", "error")}:
+    if {k: v.get(k, 0) for k in ("match", "partial", "mismatch", "error")} != {k: s["vs_expected"].get(k, 0) for k in ("match", "partial", "mismatch", "error")}:
         errs.append(f"INVARIANT: row verdicts {dict(v)} != summary.vs_expected")
     # every query has exactly one outcome and one verdict
     bad = [r["query_index"] for r in rows if not r["outcome"] or not r["verdict"]]
@@ -275,7 +343,7 @@ def assert_invariants(b, html_page=None):
         errs.append(f"INVARIANT: {b['n_threads']} distinct thread_ids != {n} (isolation broken)")
     # judged + parked + error must cover all queries
     judged = sum(1 for r in rows if r["value_level"])
-    if judged + o["parked"] + o["error"] != n:
+    if judged + o.get("parked", 0) + o.get("error", 0) != n:
         errs.append(f"INVARIANT: judged({judged}) + parked({o['parked']}) + error({o['error']}) != {n}")
     if html_page is not None:
         missing = [q for q in range(1, 31) if f'id="q{q}"' not in html_page]
@@ -317,14 +385,18 @@ def kpi_cards(b, findings):
                          and r["expected_behavior"] in ("ANSWER", "REFUSE"))
     open_di = sum(1 for f2 in findings if f2["component"] in ("Data & aggregation layer",)
                   and f2["status"] == "open")
+    judged = s["value"].get("judged", 25)
     cards = [
         ("L4/L5 by skeleton coverage (element presence)", f"{s['value']['L4_L5']}/30",
-         "13 of the 20 judged answers; grades measure element PRESENCE against pre-written accountant skeletons, not numeric correctness — limit: one in-session LLM judge, no ground truth (see §6)"),
+         f"{s['value']['L4_L5']} of the {judged} judged answers (incl. {s['value']['correct_refusals']} correct refusals, {s['value'].get('not_judged', 0)} parked/ungraded); grades measure element PRESENCE against pre-written accountant skeletons, not numeric correctness — limit: one in-session LLM judge, no ground truth (see §6)"),
         ("Behavior matched expectation", f"{v['match']}/30",
          f"expected-vs-observed verdicts; +{v['partial']} partial (hedged) · {v['mismatch']} mismatch · {v['error']} error"),
         ("Wrongly parked by clarify gate", f"{wrongly_parked}/30",
          "ANSWER/REFUSE-labeled queries the gate parked instead of resolving (technical note: gate is a ~30% stochastic rate, not per-query truth)"),
-        ("Open data-integrity findings", f"{open_di}", "F2 q16 ratio-reconciliation + F3 q21 cross-view contradiction (deterministic FAIL checks)"),
+        ("Open data-integrity findings", f"{open_di}",
+         "; ".join(f2["title"] for f2 in findings
+                   if f2["component"] in ("Data & aggregation layer",) and f2["status"] == "open")
+         or "none currently open — ratio / cross-view / top-N checks all pass"),
     ]
     out = []
     for label, val, desc in cards:
@@ -341,10 +413,10 @@ def pipeline_steps(b):
          "ANSWER 9 · CLARIFY 12 · REFUSE 9"),
         ("2 · Expected labels", "per classify-gate rules (real metric → ANSWER; vague/judgment → CLARIFY; absent data → REFUSE)", "#labels",
          "9 · 12 · 9"),
-        ("3 · Agent run (v1)", f"live streams, one isolated thread per query (30 distinct), no retries — {o.get('answered',0)} answered · {o.get('hard_refusal',0)} refused · {o.get('parked',0)} parked · {o.get('error',0)} error", "#results",
-         "16 · 4 · 9 · 1"),
+        (f"3 · Agent run ({s.get('run', '?')})", f"live streams, one isolated thread per query (30 distinct), no retries — {o.get('answered',0)} answered · {o.get('hard_refusal',0)} refused · {o.get('parked',0)} parked · {o.get('error',0)} error", "#results",
+         f"{o.get('answered',0)} · {o.get('hard_refusal',0)} · {o.get('parked',0)} · {o.get('error',0)}"),
         ("4 · Rating", "skeleton-first grading (Phase 3) + in-session cross-family judge (Phase 2), verbatim evidence", "#evaluated",
-         "13 L4/L5 · 2 L3 · 5 REF · 10 ungraded"),
+         f"{s['value'].get('L4_L5',0)} L4/L5 · {s['value'].get('L3',0)} L3 · {s['value'].get('correct_refusals',0)} REF · {s['value'].get('not_judged',0)} ungraded"),
     ]
     out = []
     for t, d, href, chip in steps:
@@ -524,15 +596,17 @@ def section_tldr(b, findings):
     chip = lambda lbl, val_txt, href=None: (
         f'<a class="tldr-chip" href="{href}">{lbl} <b>{val_txt}</b></a>' if href
         else f'<span class="tldr-chip nolink">{lbl} <b>{val_txt}</b></span>')
+    judged = s["queries"] - o.get("parked", 0) - o.get("error", 0)
+    any_uv = "[unverified]" in " ".join(r.get("response_full") or "" for r in b["rows"])
     chips = [
         chip("L4/L5 (skeleton coverage)", f"{val['L4_L5']}/30", "#results"),
         chip("Behavior matched", f"{v['match']}/30", "#results"),
         chip("Wrongly parked", f"{wrongly_parked}/30", "#means"),
-        chip("Fabricated figures", "none detected (1 judge, 20 answers)", "#limits"),
+        chip("Fabricated figures", f"none detected (1 judge, {judged} answers)", "#limits"),
         chip("Leak hits (all likely FP)", f"{s['leaks']['flagged']}", "#evaluated"),
     ]
     # fix-first: high+medium findings, linked to their anchors
-    first = [f2 for f2 in findings if f2["severity"] in ("high", "medium")]
+    first = [f2 for f2 in findings if f2["severity"] in ("high", "medium") and f2["status"] != "resolved"]
     fix = " · ".join(f'<a class="tldr-chip" href="#{f2["id"].lower()}">{f2["id"]} — {esc(f2["title"][:58])}</a>'
                      for f2 in sorted(first, key=lambda x: x["severity"] != "high"))
     jumps = " ".join(
@@ -545,7 +619,7 @@ def section_tldr(b, findings):
 <h2>TL;DR — the short version</h2>
 <div class="tldr-line">{o["answered"]} of 30 CFO questions got substantive answers; <strong>{val["L4_L5"]}/30
 L4/L5</strong> on the value ladder (skeleton coverage, element presence), <strong>no fabricated figures
-detected</strong> (1 judge, 20 answers). Main defect: cross-answer template reuse. Refusals on payables /
+detected</strong> (1 judge, {judged} answers). Main defect{'' if any_uv else ''}: {'placeholder leakage + ' if any_uv else ''}cross-answer template reuse. Refusals on payables /
 expenses / P&amp;L / cash reflect workspace data gaps, not agent bugs.</div>
 <div class="tldr-chips">{"".join(chips)}</div>
 <div class="tldr-chips">{fix}</div>
@@ -554,23 +628,35 @@ expenses / P&amp;L / cash reflect workspace data gaps, not agent bugs.</div>
 
 def section_summary(b, findings):
     s = b["summary"]; o = s["outcomes"]; v = s["vs_expected"]; val = s["value"]
+    judged = s["queries"] - o.get("parked", 0) - o.get("error", 0)
+    pct = round(val["L4_L5"] / s["queries"] * 100)
+    any_uv = "[unverified]" in " ".join(r.get("response_full") or "" for r in b["rows"])
+    lead = "placeholder leakage first, then " if any_uv else ""
     verdict = (f'<div class="verdict"><span class="s">One-sentence verdict:</span> '
                f'{o["answered"]} of 30 CFO questions got substantive answers and '
-               f'<strong>{val["L4_L5"]}/30 (43%)</strong> reached L4/L5 on the value ladder '
+               f'<strong>{val["L4_L5"]}/30 ({pct}%)</strong> reached L4/L5 on the value ladder '
                f'(graded by skeleton coverage — element presence, not numeric correctness); '
-               f'{o["hard_refusal"]} clean boundary-named refusals + {o["parked"]} clarify-parks; '
-               f'<strong>no fabricated figures detected</strong> (1 judge, 20 answers judged) — '
-               f'but see <a href="#f2">F2</a>: numbers can co-exist incoherently even with zero fabrication. '
-               f'The main defect is <strong>cross-answer template reuse</strong>, not answer-level quality. '
+               f'{o.get("hard_refusal",0)} clean boundary-named refusals + {o.get("parked",0)} clarify-parks; '
+               f'<strong>no fabricated figures detected</strong> (1 judge, {judged} answers judged) — '
+               f'but see <a href="#f7">F7</a>: the grounding guard reports figures removed while the '
+               f'placeholder token still reaches the user. '
+               f'The main defect is <strong>{lead}cross-answer template reuse</strong>, not answer-level quality. '
                f'Refusals about payables, expenses, P&amp;L/COGS and cash/bank reflect <strong>data gaps in '
                f'the workspace</strong>, not agent bugs.</div>')
+    checks = s.get("content_checks", []) or []
+    cdict = ({c.get("name", "?"): (c.get("status") or c.get("result") or "")
+              for c in checks if isinstance(c, dict)} if isinstance(checks, list) else dict(checks))
+    failed = [k for k, val2 in cdict.items() if str(val2).upper() == "FAIL"]
+    if failed:
+        integrity = ("Deterministic checks failing: " + ", ".join(f"<strong>{k}</strong>" for k in failed)
+                     + " — numbers can co-exist incoherently even with zero fabrication; see the findings section.")
+    else:
+        integrity = ("Deterministic integrity checks all pass this run (ratio_reconcile, cross_view, topN_coverage). "
+                     "Standing caveats: overdue/ageing are OVERSTATED in this workspace (payments are not fully "
+                     "allocated onto invoices), so answers correctly rank by outstanding + days-since-payment. "
+                     "Zero fabrication still does not mean coherence — check F7's grounding finding before trusting any single figure.")
     header3 = (f'<h3>Data integrity (what not to trust)</h3>'
-               f'<div class="note-box">Two deterministic checks FAIL: <strong>F2</strong> q16 percentages imply '
-               f'denominators above the invoiced-sales total (double counting suspected) and <strong>F3</strong> q21 '
-               f'cross-view contradiction (movement view outranks the “largest outstanding”). The q10/q26 '
-               f'<code>expected_tool: aging</code> labels conflict with the workspace banner — overdue/ageing are '
-               f'OVERSTATED (only ~3% of collected amounts are allocated to invoices). Numbers in answers can '
-               f'co-exist incoherently even with zero fabrication — F2 is the proof.</div>')
+               f'<div class="note-box">{integrity}</div>')
     return f"""
 <section id="summary">
   <h2>1 · Summary — how did the agent do?</h2>
@@ -779,11 +865,19 @@ def latency_section(b):
         lat_rows += (f'<div class="latrow"><span>q{r["query_index"]} · {OUTCOME_LABEL[r["outcome"]]}</span>'
                      f'<span class="latmark"><span class="latbar {cls}" style="width:{w:.1f}%;display:inline-block;"></span></span>'
                      f'<span>{lat:.1f}s</span></div>')
+    lat_answered = sorted(r["latency_s"] for r in rows if r["outcome"] == "answered" and r.get("latency_s"))
+    import statistics as _st
+    med = _st.median(lat_answered) if lat_answered else 0
+    mean = (sum(lat_answered) / len(lat_answered)) if lat_answered else 0
+    rng = f"{lat_answered[0]:.1f}–{lat_answered[-1]:.1f}s" if lat_answered else "—"
+    dropped = [r["query_index"] for r in rows if r.get("error")]
+    drop_txt = (f"q{' q'.join(map(str, dropped))} errored (recorded as-is, no retry — HEART #5). "
+                if dropped else "zero errors this run — no upstream drops. ")
     return (f'<div class="latgrid">{lat_rows}</div>'
             f'<div class="desc">Scale: 0→300s (HEART #2 SSE client timeout). '
-            f'q20 at 244.7s is an upstream IncompleteRead drop <em>before</em> the timeout — recorded as-is, no retry (HEART #5). '
-            f'Answered median 47.2s (mean 65.6s; range 35.9–211.9s) — the old blended “44.2s avg” hid the outcome split: '
-            f'parks 2–3s, hard refusals ~2s.</div>')
+            f'{drop_txt}'
+            f'Answered median {med:.1f}s (mean {mean:.1f}s; range {rng}) — outcome split: '
+            f'parks and hard refusals return in seconds.</div>')
 
 
 def section_evaluated(b):

@@ -93,6 +93,22 @@ page is verified. Verdict provenance is surfaced on-page: 13 match / 4 partial /
 error (recomputed from the JSONL, not the earlier hand count). Other accounts build byte-identical
 pages (verified head-vs-head). See `accounts/finance/runs/v1/summary.json`.
 
+**Finance v2 rerun (2026-09-24, post PR #20789 — BE 983a4293b3 latency + b87d4113ff correctness):**
+same 30 CFO queries on hirafoods. Headline vs v1: answered 16→20, parks 9→5, errors 1→0
+(q20's 244.7s IncompleteRead fail now answers in 20.6s), answered latency median 47.2s→21.4s
+(max 211.9s→30.7s — parallel vote + adaptive poll + client reuse), match 13→15.
+Measured fixes: "days days" 30→0, "[unverified] to [unverified]" 2→0,
+reconcile-boilerplate-open 14/20→0/20, answer-stats footer live. **Regression: literal
+"[unverified]" 2→48 across 15 answers (F16 keyed refs that don't resolve; decision figures
+eaten — q9's whole recommendation is placeholder; the grounding-footer removal tally doesn't
+match the rendered count).** Unchanged: clarify-gate drift (~30% park rate), cross-answer
+template reuse, ".. I can work" nits. Value: 14 L4 / 4 L3 / 1 L2 (q9 hollowed) / 6 REF, 0 L5
+(the rigid template killed proactive answers). Full: `accounts/finance/EVAL_READOUT_v2.md`.
+Tooling fixed this run: renderer findings/KPI/pipeline/TL;DR/latency were hardcoded v1 content
+(now computed per version, resolved-state findings); zero-key invariant bug on clean runs;
+`value_phase2_judge.json` is version-less — v2 re-judged in-session, v1 backed up
+(`value_phase2_judge_v1.json`); eval_cli positional order is `diff finance 1 2`.
+
 **FinGAIA grounding + relabels + leak rules (2026-09-19, pass 3):** TODO replaced with the actual
 paper (arXiv:2507.17186v2): tiers now carry the paper's step/tool-count definitions (L1 ≤5 steps
 1-2 tools; L2 5-7 steps >2 tools; L3 ~10 steps coordinated multi-tool) with an explicit

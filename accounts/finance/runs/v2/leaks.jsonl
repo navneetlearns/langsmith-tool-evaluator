@@ -1,0 +1,1 @@
+{"query_index": 2, "rule": "workspace_ref", "matched": "### 🚩 Watch out\n- **Gross margin** is not tracked in this workspace, so profitability cannot be confirmed from these rows.\n- **", "context": "q2 answered", "note": "reconcile banner (intentional user-facing warning, review allowlist) — likely FALSE POSITIVE"}
