@@ -427,7 +427,7 @@ document.getElementById('f-cat').onchange=rep;document.getElementById('f-out').o
 
 # ---- assemble ----
 score = "".join(f'<div class="tile tile-{c}" title="{_d}"><div class="tile-icon">{ic}</div><div class="tile-n">{n}</div><div class="tile-l">{lab}</div></div>'
-                for n, c, lab, ic, _d in SCORECARD)
+                for lab, n, c, ic, _d in SCORECARD)
 
 gores = "\n".join(card_goes(g) for g in GORES_WRONG)
 

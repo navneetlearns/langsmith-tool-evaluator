@@ -70,7 +70,8 @@ scripts/render_ar_dashboard.py (plain-language Overview + For-developers; quotes
 from the run file at build time; hand-graded scorecard 9/21/7/2/3/14, footnote'd). Use
 render_ar_dashboard.py, NOT build_dashboard.py, to rebuild the ar-agent page (build_dashboard
 still builds the other accounts).
-NOT pushed — 3 local commits (99feba3, 4d16f5c, 4a1b262…) pending the user's go.Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
+PUSHED to origin/main 2026-09-24 (through 804006d + scorecard-tile fix; Pages live).
+Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
 superseded on 2026-09-23 by the user's own set — scripts/gen_ar_user_queries.py, 56 rows,
 54 ANSWER / 2 CLARIFY, 8 sections, enriched on live Zainab anchors).
 
