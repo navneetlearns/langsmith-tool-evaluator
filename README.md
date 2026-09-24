@@ -20,7 +20,8 @@ python3 scripts/eval_cli.py show q21 [--full]           # one query: response, l
 python3 scripts/eval_cli.py diff v1 v2                  # per-query verdict changes + metric deltas
 python3 scripts/eval_cli.py rerun --failed              # creates v2 (subset re-run, never overwrites)
 python3 scripts/eval_cli.py gate --min-match 0.6        # CI gate: nonzero exit on pass rate < min
-python3 build_dashboard.py --account finance            # FINANCE builds a STATIC page (no JS tables)
+python3 scripts/render_finance_dashboard.py     # TWO-TAB finance page (plain-language + dev tabs; the page builder for finance)
+python3 scripts/render_finance_static.py        # regenerates the OLD technical finance page (superseded as the default)
 python3 build_dashboard.py --account surana             # Rebuild dashboard
 python3 build_dashboard.py --account unifoods
 python3 build_dashboard.py --account hirafoods
