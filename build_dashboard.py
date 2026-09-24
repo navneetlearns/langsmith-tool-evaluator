@@ -161,6 +161,9 @@ def classify_quality(record):
 
 def detect_leaks(record):
     response = record.get("response", "") or ""
+    # App-rendered suggestion chips ("**Ask next:** Show more payment updates") are APP
+    # UI, not model leakage — strip the footer before scanning (AR agent appends it).
+    response = re.sub(r"\*\*Ask next:\*\*.*$", "", response, flags=re.S)
     resp_lower = response.lower()
     indicators = []
     for leak_type, pattern in LEAK_PATTERNS.items():
