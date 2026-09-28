@@ -13,6 +13,8 @@ python3 copilot_query_pipeline.py --account surana     # 80 Tally/ERP queries
 python3 copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
 python3 copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
+python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
+python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
 python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes runs/v1/)
 python3 scripts/eval_cli.py summary finance v1          # <=60-line summary (or: eval summary finance v1)
 python3 scripts/eval_cli.py findings --open             # ranked actionable findings (or: eval findings)
@@ -37,8 +39,14 @@ python3 build_dashboard.py --account finance
 | HiraFoods | 80 | 9 | Tally, ERP (Surana query set) | v4 rerun (79/80, 13.5s) |
 | Collections (AR agent) | 80 | 10 | Receivables + WhatsApp confirmation (get_receivables) | v2 (80/80, 16.9s) |
 | Finance Agent | 30 | 1 | CFO insight questions, ERP-only, clarify gate | v1 (2026-09-18): 20 answered / 9 clarify-parks / 1 fail |
-| Ask Groups Agent | 12 (recon) | 1 | WhatsApp-group message traffic (Zainab, ask_chats lane) | recon v1 (2026-09-23): 12/12, ~14s — RECON, not graded; data inventory only |
-| AR Agent | 56 (user set, ready) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | NOT YET RUN (awaiting label review) |
+| Ask Groups Agent | 12 (recon) | 1 | WhatsApp-group message traffic (Zainab, ask_chats lane) | recon v1 (2026-09-23): 12/12, ~14s — RECON, not graded; data inventory only. Trace 4 (2026-09-28): repeat-issue queries fall back to request-list (spec-DSL cap gap); also seen on support workspace 05f67562 |
+| AR Agent | 56 (user set) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | v2 run complete 2026-09-24 (56/56, readout + two-tab page pushed); v3 pending label remap |
+
+**Strategy & learning docs (2026-09-28, UNCOMMITTED):** `agent-eval-strategy.md` — four-agent
+operating model (AR + Finance + order-to-dispatch + Ask My Groups): pillar contracts, delta-vs-
+baseline gating with significance, classification-churn metric, golden-set governance, online layer.
+`agent-eval-learning-resources.md` — curated reading list (LangChain, Red Hat, Octomind, Agents
+Honestly, Armalo, ADK rubric-judging). Both pending push along with bcfd5d9 (finance two-tab page).
 
 **Agent-template evals (2026-09-18):** deployed `chatTemplateCode` agents (finance,
 collection_and_account_receivables, order_to_dispatch, general) run through
