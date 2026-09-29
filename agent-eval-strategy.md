@@ -180,3 +180,7 @@ O2D query-gen and churn-metric build.
 - reflexion-vs-copilot-analysis.md (2026-09-29) — Reflexion (Noah Shinn, NeurIPS 2023) vs
   these four agents: architecture/goal/purpose/use-case comparison + the
   no-runtime-self-reflection gap (Reflexion-style upgrade available).
+- memory-layer-design.md (2026-09-29) — PROPOSED design (status: not approved): runtime
+  self-reflection memory — failure proxies, post-turn reflection writer (nano call), lesson
+  store, per-agent injection, guardrails, delta-vs-baseline verification. Decision gates in
+  §7.
