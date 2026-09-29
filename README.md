@@ -8,11 +8,12 @@ Root holds folders only (README is the index):
 
 - `scripts/` — all Python (pipeline, eval_cli, renderers, generators, probes; SCRIPT_DIR = repo root)
 - `docs/plans/` — eval plans + strategy/analysis docs (eval_plan, agent-eval-strategy,
-  agent-eval-learning-resources, all *-eval-plan, reflexion-vs-copilot-analysis, memory-layer-design)
+  agent-eval-learning-resources, all *-eval-plan, reflexion-vs-copilot-analysis, memory-layer-design,
+  ask-groups-reflect-node-test-plan — EXECUTED 2026-09-29, verdict negative)
 - `docs/reference/` — api-comparison-report, tool_registry; `docs/HEART.md` — eval principles
 - `captures/` — network captures (copilot.zotok.ai.har, copiiiilot.zotok.ai.har)
 - `logs/` — pipeline run logs (gitignored; copilot_query_pipeline writes logs/pipeline_run.log)
-- `accounts/<name>/` — per-workspace config, queries, runs, readouts
+- `accounts/<name>/` — per-workspace config, queries, runs, readouts (ask-groups-reflect/ = reflect-node test: EVAL_READOUT_v1.md + runs, raw lesson buffer gitignored)
 - `runs/` — shared query-result JSONL; `playground/` — REST playground eval; `langsmith-tool-evaluator/` — LangSmith tool eval + dashboard output, deployed to Pages
 
 ## Components
