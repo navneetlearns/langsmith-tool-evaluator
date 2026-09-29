@@ -2,6 +2,19 @@
 
 Multi-account evaluation for ZoTok AI agents. Three complementary pipelines:
 
+## Layout (organized 2026-09-29, commit 8bd197c)
+
+Root holds folders only (README is the index):
+
+- `scripts/` — all Python (pipeline, eval_cli, renderers, generators, probes; SCRIPT_DIR = repo root)
+- `docs/plans/` — eval plans + strategy/analysis docs (eval_plan, agent-eval-strategy,
+  agent-eval-learning-resources, all *-eval-plan, reflexion-vs-copilot-analysis, memory-layer-design)
+- `docs/reference/` — api-comparison-report, tool_registry; `docs/HEART.md` — eval principles
+- `captures/` — network captures (copilot.zotok.ai.har, copiiiilot.zotok.ai.har)
+- `logs/` — pipeline run logs (gitignored; copilot_query_pipeline writes logs/pipeline_run.log)
+- `accounts/<name>/` — per-workspace config, queries, runs, readouts
+- `runs/` — shared query-result JSONL; `playground/` — REST playground eval; `langsmith-tool-evaluator/` — LangSmith tool eval + dashboard output, deployed to Pages
+
 ## Components
 
 ### 1. Copilot Eval (Direct API — SSE Streaming)
