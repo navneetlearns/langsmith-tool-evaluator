@@ -175,3 +175,8 @@ O2D query-gen and churn-metric build.
 7. Online replay (Phase 3): one script invocation scores ≥100 real traces, outputs
    lab-vs-prod delta per agent; failing traces land in a promote/ queue visible in the
    readout.
+
+## Related
+- reflexion-vs-copilot-analysis.md (2026-09-29) — Reflexion (Noah Shinn, NeurIPS 2023) vs
+  these four agents: architecture/goal/purpose/use-case comparison + the
+  no-runtime-self-reflection gap (Reflexion-style upgrade available).
