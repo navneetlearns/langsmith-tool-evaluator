@@ -26,3 +26,6 @@ Thumbs.db
 *.swp
 *.swo
 *.env.bak
+
+# Ask-groups reflect test: raw lesson buffer (workspace data — keep out of the public repo)
+accounts/ask-groups-reflect/memory_buffer.jsonl

@@ -1,6 +1,10 @@
 # Ask My Groups — Reflect Node Test Plan (runtime mapping memory, memory-only)
 
-**Status: PROPOSED — test-only. NOT a production change, NOT a contract with the agent team.**
+**Status: EXECUTED 2026-09-29 — VERDICT: negative (no consistent positive delta). See
+accounts/ask-groups-reflect/EVAL_READOUT_v1.md. Reflect node NOT recommended on this evidence;
+dev ticket = the 4 real gaps (F2 shape-fallback rule, repeat_issues shape, Koya ingestion,
+close F5 finding).**
+**NOT a production change, NOT a contract with the agent team.**
 **Date:** 2026-09-29 · **By:** eval harness worker
 **Goal:** evidence for the developer that a reflect node + episodic memory buffer inside
 ask_chats improves query→data MAPPING on subsequent queries. Explicitly NOT a retry loop:
