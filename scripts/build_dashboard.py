@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-SCRIPT_DIR = Path(__file__).parent.resolve()
+SCRIPT_DIR = Path(__file__).resolve().parent.parent  # repo root (script lives in scripts/)
 
 # ============================================================
 # CONFIG LOADER

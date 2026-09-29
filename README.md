@@ -9,12 +9,13 @@ Multi-account evaluation for ZoTok AI agents. Three complementary pipelines:
 Tests the ZoTok Seller Copilot via the SSE streaming API. Auto-OTP auth, JWT refresh, per-account test queries from Excel.
 
 ```
-python3 copilot_query_pipeline.py --account surana     # 80 Tally/ERP queries
-python3 copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
-python3 copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
+python3 scripts/copilot_query_pipeline.py --account surana     # 80 Tally/ERP queries
+python3 scripts/copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
+python3 scripts/copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
 python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
 python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
+python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 40 fine-tuned queries; probe v1 8/8 ok, tagged window 25-26 Sep only (see accounts/ask-groups-koya/PROBE_NOTES_v1.md)
 python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes runs/v1/)
 python3 scripts/eval_cli.py summary finance v1          # <=60-line summary (or: eval summary finance v1)
 python3 scripts/eval_cli.py findings --open             # ranked actionable findings (or: eval findings)
@@ -24,10 +25,10 @@ python3 scripts/eval_cli.py rerun --failed              # creates v2 (subset re-
 python3 scripts/eval_cli.py gate --min-match 0.6        # CI gate: nonzero exit on pass rate < min
 python3 scripts/render_finance_dashboard.py     # TWO-TAB finance page (plain-language + dev tabs; the page builder for finance)
 python3 scripts/render_finance_static.py        # regenerates the OLD technical finance page (superseded as the default)
-python3 build_dashboard.py --account surana             # Rebuild dashboard
-python3 build_dashboard.py --account unifoods
-python3 build_dashboard.py --account hirafoods
-python3 build_dashboard.py --account finance
+python3 scripts/build_dashboard.py --account surana             # Rebuild dashboard
+python3 scripts/build_dashboard.py --account unifoods
+python3 scripts/build_dashboard.py --account hirafoods
+python3 scripts/build_dashboard.py --account finance
 ```
 
 **Accounts:**
@@ -40,12 +41,13 @@ python3 build_dashboard.py --account finance
 | Collections (AR agent) | 80 | 10 | Receivables + WhatsApp confirmation (get_receivables) | v2 (80/80, 16.9s) |
 | Finance Agent | 30 | 1 | CFO insight questions, ERP-only, clarify gate | v1 (2026-09-18): 20 answered / 9 clarify-parks / 1 fail |
 | Ask Groups Agent | 12 (recon) | 1 | WhatsApp-group message traffic (Zainab, ask_chats lane) | recon v1 (2026-09-23): 12/12, ~14s — RECON, not graded; data inventory only. Trace 4 (2026-09-28): repeat-issue queries fall back to request-list (spec-DSL cap gap); also seen on support workspace 05f67562 |
+| Ask Groups (Koya) | 40 (fine-tuned) | 1 | Koya ws 72157c26, ask_chats lane (login 7903329975) | probe v1 (2026-09-28): 8 live queries, 0 errors, ~12s — auth+lane OK; tagged window = 25-26 Sep only → August-anchored queries return honest "nothing tagged" refusals (data-gap diagnosis, see `accounts/ask-groups-koya/PROBE_NOTES_v1.md` + /mnt/d/Zochief/chats_agent/KOYA_DATAGAP_ANALYSIS.md); full run pending date re-anchor or tagging backfill |
 | AR Agent | 56 (user set) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | v2 run complete 2026-09-24 (56/56, readout + two-tab page pushed); v3 pending label remap |
 
-**Strategy & learning docs (2026-09-28, UNCOMMITTED):** `agent-eval-strategy.md` — four-agent
+**Strategy & learning docs (2026-09-28, UNCOMMITTED):** `docs/plans/agent-eval-strategy.md` — four-agent
 operating model (AR + Finance + order-to-dispatch + Ask My Groups): pillar contracts, delta-vs-
 baseline gating with significance, classification-churn metric, golden-set governance, online layer.
-`agent-eval-learning-resources.md` — curated reading list (LangChain, Red Hat, Octomind, Agents
+`docs/plans/agent-eval-learning-resources.md` — curated reading list (LangChain, Red Hat, Octomind, Agents
 Honestly, Armalo, ADK rubric-judging). Both pending push along with bcfd5d9 (finance two-tab page).
 
 **Agent-template evals (2026-09-18):** deployed `chatTemplateCode` agents (finance,
@@ -221,13 +223,13 @@ The pipeline supports incremental writes and resume capability:
 
 ```bash
 # Standard run (auto-increment version)
-python3 copilot_query_pipeline.py --account hirafoods
+python3 scripts/copilot_query_pipeline.py --account hirafoods
 
 # Explicit version number
-python3 copilot_query_pipeline.py --account hirafoods --run 5
+python3 scripts/copilot_query_pipeline.py --account hirafoods --run 5
 
 # Resume partial run (e.g., after timeout at query 8)
-python3 copilot_query_pipeline.py --account hirafoods --resume 4
+python3 scripts/copilot_query_pipeline.py --account hirafoods --resume 4
 ```
 
 - **Incremental writes**: Each query result is written to JSONL immediately (not buffered until end)
@@ -240,11 +242,11 @@ Build dashboards for any historical version:
 
 ```bash
 # Build latest version (default)
-python3 build_dashboard.py --account hirafoods
+python3 scripts/build_dashboard.py --account hirafoods
 
 # Build specific version
-python3 build_dashboard.py --account hirafoods --version 1
-python3 build_dashboard.py --account hirafoods --version 2
+python3 scripts/build_dashboard.py --account hirafoods --version 1
+python3 scripts/build_dashboard.py --account hirafoods --version 2
 ```
 
 ### 2. LangSmith Tool Evaluation
@@ -268,7 +270,7 @@ Copies exist at `langsmith-tool-evaluator/.env` (runnable) and `eval-dashboard/l
 cd langsmith-tool-evaluator && python3 evaluate_project.py --limit 5
 ```
 
-Note: traced runs currently show `get_sales`, `think`, `write_todos` (plus `*_node` chain/LLM runs). `tool_registry.md` must include every traced tool the judge should recognize, or runs score 0.00 for "tool not in registry".
+Note: traced runs currently show `get_sales`, `think`, `write_todos` (plus `*_node` chain/LLM runs). `docs/reference/tool_registry.md` must include every traced tool the judge should recognize, or runs score 0.00 for "tool not in registry".
 
 ### 3. Playground Eval (Direct API — REST)
 
@@ -303,4 +305,4 @@ Copilot accounts stream one of two SSE protocols — the stream is determined by
 
 ## Principles
 
-See `HEART.md` for the governing eval principles.
+See `docs/HEART.md` for the governing eval principles.

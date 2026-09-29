@@ -93,10 +93,10 @@ langsmith-tool-evaluator/                   # Git root: navneetlearns/langsmith-
 └── .env.example
 
 # Parent directory (not in repo):
-../copilot_query_pipeline.py     # Direct Copilot API pipeline (auto-OTP, SSE parser)
-../build_dashboard.py             # Reproducible dashboard builder (run after each pipeline run)
-../HEART.md                      # Eval testing principles (6 rules)
-../eval_plan.md                  # Full knowledge doc + implementation plan
+../scripts/copilot_query_pipeline.py     # Direct Copilot API pipeline (auto-OTP, SSE parser)
+../scripts/build_dashboard.py             # Reproducible dashboard builder (run after each pipeline run)
+../docs/HEART.md                  # Eval testing principles (6 rules)
+../docs/plans/eval_plan.md                 # Full knowledge doc + implementation plan
 ../runs/                         # Working directory for pipeline outputs
 ```
 

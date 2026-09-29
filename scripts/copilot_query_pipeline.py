@@ -32,8 +32,8 @@ from datetime import datetime
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 
-SCRIPT_DIR = Path(__file__).parent.resolve()
-LOG_FILE = SCRIPT_DIR / "pipeline_run.log"
+SCRIPT_DIR = Path(__file__).resolve().parent.parent  # repo root (script lives in scripts/)
+LOG_FILE = SCRIPT_DIR / "logs" / "pipeline_run.log"
 
 
 def log_msg(msg: str):

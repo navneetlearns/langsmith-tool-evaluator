@@ -1,0 +1,18 @@
+# Ask Groups — Koya workspace eval account (user-provided 2026-09-28)
+# Workspace 72157c26-eb8a-4e24-ad19-9f405860d4ad = the KCCL/Koya WhatsApp-group workspace
+# (Aug-18 trace workspace; user confirmed ask_chats lane IS deployed here).
+# Login 7903329975 = user's own number (917903329975) — the Koya workspace login.
+account_name: "AskGroupsKoya"
+phone: "7903329975"
+workspace_id: "72157c26-eb8a-4e24-ad19-9f405860d4ad"
+seller_details:
+  firstName: "Koya"
+  mobile: "917903329975"
+wa_config_id: "72157c26-eb8a-4e24-ad19-9f405860d4ad_917903329975"
+llm_provider: "gpt-5.4-nano"   # informational — parse/supervisor pins are nano-family per traces
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+# REAL lane for this agent (chatTemplateCode "ask_chats" -> threads_search -> chats_agent),
+# user-confirmed deployed on the Koya workspace. Do NOT fall back to "".
+chatTemplateCode: "ask_chats"
