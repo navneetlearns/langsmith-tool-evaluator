@@ -30,6 +30,7 @@ python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries 
 python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
 python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
 python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 40 fine-tuned queries; probe v1 8/8 ok, tagged window 25-26 Sep only (see accounts/ask-groups-koya/PROBE_NOTES_v1.md)
+python3 scripts/run_agent_evals.py --account hirafoods-askgroups # HiraFoods ws c331ac11, ask_chats lane — v1 DONE 2026-09-30, 30/30 (readout + dashboard; generator: scripts/gen_ask_groups_hirafoods_queries.py; gate: scripts/preflight_agent_probe.py hirafoods-askgroups)
 python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes runs/v1/)
 python3 scripts/eval_cli.py summary finance v1          # <=60-line summary (or: eval summary finance v1)
 python3 scripts/eval_cli.py findings --open             # ranked actionable findings (or: eval findings)
@@ -76,7 +77,9 @@ banner when records carry expected_behavior. Live: https://navneetlearns.github.
 
 **AR agent eval prep — Zainab workspace (2026-09-23):** the AR agent (collection_and_account_receivables)
 is evaluated on Zainab Enterprises (workspace d53279c2-0f92-42ea-876d-1c57770f5184, login 9029012960) —
-hirafoods is unusable (no WhatsApp data). Sequence per user decision: ask-groups recon FIRST
+hirafoods was assessed unusable for AR (no WhatsApp data — 2026-09-23 finding, since STALE:
+the 2026-09-30 hirafoods ask-groups run proved live WhatsApp traffic, 6 groups / 366 reqs / 5d).
+AR stays on Zainab per prior decision (ERP-side AR surface + fabric corpus). Sequence per user decision: ask-groups recon FIRST
 (accounts/ask-groups/, lane ask_chats — 12 probes 12/12, avg 14s, RECON not graded;
 RECON_DATA_INVENTORY.md: 257 active groups/7d, tagged corpus ~10k msgs/week, 61% untagged
 disclosed, payment chatter sparse (9 payment requests/7d, ₹5,192), customer aliases harvested),

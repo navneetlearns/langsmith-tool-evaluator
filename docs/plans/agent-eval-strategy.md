@@ -12,8 +12,9 @@ harness has never had. (v2: added Ask My Groups as a first-class agent 2026-09-2
    - **Finance** (hirafoods ws, `chatTemplateCode: finance`, 30 CFO queries, v1/v2 done)
    - **AR** (Zainab ws, 56 user queries, v1/v2 done, label remap pending)
    - **Order-to-Dispatch** (hirafoods ws, plan exists, NEVER run)
-   - **Ask My Groups** (Zainab ws, `chatTemplateCode: ask_chats` → threads_search →
-     chats_agent lane, recon v1 done 12/12 — NEVER graded)
+   - **Ask My Groups** (hirafoods ws, `chatTemplateCode: ask_chats` → threads_search →
+     chats_agent lane, recon v1 done 12/12 — **GRADED v1 DONE 2026-09-30**: accounts/
+     hirafoods-askgroups/, 30/30, avg 13.2s, 0 fabrication; readout EVAL_READOUT_v1.md)
    If the agent list is anything else (e.g. deployed templates incl. `general` /
    collections), say so — the plan changes only in which golden sets get built.
 2. **Baseline re-verification:** AR v3, Finance v3, O2D first run AND Ask Groups first
@@ -111,6 +112,14 @@ stops improving (MLflow/LangChain pattern: grow the suite from real failures).
   deployed-chat-templates first — skill rule). expected_behavior labels ANSWER/CLARIFY/
   REFUSE per row; run via run_agent_evals.py; probe gate before the full run.
   Gate: quality buckets + honesty-caveat pass rate vs recon baseline.
+  **STATUS 2026-09-30: DONE on hirafoods ws** (scope deviation user-approved: hirafoods
+  instead of Zainab): accounts/hirafoods-askgroups/, 30/30 avg 13.2s, 0 fabrication —
+  21 answered / 8 NEAREST_SHAPE / 1 clean refuse; honesty caveats in 21/21 numeric
+  answers; repeat_issues cap gap reproduced (q26); photo_content/event_timing caps no
+  longer refuse (q23/q25 answered nearest-shape); q30 coverage-proportion answered with
+  group-count shape; no working clarify-ask. Readout: accounts/hirafoods-askgroups/
+  EVAL_READOUT_v1.md. Follow-up (Task 1.4b, optional): entity-anchored v2 now that real
+  customer aliases (Om Agencies 923, Krishna Traders 332, …) are harvested.
 - **Task 1.5 — Uniform readout shape** for all four: same EVAL_READOUT_v<N> structure
   (completion, tool-accuracy, quality buckets, refusals, action list) + two-tab dashboard.
 
