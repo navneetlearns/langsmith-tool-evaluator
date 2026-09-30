@@ -1,0 +1,18 @@
+# Ask Groups — HiraFoods workspace eval account (ask_chats lane)
+# Workspace c331ac11-c3e8-4d42-a8d6-b8b04127354c = hirafoods demo creds (phone 4040505050).
+# ask_chats IS deployed here (enumerated 2026-09-30, id 71d19eb3-3423-4105-9263-c844c334c98e,
+# created 2026-09-27). Its deployed-template system_prompt is EMPTY — ask_chats routes to the
+# chats_agent subgraph (spec-DSL shapes chat/count/list/reasons; no repeat shape).
+# Do NOT fall back to "" (that routes to the general Seller Copilot lane).
+account_name: "HiraFoodsAskGroups"
+phone: "4040505050"
+workspace_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c"
+seller_details:
+  firstName: "HiraFoods"
+  mobile: "914040505050"
+wa_config_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c_914040505050"
+llm_provider: "gpt-5.4-nano"   # informational — parse/supervisor pins are nano-family per traces
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+chatTemplateCode: "ask_chats"
