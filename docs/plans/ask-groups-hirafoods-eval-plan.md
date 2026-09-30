@@ -1,6 +1,11 @@
 # Ask My Groups Agent — Eval Plan on HiraFoods Account
 
-**Status: Proposed — NOT executed. Individual gates (Step 0 + the questions in §5) decide each phase.**
+**Status: EXECUTED 2026-09-30 — v1 run complete (30/30, 0 failed, avg 13.2s). Readout:
+accounts/hirafoods-askgroups/EVAL_READOUT_v1.md. ask_chats deployment on hirafoods CONFIRMED
+(id 71d19eb3, created 2026-09-27). Gates §0 all passed (workspace viable: 6 groups, 366
+reqs/5d). Findings: repeat_issues cap gap (NEAREST_SHAPE), REFUSE classes drifted (photo_content/
+event_timing answered instead of refusing), q30 coverage-proportion answered with group-count
+shape, no working clarify-ask. History retained below.**
 **Date:** 2026-09-28 · **By:** eval harness worker
 **Relation to strategy:** executes the Ask My Groups pillar (agent-eval-strategy.md Task 1.4),
 with one scope deviation: **workspace = hirafoods (c331ac11…) instead of Zainab (d53279c2…).**
