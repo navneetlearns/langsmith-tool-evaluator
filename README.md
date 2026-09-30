@@ -9,7 +9,8 @@ Root holds folders only (README is the index):
 - `scripts/` — all Python (pipeline, eval_cli, renderers, generators, probes; SCRIPT_DIR = repo root)
 - `docs/plans/` — eval plans + strategy/analysis docs (eval_plan, agent-eval-strategy,
   agent-eval-learning-resources, all *-eval-plan, reflexion-vs-copilot-analysis, memory-layer-design,
-  ask-groups-reflect-node-test-plan — EXECUTED 2026-09-29, verdict negative)
+  ask-groups-reflect-node-test-plan — EXECUTED 2026-09-29, verdict negative;
+  goal-super-agent-architecture — 2026-09-30, committed 79f6551)
 - `docs/reference/` — api-comparison-report, tool_registry; `docs/HEART.md` — eval principles
 - `captures/` — network captures (copilot.zotok.ai.har, copiiiilot.zotok.ai.har)
 - `logs/` — pipeline run logs (gitignored; copilot_query_pipeline writes logs/pipeline_run.log)

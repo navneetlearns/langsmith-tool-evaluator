@@ -101,3 +101,6 @@ lesson rows per workspace — the closed loop start (G5), not a blank slate.
 - agent-eval-strategy.md (this repo) — G5 closed loop, delta-vs-baseline gating
 - agent-design-notes.md (~/AgentWork/seller-copilot) — graph architecture, tool surface
 - reflexion repo: github.com/noahshinn/reflexion; paper arxiv.org/abs/2303.11366
+- goal-super-agent-architecture.md (this repo, 2026-09-30) — goal-driven super agent over
+  the copilot agents; adopts this design's lessons store as its episodic memory (Phase 2,
+  delta-gated) inside an act→measure→reflect→retry goal loop

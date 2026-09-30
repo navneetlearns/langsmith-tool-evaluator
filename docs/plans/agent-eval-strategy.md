@@ -193,3 +193,8 @@ O2D query-gen and churn-metric build.
   self-reflection memory — failure proxies, post-turn reflection writer (nano call), lesson
   store, per-agent injection, guardrails, delta-vs-baseline verification. Decision gates in
   §7.
+- goal-super-agent-architecture.md (2026-09-30) — goal-driven super agent sitting over the
+  copilot agents: Reflexion loop generalized to business goals (goal card → plan → approve →
+  execute → measure → reflect → retry → report), three approaches (harness-first / agent-first /
+  hierarchical) with trade-offs, counter-KPI rule, action approval tiers, guardrails, and
+  decision gates pending user confirmation before any build.
