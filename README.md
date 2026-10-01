@@ -2,7 +2,7 @@
 
 Multi-account evaluation for ZoTok AI agents. Three complementary pipelines:
 
-## Layout (organized 2026-09-29, commit 8bd197c)
+## Layout (organized 2026-09-29, commit 8bd197c; tidied 2026-10-01 — legacy runs → runs/legacy/, kccl plan doc → docs/plans/)
 
 Root holds folders only (README is the index):
 
@@ -10,12 +10,15 @@ Root holds folders only (README is the index):
 - `docs/plans/` — eval plans + strategy/analysis docs (eval_plan, agent-eval-strategy,
   agent-eval-learning-resources, all *-eval-plan, reflexion-vs-copilot-analysis, memory-layer-design,
   ask-groups-reflect-node-test-plan — EXECUTED 2026-09-29, verdict negative;
-  goal-super-agent-architecture — 2026-09-30, committed 79f6551)
+  goal-super-agent-architecture — 2026-09-30, committed 79f6551;
+  ask-groups-kccl-multiturn-eval-plan — CANCELED 2026-09-28, decision trail;
+  2026-10-01-ask-groups-koya-eval-run — EXECUTED, 30/30 v1 run)
 - `docs/reference/` — api-comparison-report, tool_registry; `docs/HEART.md` — eval principles
 - `captures/` — network captures (copilot.zotok.ai.har, copiiiilot.zotok.ai.har)
 - `logs/` — pipeline run logs (gitignored; copilot_query_pipeline writes logs/pipeline_run.log)
 - `accounts/<name>/` — per-workspace config, queries, runs, readouts (ask-groups-reflect/ = reflect-node test: EVAL_READOUT_v1.md + runs, raw lesson buffer gitignored)
-- `runs/` — shared query-result JSONL; `playground/` — REST playground eval; `langsmith-tool-evaluator/` — LangSmith tool eval + dashboard output, deployed to Pages
+- `runs/` — legacy July-2026 surana-era runs under `runs/legacy/`; current runs live in
+  `accounts/<name>/runs/`; `playground/` — REST playground eval; `langsmith-tool-evaluator/` — LangSmith tool eval + dashboard output, deployed to Pages
 
 ## Components
 
@@ -30,9 +33,9 @@ python3 scripts/copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP qu
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
 python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
 python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
-python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 40 fine-tuned queries; probe v1 8/8 ok, tagged window 25-26 Sep only (see accounts/ask-groups-koya/PROBE_NOTES_v1.md)
+python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 30 re-anchored queries (21/4/5); v1 run 2026-10-01 DONE 30/30, 0 fabrication (accounts/ask-groups-koya/EVAL_READOUT_v1.md)
 python3 scripts/run_agent_evals.py --account hirafoods-askgroups # HiraFoods ws c331ac11, ask_chats lane — v1 DONE 2026-09-30, 30/30 (readout + dashboard; generator: scripts/gen_ask_groups_hirafoods_queries.py; gate: scripts/preflight_agent_probe.py hirafoods-askgroups)
-python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes runs/v1/)
+python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes accounts/finance/runs/v1/)
 python3 scripts/eval_cli.py summary finance v1          # <=60-line summary (or: eval summary finance v1)
 python3 scripts/eval_cli.py findings --open             # ranked actionable findings (or: eval findings)
 python3 scripts/eval_cli.py show q21 [--full]           # one query: response, labels, judge, flags
@@ -61,11 +64,11 @@ python3 scripts/build_dashboard.py --account finance
 | Ask Groups (HiraFoods) | 30 (user-approved) | 10 | HiraFoods ws c331ac11, ask_chats lane — deployment CONFIRMED 2026-09-30 (id 71d19eb3) | **v1 run 2026-09-30: 30/30, 0 failed, avg 13.2s, 0 fabrications** — workspace VIABLE (6 groups, 366 reqs/5d, real customers+amounts); readout + EVAL_READOUT_v1.md + dashboard; findings: repeat_issues cap gap (NEAREST_SHAPE), REFUSE classes drifted (photo_content/event_timing no longer refuse), coverage-proportion q answered with group-count shape, no working clarify-ask |
 | AR Agent | 56 (user set) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | v2 run complete 2026-09-24 (56/56, readout + two-tab page pushed); v3 pending label remap |
 
-**Strategy & learning docs (2026-09-28, UNCOMMITTED):** `docs/plans/agent-eval-strategy.md` — four-agent
+**Strategy & learning docs (2026-09-28, committed):** `docs/plans/agent-eval-strategy.md` — four-agent
 operating model (AR + Finance + order-to-dispatch + Ask My Groups): pillar contracts, delta-vs-
 baseline gating with significance, classification-churn metric, golden-set governance, online layer.
 `docs/plans/agent-eval-learning-resources.md` — curated reading list (LangChain, Red Hat, Octomind, Agents
-Honestly, Armalo, ADK rubric-judging). Both pending push along with bcfd5d9 (finance two-tab page).
+Honestly, Armalo, ADK rubric-judging).
 
 **Agent-template evals (2026-09-18):** deployed `chatTemplateCode` agents (finance,
 collection_and_account_receivables, order_to_dispatch, general) run through
@@ -93,7 +96,7 @@ no identity-shortlist tool; resolver inconsistency flagged: named lookups someti
 to windowed get_receivables and fail), entities.json rebuilt for Zainab (hirafoods values
 gone), and the user's 55-question set enriched + labeled into queries.xlsx.
 Plan: ar-agent-user-queries-eval-plan.md (Phase 1 executed; blocked on label review).
-AR v1 RUN (2026-09-24): 56/56 queries executed on Zainab (runs/query_results_v2.jsonl,
+AR v1 RUN (2026-09-24): 56/56 queries executed on Zainab (accounts/ar-agent/runs/query_results_v2.jsonl,
 EVAL_READOUT_v1.md) — 24 success/14 no_data/14 clarify-parks/4 marginal raw, judged 38
 answered-with-value; see readout. AR page = docs/ar-agent/index.html, TWO-TAB build via
 scripts/render_ar_dashboard.py (plain-language Overview + For-developers; quotes pulled
