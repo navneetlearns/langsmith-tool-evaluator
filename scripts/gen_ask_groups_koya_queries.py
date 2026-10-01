@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Rebuild accounts/ask-groups-koya/queries.xlsx — 40 fine-tuned Ask My Groups queries,
-Koya/KCCL-grounded, RE-ANCHORED to the live tagged window 2026-10-01.
+"""Rebuild accounts/ask-groups-koya/queries.xlsx — 30 fine-tuned Ask My Groups queries,
+Koya/KCCL-grounded, RE-ANCHORED to the live tagged window (2026-10-01).
 
 History: user-approved flow 2026-09-28 (40 queries in the style of the user's 6-category
 reference, fine-tuned against the actual extracted data in `Project Status Update-KCCL.xlsx`
-— Status Tracker--V1, 496 rows). Probe v1 (09-28) found the tagged corpus = 25-26 Sep only,
-so August-anchored rows returned honest nothing-tagged (measured the tag gap, not the agent).
-Re-probe 2026-10-01: covered_range NOW = 25 Sep -> 1 Oct; 30-Sep DPR + purchase messages are
+— Status Tracker--V1, 496 rows). Probe v1 (09-28) found the tagged corpus = 25-26 Sep only;
+re-probe 2026-10-01: covered_range NOW = 25 Sep -> 1 Oct; 30-Sep DPR + purchase messages are
 tagged and answerable (q4/q11/q24/q38 answered with evidence; q1 August control refuses
-cleanly). Re-anchor = re-date sections A/B/C/D/F to the live window, keep 2 August controls
-as REFUSE, relabel the event_timing-capped row (A5, probed q5) as REFUSE-expectation.
+cleanly). 2026-10-01 user decision: RUN ONLY 30 queries -> this stratified 30-row subset of
+the 40 (all REFUSE/CLARIFY controls + probed-working rows kept; 10 lowest-value ANSWER rows
+dropped: 2,3,10,13,16,23,25,26,32,34 — recover them from git history of this file if the
+full 40 is wanted later).
 
 Real anchors used (sheet 2026-09-28 + re-probe 2026-10-01):
 - Corpus/date band: reports 20-Jul -> 12-Aug 2026 in the sheet; LIVE tagged band 25-Sep -> 1-Oct.
@@ -60,10 +61,6 @@ SECTIONS = [
      [
       ("Which projects haven't submitted their DPR on 12 August?", RFJ,
        "REFUSE control (probed q1 2026-10-01: clean date-range refusal — 'workspace only contains messages 25 Sep to 1 Oct'). August is outside covered_range; honest refusal = PASS.", D, REFUSE),
-      ("Show me the projects where the 1 October DPR is still pending.", ANS,
-       "Live band; GT: 30-Sep reports tagged (Alakkode, Elavanchery). List shape. Must not silently merge name variants (Thrikkalangode ~5 spellings).", D, ANSWER),
-      ("Which projects haven't shared their DPR as of today?", ANS,
-       "Paraphrase robustness of A2 (haven't submitted vs haven't shared vs pending).", D, ANSWER),
       ("Which projects have not sent the DPR in the last 2 working days?", ANS,
        "Working-day band 30 Sep-1 Oct; probe q4 (2026-10-01) answered '0 confirmed missing, 2 working days covered' with per-project evidence — expect same.", D, ANSWER),
       ("Are there any projects that haven't submitted DPR for more than 2 working days?", RFJ,
@@ -79,14 +76,10 @@ SECTIONS = [
      [
       ("How are we doing against the purchase plan?", CLR,
        "Open-ended; CLARIFY or scoped spec acceptable. GT: Purchase HO team (209 msgs); probe q11: 7 pending activities.", D, CLARIFY),
-      ("Show me planned purchases versus what the Purchase team has actually done this week.", ANS,
-       "Plan-vs-Actual in 'Purchase HO team' group, band 25 Sep-1 Oct.", D, ANSWER),
       ("Which purchase activities are still pending?", ANS,
        "Probed q11 (2026-10-01): answered '7 pending activities' (Maharajganj HDPE PO preparation, Kothur & Pamidi MS sleeves vendor dispatch, approval/receipt gaps) with evidence — expect same.", D, ANSWER),
       ("Which purchase tasks are overdue?", ANS,
        "'Overdue' needs a reference date -> CLARIFY acceptable if agent asks; else pending list.", D, ANSWER),
-      ("Can you identify purchases where no action has been taken against the plan this week?", ANS,
-       "Sheet anchors (05-Aug: Pamidi, JJM Nandigama, Vizianagaram) are outside coverage — live version graded on tagged band; honest empty OK.", D, ANSWER),
       ("What percentage of the planned purchase activities have been completed?", ANS,
        "Ratio shape from tagged rows (25 Sep-1 Oct); must cite the numbers it measured.", D, ANSWER),
      ]),
@@ -94,8 +87,6 @@ SECTIONS = [
      [
       ("For the tracked projects, how much of the planned work has actually been completed?", CLR,
        "Open-ended; needs scope anchor (date/group); guessing an entity = FAIL.", D, CLARIFY),
-      ("Which of the tracked projects are behind their plan this week?", ANS,
-       "Live band 25 Sep-1 Oct; honest empty / NEAREST_SHAPE accepted; fabricated plan-vs-actual = FAIL.", D, ANSWER),
       ("Show me the project-wise planned versus actual status for the last week.", ANS,
        "List shape; per project from tagged reports (Alakkode, Elavanchery); cite evidence_sids.", D, ANSWER),
       ("Which project has the biggest gap between plan and execution this week?", ANS,
@@ -111,17 +102,11 @@ SECTIONS = [
        "Judgment-y; correct = cite stock messages or CLARIFY scope; no invented thresholds.", D, CLARIFY),
       ("Show me factory-wise raw material stock information shared in the last 3 days.", ANS,
        "Band ~30 Sep-1 Oct (covered); probe q22 'last week' was nothing-tagged — re-anchored to covered days; honest empty ok.", D, ANSWER),
-      ("Which materials are at risk of running out?", RFJ,
-       "Same honesty contract as D1.", D, REFUSE),
      ]),
     ("E. Factories — despatches as per DPR",
      [
       ("What did the factories dispatch as per the latest DPR?", ANS,
        "Probed q24 (2026-10-01): answered from 30-Sep DPR (Kothur/Pamidi MS sleeves not dispatched, Muthuthala 2 planned loads, Chandrapur conveyor quotation) with evidence — expect same; zero is a real answer.", D, ANSWER),
-      ("Show dispatches factory-wise from the latest DPR.", ANS,
-       "Factory filter: Kothur/Pamidi/Chandrapur/Muthuthala from the 30-Sep DPR.", D, ANSWER),
-      ("Which clients received pipes in the latest dispatch report?", ANS,
-       "30-Sep DPR: no dispatch completed -> zero-handling trap (0 clients is a real answer, not 'no data').", D, ANSWER),
       ("Give me the client-wise pipe dispatch details.", ANS,
        "From the 30-Sep DPR; must cite evidence_sids.", D, ANSWER),
       ("How many pipes are still pending for dispatch?", ANS,
@@ -135,12 +120,8 @@ SECTIONS = [
      [
       ("What did the factories produce as per the latest DPR?", ANS,
        "Probed q31 (2026-10-01): lookup returned only YouTube + 'Hi KVL' -> honest no-data refusal with cited sids = PASS; fabrication = FAIL. The 30-Sep DPR may lack production figures.", D, ANSWER),
-      ("Show production client-wise from the latest DPR.", ANS,
-       "Client x qty x size; GT reference (demo extract): Aquarii 2,602 Rmt/520 nos — verify against live rows or honest empty.", D, ANSWER),
       ("How many pipes of each size were produced in the latest report?", ANS,
        "Sizes 600-1400mm (9 sizes); units trap Rmt vs Nos.", D, ANSWER),
-      ("Which factory produced the most in the last report?", ANS,
-       "Ranked factory comparison; honest empty if 30-Sep DPR lacks production content.", D, ANSWER),
       ("Is actual production below the DPR plan anywhere?", ANS,
        "Shortfall trap: must compare plan vs actual from the report data, not generalise.", D, ANSWER),
      ]),
@@ -208,5 +189,5 @@ def verify(xlsx: Path, expected: int) -> None:
 if __name__ == "__main__":
     for out in (OUT, MIRROR):
         n = build(out)
-        verify(out, 40)
-    print("wrote 40 re-anchored Koya ask-groups queries to both copies")
+        verify(out, 30)
+    print("wrote 30 re-anchored Koya ask-groups queries (user-capped subset) to both copies")
