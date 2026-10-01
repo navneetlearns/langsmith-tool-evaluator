@@ -33,7 +33,7 @@ python3 scripts/copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP qu
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
 python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
 python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
-python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 30 re-anchored queries (21/4/5); v1 run 2026-10-01 DONE 30/30, 0 fabrication (accounts/ask-groups-koya/EVAL_READOUT_v1.md)
+python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 30 re-anchored queries (21/4/5); v1 run 2026-10-01 DONE 30/30, 0 fabrication; AI second-opinion review folded in (accounts/ask-groups-koya/EVAL_READOUT_v1.md); next run = user's own 30-query set
 python3 scripts/run_agent_evals.py --account hirafoods-askgroups # HiraFoods ws c331ac11, ask_chats lane — v1 DONE 2026-09-30, 30/30 (readout + dashboard; generator: scripts/gen_ask_groups_hirafoods_queries.py; gate: scripts/preflight_agent_probe.py hirafoods-askgroups)
 python3 scripts/finance_pipeline.py --print             # derive summary/findings/leaks from the run (writes accounts/finance/runs/v1/)
 python3 scripts/eval_cli.py summary finance v1          # <=60-line summary (or: eval summary finance v1)

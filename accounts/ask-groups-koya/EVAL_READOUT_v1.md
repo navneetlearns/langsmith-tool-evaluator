@@ -70,6 +70,33 @@ agent refuses rather than fabricates.
    config" path (path 3) is answered: nightly tagging runs; August history is simply not in
    scope of the facts table (outside covered_range).
 
+## Second-opinion review (2026-10-01, external AI reviewer)
+A second AI review of the same v5 runs was analyzed line-by-line against the raw responses;
+its buckets differ (17 matched / 2 soft / 11 missed vs ours 17/10/3) but the substance largely
+holds. Confirmed findings:
+- **Cross-query contradiction cluster (missed by the per-row readout — its best catch):** no
+  single "pending DPR" definition. q2/q3/q28 "0 missing" vs q26 Archana Sudhan (Alakkode)
+  "pending for 30-Sep DPR" vs q4 "the pending projects" vs q5 "Alakkode 2 working days since
+  last DPR" — all verbatim in v5. Also q2's "last 2 working days" = 30 Sep–1 Oct while q28's
+  = 29–30 Sep. Fix: one fixed definition of working-days anchor + pending-DPR in the spec.
+- **Clarify 0/4** (matches F2): all four CLARIFY rows guessed/answered; capability gap.
+- **q20 counts items/POs, not pipes** ("How many pipes are pending?" → MS sleeves, PO-211,
+  PO-241 = 3 events) and **q19's dispatch table is messy** (raw plan text, "next dispatch" in
+  the Quantity column, plan post labeled kind=dispatch). Renderer/format fixes.
+- **q29 over-answered its REFUSE label** (procurement-status inference, grounded+caveated, no
+  fabrication — strict per-label read is a miss; see F1).
+- **Label artifacts in the set itself:** q14/q15/q27 near-identical critical-stock questions
+  with 3 different labels; q2/q3 near-duplicates (ANSWER vs REFUSE); only one August control.
+  Some "misses" are test-design, not agent.
+- **Tool use untracked** (expected_tool=no_tool, tool_calls empty ×30 while ~23 cite sources):
+  harness should log agent-side retrieval. Also makes q23-vs-q4/q28 DPR "contradiction"
+  unadjudicable (group-scope difference suspected — q23 searched the production lane).
+Disputed (AI overstated): q18-vs-q22 is NOT a contradiction (q18's own text: "pending items
+still in follow-up"); the 6 "refused answerable" rows (q10/15/21/23/24/30) are corpus gaps
+(quantities not extracted), not agent failures.
+Attribution of the AI's 11 misses: ~4 agent issues (clarify, definition drift, table shape,
+q29 scope) + ~4 label artifacts + ~2 corpus gaps + ~1 unadjudicable.
+
 ## Coverage caveat (read all numbers through it)
 Tagged window = 25 Sep→1 Oct (1-Oct tagged only partially/raw at run time; disclosed in the
 answers themselves). August-anchored KCCL extraction (496 rows) is NOT in the live facts

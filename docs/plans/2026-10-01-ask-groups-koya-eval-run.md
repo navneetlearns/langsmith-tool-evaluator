@@ -196,3 +196,25 @@ Buckets (hirafoods pattern + koya specifics):
 - `docs/plans/agent-eval-strategy.md` Task 1.4 — pillar contract + gate language
 - `ask-groups-kccl-multiturn-eval-plan.md` (langsmith-tool-evaluator clone, uncommitted) —
   cancellation trail for the KCCL-verbatim port
+
+## Post-run addendum (2026-10-01) — v1 DONE; next run = user's own 30 queries
+
+Run executed 30/30 (v5, avg 17.8s, 0 fabrication) → `accounts/ask-groups-koya/EVAL_READOUT_v1.md`.
+An external AI second-opinion review of v5 was analyzed and folded into the readout (cross-query
+consistency gaps it caught; two of its "contradictions" disputed — q18-consistent, q23-group-scope).
+
+**User direction for the next run:** hirafoods-style queries are NOT relevant to the KCCL eval;
+the user will share their **own 30 queries** and we run exactly that set (same Koya ws 72157c26,
+ask_chats lane). Carry these pending fixes into that setup:
+
+1. Resolve label conflicts before running (no near-duplicate Q14/15/27 patterns); user labels the
+   30 rows ANSWER/CLARIFY/REFUSE if possible, else we label + show delta first.
+2. Standardize "working days" anchor and "pending DPR" definition in the spec — fixes the
+   q2/q4/q5/q26/q28 contradiction cluster.
+3. Decide clarify policy: either add clarify-ask capability to the agent (dev) or relabel the
+   vague rows to ANSWER-with-scope.
+4. Log agent-side tool_calls/retrieval in the harness (currently all no_tool/empty — q23-class
+   contradictions stay unadjudicable without it).
+5. Tighten dispatch-table rendering (q19) and count pipes, not events (q20).
+Also carried: honest-empty on missing data = PASS behavior (corpus gaps, not agent failures —
+q10/15/21/23/24/30 are REFUSE-level data, not answer failures).
