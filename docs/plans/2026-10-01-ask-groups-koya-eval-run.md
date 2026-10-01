@@ -1,6 +1,6 @@
 # Ask My Groups — Koya/KCCL Group Eval Run v1 (2026-10-01)
 
-**Status: PROPOSED — executes only after the user confirms the decision gates in §G.**
+**Status: EXECUTED 2026-10-01 — v1 run done (30/30, 0 errors, 0 fabrication; readout `accounts/ask-groups-koya/EVAL_READOUT_v1.md`). Run was capped to a stratified 30-query subset (user); the plan's 40-row references now read 30. Decision gates in §G: G2 fork resolved by re-probe → re-anchor (applied); G3 delta approved; G4 push pending.**
 Prepared 2026-10-01 from recon. This plan resumes the Koya ask-groups eval
 (`accounts/ask-groups-koya/`) that stalled at probe v1 (2026-09-28) on a tagged-corpus
 data gap. It is the same agent + workspace the user's 09-28 "40 fine-tuned KCCL queries"
