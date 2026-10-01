@@ -60,7 +60,9 @@ def main():
     cfg = load_account_config(account)
     runs_dir = Path("accounts") / account / "runs"
     manifest_file = runs_dir / "manifest.json"
-    version = args.run or get_next_version(runs_dir)
+    version = args.run or args.resume or get_next_version(runs_dir)
+    if args.resume and not args.run:
+        print(f"[{account}] resume: appending new rows into v{version} (same file as source)")
     out_file = runs_dir / f"query_results_v{version}.jsonl"
 
     # Carry-over: when re-running a subset (--only) the new file must still contain the
