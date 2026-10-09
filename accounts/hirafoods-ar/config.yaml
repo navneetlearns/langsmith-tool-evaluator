@@ -1,0 +1,25 @@
+# AR Agent (collection_and_account_receivables) — HiraFoods workspace eval account
+# Workspace c331ac11-c3e8-4d42-a8d6-b8b04127354c = HiraFoods (AU Bank) LIVE client workspace,
+# phone 4040505050. AR lane IS deployed here (enumerated 2026-10-09 via
+# deployed-chat-templates: code=collection_and_account_receivables,
+# id=26fc7c56-f2f6-4fe6-823c-91d0dfbbc1fe, system_prompt 11984 chars — 5-tool read-only
+# ERP contract: search_customers_master / getCustomerAccountData / getCustomerAnalytics /
+# get_receivables / get_collections).
+# ALL probes/evals on this account are READ-ONLY. Never write, never send, never change config
+# on the workspace. Drafting never sends (AR contract is itself a test assertion).
+# wa_config_id + seller_details are taken from the app's OWN live request body (user's
+# /hub/copilot/resume capture, 2026-10-08) — NOT copied from hirafoods-askgroups (that account
+# uses the ..._914040505050 binding; the AR app on this workspace uses ..._917893797892_COP).
+account_name: "HiraFoodsAR"
+phone: "4040505050"
+workspace_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c"
+seller_details:
+  firstName: "Hirafoods Pvt Ltd"
+  mobile: "914040505050"
+wa_config_id: "c331ac11-c3e8-4d42-a8d6-b8b04127354c_917893797892_COP"
+llm_provider: "gpt-6-luna"   # informational — the AR stream capture shows gpt-6-luna on this lane
+base_url: "https://api.zotok.ai"
+sse_timeout: 300
+sse_read_timeout: 120
+# REAL code, not "" — empty string routes to the general lane.
+chatTemplateCode: "collection_and_account_receivables"

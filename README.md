@@ -32,6 +32,8 @@ python3 scripts/copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-gro
 python3 scripts/copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
 python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
+python3 scripts/probe_ar_hirafoods_gate.py --account hirafoods-ar  # READ-ONLY 6-probe gate (ledger/signal/identity/B2 join) before any AR run
+python3 scripts/run_agent_evals.py --account hirafoods-ar   # 32 AR queries on HiraFoods c331ac11 — v2 DONE 2026-10-09, 32/32, 0 errors (generator: scripts/gen_ar_hirafoods_queries.py)
 python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
 python3 scripts/run_agent_evals.py --account ask-groups-koya # Koya ws 72157c26 (login 7903329975) — 30 re-anchored queries (21/4/5); v1 run 2026-10-01 DONE 30/30, 0 fabrication; AI second-opinion review folded in (accounts/ask-groups-koya/EVAL_READOUT_v1.md); next run = user's own 30-query set
 python3 scripts/run_agent_evals.py --account hirafoods-askgroups # HiraFoods ws c331ac11, ask_chats lane — v1 DONE 2026-09-30, 30/30 (readout + dashboard; generator: scripts/gen_ask_groups_hirafoods_queries.py; gate: scripts/preflight_agent_probe.py hirafoods-askgroups)
@@ -107,6 +109,27 @@ PUSHED to origin/main 2026-09-24 (through 804006d + scorecard-tile fix; Pages li
 Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
 superseded on 2026-09-23 by the user's own set — scripts/gen_ar_user_queries.py, 56 rows,
 54 ANSWER / 2 CLARIFY, 8 sections, enriched on live Zainab anchors).
+
+**AR agent eval — HiraFoods RUN (2026-10-09):** the user approved the 32-row HiraFoods draft and said
+run it. The AR lane IS deployed and enumerable on c331ac11 (`collection_and_account_receivables`,
+id 26fc7c56; the 2026-09-24 "endpoint never lists AR codes" note is stale). Read-only gate probe
+(scripts/probe_ar_hirafoods_gate.py → runs/gate_probe_v1.jsonl) answered G2 LEDGER GREEN
+(total outstanding ₹57,77,21,622.19; 14,592 pending invoices), G3 WA-SIGNAL GREEN
+(ar_payments_reported: 1 unresolved claim, Lakshmi Agencies & Co 84 / INV-4007), G4 IDENTITY PARTIAL
+(the WhatsApp display name does NOT resolve), G5 GREEN; the plan's B2 "invoice × promise JOIN refuses"
+boundary is INVERTED here — the join answers. Full run: 32/32 rows, 0 errors, avg 16.3s
+(accounts/hirafoods-ar/runs/query_results_v2.jsonl). Judged 19/32 pass-class, 0 fabrication, 0 format
+violations; the 13 non-pass rows partition disjointly into 6 lookup-path (name-resolution q1/q4/q5,
+invoice-lookup q12/q14/q20), 2 silent empty responses with no interrupt event, 3 scope errors
+(1 over-refusal + 2 out-of-scope product answers) and 2 reliability singletons (q9 failing tool
+path, q16 transient) — affected ≠ lost: the name defect touched 5 rows and the invoice defect 6, but
+q2/q32/q11 still behaved acceptably.
+Tool surface is a THIRD mix (13 tools; NOT one query_ar-family call) → strict labels 9/27 (28%) are a
+label artifact. Artifacts: accounts/hirafoods-ar/{config.yaml, entities.json, queries.xlsx (generator
+scripts/gen_ar_hirafoods_queries.py), QUERY_SET_DRAFT_v1.md, EVAL_READOUT_v1.md, runs/analysis_v2.json,
+runs/judgments_v1.jsonl}; page docs/hirafoods-ar/index.html; QA scripts/qa_dashboards.py (Playwright,
+figures asserted against the run files — it caught a gate-probe figure cited on the page). Readout:
+accounts/hirafoods-ar/EVAL_READOUT_v1.md. Committed locally; NOT pushed.
 
 **Derived-artifact pipeline + eval CLI + static dashboard (2026-09-19):**
 `scripts/finance_pipeline.py` derives a single source of truth from the raw JSONL

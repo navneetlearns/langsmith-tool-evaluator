@@ -1,0 +1,56 @@
+{
+  "_note": "AR agent eval — HiraFoods c331ac11 entities. Sources: (a) the user's WhatsApp sample (2026-10-05 window, group 'Laxmi Agency + Hirafoods'); (b) the LIVE read-only gate probe run 2026-10-09 (accounts/hirafoods-ar/runs/gate_probe_v1.jsonl). Only these entities may appear in the query set — no ABC/XYZ placeholders (user-confirmed rule 2026-09-18).",
+  "_workspace": "c331ac11-c3e8-4d42-a8d6-b8b04127354c",
+  "_lane": "collection_and_account_receivables",
+  "_gate_verdicts_2026_10_09": {
+    "G2_ledger": "PASS — get_receivables returned rows: total outstanding ₹57,77,21,622.19; 14,592 pending invoices",
+    "G3_wa_signal": "PASS — ar_payments_reported returned 1 unresolved payment claim (Lakshmi Agencies & Co 84 / INV-4007)",
+    "G4_identity": "PARTIAL — 'Lakshmi Agencies' did NOT resolve (agent asked for mobile/code instead of guessing); 'Laxmi wale ka kya status hai?' was answered as ORDER status (search_customers_master + list_orders), i.e. the alias routed to the wrong domain rather than clarifying",
+    "B2_join_boundary": "DIFFERS from Zainab — the invoice-x-WA-signal JOIN ANSWERED on HiraFoods (1 customer with overdue bills + recorded promises; 12 overdue bills; customer-summary overdue ₹1,78,611.84), though it hedged that promise refs (INV-4008-INV-4012, INV-4011) do not match the receivables bill numbers"
+  },
+  "_tools_observed_2026_10_09": ["get_receivables", "ar_payments_reported", "ar_promises", "search_customers_master", "list_orders"],
+  "customers": [
+    {
+      "name": "Lakshmi Agencies & Co 84",
+      "aliases": ["Laxmi Agency", "Lakshmi Agencies", "Laxmi wale"],
+      "notes": "master form is the WhatsApp sender display name; the group title uses the short alias — a live alias mismatch. Resolution of the alias is UNVERIFIED on this workspace (gate probe 4: honest non-resolve)."
+    }
+  ],
+  "groups": [
+    {
+      "title": "Laxmi Agency + Hirafoods",
+      "channel": "49cc94d3-9d51-4f2c-be92-9f8313c8bc89"
+    }
+  ],
+  "invoices": [
+    {"number": "INV-4007", "note": "dispatched 5-Oct, delivery expected 7-Oct; customer said 'All settled from our side' — the payment-claim anchor (LIVE-CONFIRMED via ar_payments_reported, reported 05/10/2026)"},
+    {"number": "INV-4008", "note": "open thread — team 'checking with the godown'"},
+    {"number": "INV-4009", "note": "payment link/UPI sent ₹7,60,000; customer 'let me check with accounts and revert by 8 PM'"},
+    {"number": "INV-4011", "note": "customer: 'collections are slow, INV-4011 by 10-Oct' — dated promise"},
+    {"number": "INV-4012", "note": "team: 'has now been reconciled' — team-side claim"},
+    {"number": "INV-4013", "note": "customer: change qty to 30 cases Diamond Juice Strong before dispatch — change request"}
+  ],
+  "products": [
+    {"name": "Ultra Biscuits Regular 100g", "note": "order 12 cases; credit terms ₹1,460.88 due 20-Oct"},
+    {"name": "Diamond Juice Strong", "note": "30 cases qty-change request on INV-4013"},
+    {"name": "Classic Toothpaste Strong", "note": "24 cases — non-AR noise (REFUSE fodder)"}
+  ],
+  "amounts": [
+    "₹7,60,000",
+    "₹1,460.88",
+    "₹57,77,21,622.19",
+    "₹1,78,611.84"
+  ],
+  "amount_anchors": {
+    "workspace_total_outstanding": "₹57,77,21,622.19 (live 2026-10-09, get_receivables, customer-summary balance incl. due + not-yet-due)",
+    "workspace_pending_invoices": 14592,
+    "lakshmi_overdue_bills": 12,
+    "lakshmi_overdue_balance": "₹1,78,611.84 (customer-summary overdue balance, live 2026-10-09)"
+  },
+  "non_ar_noise": [
+    "Ultra Biscuits Regular stock/reserve",
+    "Classic Toothpaste Strong 24 cases",
+    "MH34 GH 7357 dispatch",
+    "product rates"
+  ]
+}

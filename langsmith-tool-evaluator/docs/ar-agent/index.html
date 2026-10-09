@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AR agent — accounts-receivable answers, 56-question test</title>
+<title>Accounts-receivable assistant — 56-question test</title>
 <style>
 :root{ --bg:#f8fafc; --card:#ffffff; --ink:#0f172a; --mut:#475569; --line:#e2e8f0;
  --acc:#2563eb; --ok:#15803d; --bad:#b91c1c; --warn:#b45309; --none:#64748b; --soft:#f1f5f9; }
@@ -101,7 +101,7 @@ table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
   <h3>The same payment list is returned again and again</h3>
   <p class="qq"><span class="qmark">Q</span> “Which payments were claimed on WhatsApp but I can&#x27;t find in ERP?” <span class="qi">q2</span></p>
   <div class="ans"><table><tr><th>Customer</th><th>Reference</th><th>Update</th><th>Status</th><th>Amount</th><th>Opened on</th><th>Last status change (IST)</th></tr><tr><td>KRISHNA COATED FABRICS PVT LTD</td><td>HDFC BANK-50200065744791(0)</td><td>Payment</td><td>Reported</td><td>₹63,699</td><td>21 Sep 2026</td><td>Unknown</td></tr><tr><td>POPULAR MATTRESS & CLOTH STORE</td><td>AXOMB26402076571</td><td>Payment</td><td>Reported</td><td>₹9,776</td><td>21 Sep 2026</td><td>Unknown</td></tr><tr><td>TRENDS FURNISHING</td><td>000425560065</td><td>Payment</td><td>Reported</td><td>₹2,52,120</td><td>19 Sep 2026</td><td>Unknown</td></tr><tr><td>TENON</td><td>625917715661</td><td>Payment</td><td>Reported</td><td>₹70,235</td><td>17 Sep 2026</td><td>Unknown</td></tr><tr><td>R DECOR SPACE</td><td>0917i30054436801</td><td>Payment</td><td>Reported</td><td>₹12,009</td><td>17 Sep 2026</td><td>Unknown</td></tr></table></div>
-  <p class="note">The same reported-payments list — led by KRISHNA COATED FABRICS, TRENDS FURNISHING and TENON with ₹9,776 claims — comes back for 17 different questions, whatever the question actually asks.</p>
+  <p class="note">The same reported-payments list — led by KRISHNA COATED FABRICS, TRENDS FURNISHING and TENON with ₹9,776 claims — comes back for many different questions, whatever the question actually asks.</p>
 </div>
 <div class="card">
   <h3>Some answers contradict the data</h3>
@@ -171,7 +171,7 @@ table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
   <h2>Bug list</h2>
   <table class="numt"><thead><tr><th>Queries</th><th>Issue</th></tr></thead><tbody><tr><td>q13</td><td>status=open misses broken commitments — “no overdue promises” while ONCE &amp; AGAIN’s is broken</td></tr><tr><td>q17</td><td>inverted is_null filter</td></tr><tr><td>q18</td><td>unrelated balances table attached to the answer</td></tr><tr><td>q31</td><td>false “none open” for unresolved references</td></tr><tr><td>q2, 16, 24, 30, 36</td><td>dangling headlines — headline promises more than the rows show</td></tr><tr><td>many</td><td>Entered rows leak into unmatched lists</td></tr><tr><td>many</td><td>literal \* and &amp;amp; appear in rendered answers</td></tr></tbody></table>
   <h2>Number consistency</h2>
-  <table class="numt"><thead><tr><th>Entity</th><th>View / source</th><th>Amount</th></tr></thead><tbody><tr><td>Interworld Furnishings</td><td>Ledger view (q18)</td><td>₹40,19,329 ≈ ₹40 lakh</td></tr><tr><td>Interworld Furnishings</td><td>Follow-up worklist (q22, q54)</td><td>₹72,36,78,400 ≈ ₹72.37 crore</td></tr><tr><td>Interworld Furnishings</td><td>Query text (q46)</td><td>₹7.24 crore (user-entered anchor)</td></tr><tr><td>DESIGN ELEMENTS</td><td>Answer q39</td><td>₹3,06,12,600</td></tr><tr><td>DESIGN ELEMENTS</td><td>Answer q43</td><td>₹3,06,126 — exactly 100× smaller</td></tr></tbody></table>
+  <table class="numt"><thead><tr><th>Entity / metric</th><th>View / source</th><th>Value</th></tr></thead><tbody><tr><td>Interworld Furnishings</td><td>Ledger view (q18)</td><td>₹40,19,329 ≈ ₹40 lakh</td></tr><tr><td>Interworld Furnishings</td><td>Follow-up worklist (q22, q54)</td><td>₹72,36,78,400 ≈ ₹72.37 crore</td></tr><tr><td>Interworld Furnishings</td><td>Query text (q46)</td><td>₹7.24 crore (user-entered anchor)</td></tr><tr><td>DESIGN ELEMENTS</td><td>Answer q39</td><td>₹3,06,12,600</td></tr><tr><td>DESIGN ELEMENTS</td><td>Answer q43</td><td>₹3,06,126 — exactly 100× smaller</td></tr></tbody></table>
   <p class="note"><span class="flag">Suspected scaling bug:</span> DESIGN ELEMENTS differs by exactly 100× between q39 and q43; Interworld differs 10-180× across views.</p>
   <h2>Harness notes</h2>
   <ul><li>Interrupts are recorded as empty responses — auto-select or log the picker payload (finance P1 same).</li><li>expected_tool labels don’t match real tool names (labels from the 09-23 harvest surface; the run calls the query_ar family).</li><li>tool_calls under-reports steps — q13 shows 4 steps in the UI but only 2 tool calls.</li><li>3 queries cite a “Bill 15293 / ₹880 NEFT” claim that is not found in the data (q20, q25, q49).</li><li>~8 queries embed the answer in the query text itself.</li></ul>
@@ -183,7 +183,7 @@ table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
   <p class="fn">Hand-graded, no ground-truth baseline exists. Judgment is a human reviewer’s, not the file’s; machine counts in the developer tab are computed from the run file.</p>
 </section>
 
-<p class="fn">Scoring is hand-graded by a human reviewer (solid 9 · partial 21 · wrong 7 · honest “can’t do” 2 · lookup errors 3 · no answer 14). There is no ground-truth baseline for these answers; treat the numbers as judgment, and the quoted answers on this page as taken verbatim from the run.</p>
+<p class="fn">Scoring is hand-graded by a human reviewer (solid 9 · partial 21 · wrong 7 · honest “can’t do” 2 · lookup errors 3 · no answer 14). Accounts ar-agent, run v2, file query_results_v2.jsonl (56 records). Scoring is hand-graded by a human reviewer; there is no ground-truth baseline for these answers — treat the numbers as judgment, and the quoted answers on this page as taken verbatim from the run.</p>
 </div>
 <script>
 var tabs=document.querySelectorAll('.tabs button');tabs.forEach(function(b){b.onclick=function(){

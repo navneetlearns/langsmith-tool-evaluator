@@ -1,0 +1,48 @@
+{
+ "account": "hirafoods-ar",
+ "run": 2,
+ "n": 32,
+ "buckets": {
+  "success": 30,
+  "fail": 2
+ },
+ "parks": [],
+ "errors": [
+  13,
+  28
+ ],
+ "tool_accuracy": {
+  "predicted": 27,
+  "strict": 9,
+  "lenient": 21
+ },
+ "tool_surface": {
+  "search_customers_master": 5,
+  "search_messages": 2,
+  "spawn_filter_agent": 1,
+  "ar_promises": 2,
+  "ar_payments_reported": 1,
+  "get_channel_data": 1,
+  "getCustomerAccountData": 2,
+  "search_threads": 1,
+  "list_invoices": 3,
+  "get_receivables": 5,
+  "list_dispatch_notes": 1,
+  "get_collections": 1,
+  "search_product_master": 2
+ },
+ "hedged": 18,
+ "format_violations": [],
+ "latency_by_outcome": {
+  "ANSWER": 16.1,
+  "FAIL": 19.3
+ },
+ "behavior_matrix": {
+  "ANSWER>ANSWER": 23,
+  "ANSWER>FAIL": 1,
+  "CLARIFY>ANSWER": 2,
+  "CLARIFY>FAIL": 1,
+  "NEAREST_SHAPE>ANSWER": 1,
+  "REFUSE>ANSWER": 4
+ }
+}

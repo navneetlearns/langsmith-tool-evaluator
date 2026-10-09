@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""AR agent eval run analyzer — deterministic checks over accounts/ar-agent/runs/query_results_v<N>.jsonl.
+"""AR agent eval run analyzer — deterministic checks over accounts/<account>/runs/query_results_v<N>.jsonl.
 
 Mirrors the finance pipeline's role for AR: bucket counts, behavior matrix, tool accuracy
 (strict + lenient), format-compliance bans, hedge-pattern presence, latency by outcome,
 tool-surface inventory, cross-answer repetition. Prints a <=70-line first-read block.
 
-Usage: python3 scripts/analyze_ar_run.py [--run N] [--json]
+Usage: python3 scripts/analyze_ar_run.py [--account NAME] [--run N] [--json]
+  --account defaults to ar-agent (Zainab); pass hirafoods-ar for the HiraFoods AR run.
 """
 import json
 import re
@@ -17,7 +18,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import build_dashboard as bd
 
 ROOT = Path(__file__).resolve().parent.parent
-RUNS = ROOT / "accounts/ar-agent/runs"
+ACCOUNT = "ar-agent"
+if "--account" in sys.argv:
+    ACCOUNT = sys.argv[sys.argv.index("--account") + 1]
+RUNS = ROOT / "accounts" / ACCOUNT / "runs"
 
 TOOLS_DECLARED = [
     "query_ar", "query_ar_financials", "get_ar_evidence", "resolve_ar_identity",
@@ -31,9 +35,16 @@ TOOL_BAN_RE = re.compile(
     r"resolve_ar_identity|resolve_ar_customer|get_ar_evidence|get_paid_collections|"
     r"run-[0-9a-f]+|thread_[0-9a-f]+)\b", re.I)
 WORD_BAN_RE = re.compile(r"\b(stale|stale data|partial data|\bsql\b|\boffset\b|\bpage\s+\d)\b", re.I)
+# Hedge detection must cover the Hinglish register these answers are actually written in: an
+# English-only regex scored the HiraFoods run at 2/30 hedged when every other answer hedges
+# ("confirm nahi kar paaya", "pushti nahi", "daava nahi karunga", "nahi mila").
 HEDGE_RE = re.compile(r"(not (yet )?(confirmed|received|matched|entered)|reported|"
                       r"not proof|may have changed|older list|dated read|doesn't cover|"
-                      r"may not cover|not independently (confirmed|verified))", re.I)
+                      r"may not cover|not independently (confirmed|verified)|"
+                      r"confirm nahi|confirmation nahi|pushti nahi|daava nahi|"
+                      r"verify nahi|verified nahi|nahi mila|match nahi mila|"
+                      r"confirm nahi kar|jaanch nahi|nahin mila|"
+                      r"सत्यापित नहीं|पुष्टि नहीं|नहीं मिला|दावा नहीं)", re.I)
 PAISE_SUSPECT_RE = re.compile(r"₹\s*\d{6,}(?![\d,])")  # ₹ followed by >=6 digits without comma separators
 
 
@@ -128,7 +139,7 @@ def analyze(run):
     def pct(x):
         return f"{100.0 * x / n:.0f}%" if n else "0%"
 
-    print(f"AR RUN v{run} — {n} queries | buckets: " +
+    print(f"AR RUN [{ACCOUNT}] v{run} — {n} queries | buckets: " +
           " ".join(f"{k}={v} ({pct(v)})" for k, v in sorted(buckets.items())))
     print(f"parks(idx)={parks} | errors(idx)={errors}")
     print(f"tool accuracy (predicted={tool_predicted}): strict={tool_strict} ({pct(tool_strict) if tool_predicted else 0} of predicted) "
@@ -148,13 +159,17 @@ def analyze(run):
 
     if "--json" in sys.argv:
         out = {
-            "run": run, "n": n, "buckets": dict(buckets), "parks": parks, "errors": errors,
+            "account": ACCOUNT, "run": run, "n": n, "buckets": dict(buckets), "parks": parks,
+            "errors": errors,
             "tool_accuracy": {"predicted": tool_predicted, "strict": tool_strict, "lenient": tool_lenient},
             "tool_surface": dict(tools_used), "hedged": hedge_ok,
             "format_violations": [list(h) for h in format_hits],
             "latency_by_outcome": {k: round(sum(v) / len(v), 1) for k, v in latency_by.items()},
             "behavior_matrix": {f"{e}>{o}": c for (e, o), c in sorted(Counter(observed.values()).items())},
         }
+        dest = RUNS / f"analysis_v{run}.json"
+        dest.write_text(json.dumps(out, ensure_ascii=False, indent=1))
+        print(f"WROTE {dest}")
         print("JSON:", json.dumps(out))
     return recs
 
