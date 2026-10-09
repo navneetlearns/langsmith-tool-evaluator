@@ -100,8 +100,9 @@ gone), and the user's 55-question set enriched + labeled into queries.xlsx.
 Plan: ar-agent-user-queries-eval-plan.md (Phase 1 executed; blocked on label review).
 AR v1 RUN (2026-09-24): 56/56 queries executed on Zainab (accounts/ar-agent/runs/query_results_v2.jsonl,
 EVAL_READOUT_v1.md) — 24 success/14 no_data/14 clarify-parks/4 marginal raw, judged 38
-answered-with-value; see readout. AR page = docs/ar-agent/index.html, TWO-TAB build via
-scripts/render_ar_dashboard.py (plain-language Overview + For-developers; quotes pulled
+answered-with-value; see readout. AR page = docs/ar-agent/index.html, three-tab build via
+scripts/render_ar_dashboard.py (plain-language Overview + For-developers + Raw I/O & thread IDs —
+the third tab lists every record's thread_id and its full untrimmed input/output; quotes pulled
 from the run file at build time; hand-graded scorecard 9/21/7/2/3/14, footnote'd). Use
 render_ar_dashboard.py, NOT build_dashboard.py, to rebuild the ar-agent page (build_dashboard
 still builds the other accounts).
@@ -129,7 +130,8 @@ label artifact. Artifacts: accounts/hirafoods-ar/{config.yaml, entities.json, qu
 scripts/gen_ar_hirafoods_queries.py), QUERY_SET_DRAFT_v1.md, EVAL_READOUT_v1.md, runs/analysis_v2.json,
 runs/judgments_v1.jsonl}; page docs/hirafoods-ar/index.html; QA scripts/qa_dashboards.py (Playwright,
 figures asserted against the run files — it caught a gate-probe figure cited on the page). Readout:
-accounts/hirafoods-ar/EVAL_READOUT_v1.md. Committed locally; NOT pushed.
+accounts/hirafoods-ar/EVAL_READOUT_v1.md. Pushed 2026-10-09 (33b42ba run + 00cbe5c raw-IO/thread-id
+tab); Pages live at /hirafoods-ar/.
 
 **Derived-artifact pipeline + eval CLI + static dashboard (2026-09-19):**
 `scripts/finance_pipeline.py` derives a single source of truth from the raw JSONL
