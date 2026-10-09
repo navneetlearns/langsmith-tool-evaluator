@@ -89,6 +89,28 @@ try:
             page.wait_for_timeout(200)
             r["filter_no_answer_label"] = page.locator("#rc").inner_text()
 
+            # raw I/O tab: one details block + one index row per run record,
+            # and every thread_id in the run file must appear on the page
+            page.click('button[data-tab="raw"]')
+            page.wait_for_timeout(250)
+            r["raw_pane_visible"] = page.locator("#pane-raw").is_visible()
+            r["raw_blocks"] = page.locator("details.raw").count()
+            r["raw_index_rows"] = page.locator("#pane-raw table.tbl tbody tr").count()
+            page_html = page.content()
+            tids = [json.loads(line).get("thread_id")
+                    for line in spec["run"].read_text().splitlines() if line.strip()]
+            tids = [t for t in tids if t]
+            r["thread_ids_in_runfile"] = len(tids)
+            r["thread_ids_missing_on_page"] = [t for t in tids if t not in page_html]
+            # expand the first raw block and confirm the audit surface has real ink
+            page.locator("details.raw").first.click()
+            page.wait_for_timeout(150)
+            r["raw_first_input_len"] = len(page.locator("details.raw pre.io").first.inner_text())
+            r["raw_first_output_len"] = len(page.locator("details.raw").first.locator(".ans").inner_text())
+            shot_raw = ROOT / f"qa/{account}-raw.png"
+            page.screenshot(path=str(shot_raw), full_page=False)
+            r["raw_screenshot"] = str(shot_raw)
+
             shot = ROOT / f"qa/{account}.png"
             shot.parent.mkdir(exist_ok=True)
             page.screenshot(path=str(shot), full_page=True)
@@ -116,6 +138,14 @@ for account, r in results.items():
         ("figures traceable to run file", not r["figures_not_in_runfile"], str(r["figures_not_in_runfile"])),
         ("no h-overflow", r["doc_scroll_w"] <= r["viewport_w"] + 4, f"{r['doc_scroll_w']} vs {r['viewport_w']}"),
         ("dev pane renders", r["dev_pane_visible"] and r["dev_text_len"] > 1500, str(r["dev_text_len"])),
+        ("raw pane renders", r["raw_pane_visible"] and r["raw_blocks"] > 0, str(r.get("raw_blocks"))),
+        ("raw blocks == records", r["raw_blocks"] == spec["rows"], f"{r['raw_blocks']} vs {spec['rows']}"),
+        ("raw index rows == records", r["raw_index_rows"] == spec["rows"],
+         f"{r['raw_index_rows']} vs {spec['rows']}"),
+        ("all thread ids on page", not r["thread_ids_missing_on_page"],
+         f"{len(r['thread_ids_missing_on_page'])} missing"),
+        ("raw input non-empty", r["raw_first_input_len"] > 10, str(r["raw_first_input_len"])),
+        ("raw output non-empty", r["raw_first_output_len"] > 40, str(r["raw_first_output_len"])),
         ("screenshot non-trivial", r["screenshot_bytes"] > 60000, str(r["screenshot_bytes"])),
     ]
     for name, passed, detail in checks:

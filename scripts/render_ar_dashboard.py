@@ -348,10 +348,69 @@ for e in expl:
     t = re.sub(r"\s+", " ", t).strip()
     e["a"] = (t[:420] + " …") if len(t) > 420 else t
 
+# ---------------- raw input/output: FULL, untrimmed, per query ----------------
+# Every row of the run file verbatim: thread_id, the exact input string, the whole
+# response body (no 420/480-char trim), raw tool_calls JSON, status sequence, timing.
+# The explorer table above stays trimmed for scanning; this is the audit surface.
+Q = lambda s: H.escape("" if s is None else str(s))
+raw_idx, raw_blocks_html = [], []
+
+
+def pre(s):
+    return '<pre class="io">' + Q(s) + "</pre>"
+
+
+for r in recs:
+    qi = r["query_index"]
+    o = OUT_LABEL[outcome(r)]
+    chip = f"chip-{o.lower().replace(' ', '-')}"
+    tid = r.get("thread_id") or "(none recorded)"
+    resp = clean(r.get("response") or "")
+    tools = r.get("tool_calls") or []
+    if resp.strip():
+        out_html = md_to_html(resp)
+    else:
+        out_html = ('<p class="empty">(EMPTY response — no body, no error field, '
+                    'no interrupt event: the silent-park rows the analyzer cannot see)</p>')
+    tools_html = pre(json.dumps(tools, indent=2, ensure_ascii=False)) \
+        if tools else '<p class="empty">(no tool calls recorded)</p>'
+    seq = r.get("status_sequence") or []
+    meta = "".join(
+        f"<tr><th>{Q(k)}</th><td>{Q(v if v is not None else '—')}</td></tr>"
+        for k, v in [
+            ("category", r.get("category") or "—"),
+            ("expected_tool", r.get("expected_tool") or "—"),
+            ("expected_behavior", r.get("expected_behavior") or "—"),
+            ("response_time_seconds", r.get("response_time_seconds")),
+            ("ui_payload_type", r.get("ui_payload_type")),
+            ("error", r.get("error")),
+            ("suggestions", json.dumps(r.get("suggestions") or [], ensure_ascii=False)),
+        ])
+    raw_idx.append(
+        f'<tr data-out="{Q(o)}"><td class="qi">q{qi}</td>'
+        f'<td><a class="tidlink" href="#raw-q{qi}">{Q(tid)}</a></td>'
+        f'<td><span class="chip {chip}">{Q(o)}</span></td>'
+        f'<td class="s">{round(r.get("response_time_seconds") or 0)}s</td>'
+        f'<td class="qcol">{Q(clean(r.get("query") or "")[:110])}</td></tr>')
+    raw_blocks_html.append(f"""<details class="raw" id="raw-q{qi}">
+<summary><span class="qi">q{qi}</span> <span class="rq">{Q(clean(r.get('query') or ''))}</span>
+ <span class="chip {chip}">{Q(o)}</span> <code class="tid">{Q(tid)}</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>{Q(tid)}</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/{ACCOUNT}/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt">{meta}</table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4>{pre(r.get('query') or '')}</div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans">{out_html}</div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4>{tools_html}</div>
+  <div class="rawcell wide"><h4>Status sequence ({len(seq)} events)</h4>{pre(' -> '.join(seq) or '(none)')}</div>
+</div>
+</details>""")
+
+raw_idx_html = "".join(raw_idx)
+raw_html = "".join(raw_blocks_html)
+
 # ---------------- page ----------------
-Q = lambda s: H.escape(s)
-
-
 def table_region(qi, heading, max_rows=8):
     """Render the table that follows '### <heading>' in the response, as real HTML."""
     s = clean(by[qi].get("response") or "")
@@ -459,6 +518,21 @@ code{background:var(--soft);border:1px solid var(--line);border-radius:5px;paddi
 table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
 .numt th,.numt td{border:1px solid var(--line);padding:7px 11px;text-align:left}
 .numt th{background:var(--soft)} .flag{color:var(--bad);font-weight:600}
+.raw{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0}
+.raw summary{cursor:pointer;font-size:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.raw summary .rq{font-weight:600}
+.raw summary .qi{min-width:26px}
+.tid{font-size:11.5px;color:var(--mut)}
+.tidlink{color:var(--acc);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;text-decoration:none;word-break:break-all}
+.tidlink:hover{text-decoration:underline}
+.tidfull code{display:block;padding:7px 9px;word-break:break-all;font-size:12.5px}
+.rawgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.rawcell{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.rawcell.wide{grid-column:1/-1}
+.rawcell h4{margin:0 0 6px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+pre.io{margin:0;white-space:pre-wrap;word-break:break-word;font-size:12.5px;background:var(--card);
+ border:1px solid var(--line);border-radius:8px;padding:9px 11px;max-height:360px;overflow:auto}
+@media (max-width:760px){.rawgrid{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
 
 <header>
@@ -469,6 +543,7 @@ table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
 <div class="tabs">
   <button class="on" data-tab="ov">Overview</button>
   <button data-tab="dev">For developers</button>
+  <button data-tab="raw">Raw I/O &amp; thread IDs</button>
 </div>
 
 <section class="pane on" id="pane-ov">
@@ -532,6 +607,24 @@ __WORKS__
   <p class="fn">Hand-graded, no ground-truth baseline exists. Judgment is a human reviewer’s, not the file’s; machine counts in the developer tab are computed from the run file.</p>
 </section>
 
+<section class="pane" id="pane-raw">
+  <h2>Thread IDs — one per query</h2>
+  <p class="note">Every record in the run file carries its own <code>thread_id</code>: the conversation
+  thread the harness created for that query. Click a thread ID to jump to its full raw
+  input/output below; resume or replay it against <code>/hub/copilot/threads</code> with the
+  workspace in the account’s <code>config.yaml</code>.</p>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>#</th><th>Thread ID</th><th>Outcome</th><th>Time</th><th>Question</th></tr></thead>
+    <tbody>__RAWIDX__</tbody>
+  </table></div>
+
+  <h2>Full raw input/output</h2>
+  <p class="note">Audit surface: the exact input string sent, the whole response body with no
+  trimming, the raw <code>tool_calls</code> JSON, the SSE status sequence, and record metadata —
+  every row of <code>__FILE__</code> verbatim.</p>
+  __RAW__
+</section>
+
 <p class="fn">__FOOTER__ Accounts __ACCOUNT__, run v__RUN__, file __FILE__ (__N__ records). Scoring is hand-graded by a human reviewer; there is no ground-truth baseline for these answers — treat the numbers as judgment, and the quoted answers on this page as taken verbatim from the run.</p>
 </div>
 <script>
@@ -591,6 +684,8 @@ page = (HTML_PAGE
         .replace("__LATNOTE__", cfg["latency_note"])
         .replace("__FIX__", fix)
         .replace("__FOOTER__", cfg["footer_score"])
+        .replace("__RAWIDX__", raw_idx_html)
+        .replace("__RAW__", raw_html)
         .replace("__ACCOUNT__", ACCOUNT).replace("__RUN__", str(RUN))
         .replace("__FILE__", f"query_results_v{RUN}.jsonl").replace("__N__", str(N)))
 

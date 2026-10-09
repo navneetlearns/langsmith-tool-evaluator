@@ -16,6 +16,9 @@ venv/
 # Logs
 *.log
 
+# QA screenshots (regenerate with: python3 scripts/qa_dashboards.py)
+qa/
+
 # OS
 .DS_Store
 Thumbs.db

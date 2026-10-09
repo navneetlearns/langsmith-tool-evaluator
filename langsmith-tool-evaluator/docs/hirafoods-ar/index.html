@@ -60,6 +60,21 @@ code{background:var(--soft);border:1px solid var(--line);border-radius:5px;paddi
 table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
 .numt th,.numt td{border:1px solid var(--line);padding:7px 11px;text-align:left}
 .numt th{background:var(--soft)} .flag{color:var(--bad);font-weight:600}
+.raw{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0}
+.raw summary{cursor:pointer;font-size:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.raw summary .rq{font-weight:600}
+.raw summary .qi{min-width:26px}
+.tid{font-size:11.5px;color:var(--mut)}
+.tidlink{color:var(--acc);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;text-decoration:none;word-break:break-all}
+.tidlink:hover{text-decoration:underline}
+.tidfull code{display:block;padding:7px 9px;word-break:break-all;font-size:12.5px}
+.rawgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.rawcell{background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.rawcell.wide{grid-column:1/-1}
+.rawcell h4{margin:0 0 6px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.03em}
+pre.io{margin:0;white-space:pre-wrap;word-break:break-word;font-size:12.5px;background:var(--card);
+ border:1px solid var(--line);border-radius:8px;padding:9px 11px;max-height:360px;overflow:auto}
+@media (max-width:760px){.rawgrid{grid-template-columns:1fr}}
 </style></head><body><div class="wrap">
 
 <header>
@@ -70,6 +85,7 @@ table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
 <div class="tabs">
   <button class="on" data-tab="ov">Overview</button>
   <button data-tab="dev">For developers</button>
+  <button data-tab="raw">Raw I/O &amp; thread IDs</button>
 </div>
 
 <section class="pane on" id="pane-ov">
@@ -164,6 +180,907 @@ table.numt{border-collapse:collapse;width:100%;margin:8px 0 4px;font-size:14px}
   <h2>Suggested fix order</h2>
   <ol><li>Resolver alias matching (or resolve from the signal side&#x27;s customer identity) — 5 rows, the single biggest win.</li><li>Invoice-number namespace: say which series was searched, and make the chat-quoted series findable — 6 rows.</li><li>Silent parks: emit the question/options event so the user (and the runner) can see them — 2 rows + unresumable today.</li><li>Tool-scope the lane so receivables refusal actually holds for stock/rate/dispatch questions — 2 rows.</li><li>Then re-map expected_tool labels to the observed 13-tool surface before v3.</li></ol>
   <p class="fn">Hand-graded, no ground-truth baseline exists. Judgment is a human reviewer’s, not the file’s; machine counts in the developer tab are computed from the run file.</p>
+</section>
+
+<section class="pane" id="pane-raw">
+  <h2>Thread IDs — one per query</h2>
+  <p class="note">Every record in the run file carries its own <code>thread_id</code>: the conversation
+  thread the harness created for that query. Click a thread ID to jump to its full raw
+  input/output below; resume or replay it against <code>/hub/copilot/threads</code> with the
+  workspace in the account’s <code>config.yaml</code>.</p>
+  <div class="tblwrap"><table class="tbl">
+    <thead><tr><th>#</th><th>Thread ID</th><th>Outcome</th><th>Time</th><th>Question</th></tr></thead>
+    <tbody><tr data-out="Answered"><td class="qi">q1</td><td><a class="tidlink" href="#raw-q1">082b39c0-8213-4612-aa29-d876f6bfbfed</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">16s</td><td class="qcol">Lakshmi Agencies ka kitna baaki hai?</td></tr><tr data-out="Answered"><td class="qi">q2</td><td><a class="tidlink" href="#raw-q2">946ec836-d81a-4e5d-b085-7e59cee7763a</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">15s</td><td class="qcol">Laxmi Agency ka outstanding kya hai?</td></tr><tr data-out="Answered"><td class="qi">q3</td><td><a class="tidlink" href="#raw-q3">57a8d955-3107-45e3-a2a1-e121aedb5233</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">61s</td><td class="qcol">Lakshmi ne bola tha INV-4007 ka paid kar diya - confirm hua?</td></tr><tr data-out="Answered"><td class="qi">q4</td><td><a class="tidlink" href="#raw-q4">9f2eb20c-95d6-4713-bcdf-964c4b2fb645</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">31s</td><td class="qcol">Lakshmi ne payment ka kya promise kiya tha?</td></tr><tr data-out="Answered"><td class="qi">q5</td><td><a class="tidlink" href="#raw-q5">61e87900-dd0f-4226-8de5-cd0fab1f8c98</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">15s</td><td class="qcol">Lakshmi Agencies ke saath kya stuck hai?</td></tr><tr data-out="Answered"><td class="qi">q6</td><td><a class="tidlink" href="#raw-q6">66a68d5c-07b8-4947-8dbe-7a3efd477fb4</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">10s</td><td class="qcol">kaunsi party ne outstanding acknowledge kiya?</td></tr><tr data-out="Answered"><td class="qi">q7</td><td><a class="tidlink" href="#raw-q7">b02946ae-c738-435e-9c89-6647895d612a</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">24s</td><td class="qcol">kis-kis ne bola paid, par system me abhi pending hai?</td></tr><tr data-out="Answered"><td class="qi">q8</td><td><a class="tidlink" href="#raw-q8">9cd9ccc9-fd09-4f60-b656-ecdce0cd32d5</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">10s</td><td class="qcol">Lakshmi ke group me pichle hafte kya hua?</td></tr><tr data-out="Answered"><td class="qi">q9</td><td><a class="tidlink" href="#raw-q9">e6584c8e-f24c-48d4-9202-ecbf4691c017</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">10s</td><td class="qcol">sabse zyada kis party ka payment baaki hai?</td></tr><tr data-out="Answered"><td class="qi">q10</td><td><a class="tidlink" href="#raw-q10">c68f586b-92b6-4a80-90b2-8add64924ea9</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">12s</td><td class="qcol">kis party se last 3 din me koi baat nahi hui?</td></tr><tr data-out="Answered"><td class="qi">q11</td><td><a class="tidlink" href="#raw-q11">8e450a22-ba0b-4a24-9cd7-d759fcc7a374</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">7s</td><td class="qcol">INV-4009 ka payment aaya?</td></tr><tr data-out="Answered"><td class="qi">q12</td><td><a class="tidlink" href="#raw-q12">2067f98d-da94-491c-bc35-de22db76779e</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">23s</td><td class="qcol">INV-4007 settle hua?</td></tr><tr data-out="No answer"><td class="qi">q13</td><td><a class="tidlink" href="#raw-q13">e4b456d8-5fb0-4603-9788-394135e37da5</a></td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">27s</td><td class="qcol">invoice 4008 ka kya hua?</td></tr><tr data-out="Answered"><td class="qi">q14</td><td><a class="tidlink" href="#raw-q14">bc7a3869-5689-4899-99e1-576d066e7f0f</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">12s</td><td class="qcol">INV-4013 ka status?</td></tr><tr data-out="Answered"><td class="qi">q15</td><td><a class="tidlink" href="#raw-q15">a68be831-6632-466e-b028-1519b683a30f</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">14s</td><td class="qcol">konsi invoices abhi pending hain?</td></tr><tr data-out="Answered"><td class="qi">q16</td><td><a class="tidlink" href="#raw-q16">90c39b7b-494a-4cb2-99af-766d2909490b</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">10s</td><td class="qcol">is hafte dispatch hue invoices?</td></tr><tr data-out="Answered"><td class="qi">q17</td><td><a class="tidlink" href="#raw-q17">15ee6624-aee2-4051-ba82-de769d28a63e</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">32s</td><td class="qcol">kis invoice ke liye party ne bola paid?</td></tr><tr data-out="Answered"><td class="qi">q18</td><td><a class="tidlink" href="#raw-q18">0ca07dea-0926-4be4-b706-e8efb99e1a5d</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">15s</td><td class="qcol">kis invoice ka payment kab tak aayega?</td></tr><tr data-out="Answered"><td class="qi">q19</td><td><a class="tidlink" href="#raw-q19">241e728c-b453-4859-ae3b-db8e44ddaf9e</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">7s</td><td class="qcol">sabse purani unpaid invoice konsi hai?</td></tr><tr data-out="Answered"><td class="qi">q20</td><td><a class="tidlink" href="#raw-q20">3dc507bc-9f50-4fcf-af6b-666a08d71726</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">13s</td><td class="qcol">INV-4009 tak kitna payment aana hai?</td></tr><tr data-out="Answered"><td class="qi">q21</td><td><a class="tidlink" href="#raw-q21">d2fbb82d-0ef5-44c0-b61c-b32df2035d41</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">21s</td><td class="qcol">total outstanding kitna hai?</td></tr><tr data-out="Answered"><td class="qi">q22</td><td><a class="tidlink" href="#raw-q22">87ef1509-c9ed-412a-816f-69def6947667</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">15s</td><td class="qcol">is mahine kitna payment aaya?</td></tr><tr data-out="Answered"><td class="qi">q23</td><td><a class="tidlink" href="#raw-q23">2ad90df0-6351-4344-89e4-23189f6e64c9</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">18s</td><td class="qcol">aaj kis-kis ne payment ka promise kiya?</td></tr><tr data-out="Answered"><td class="qi">q24</td><td><a class="tidlink" href="#raw-q24">19c1f963-92ed-4844-829a-c1581bc46c57</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">18s</td><td class="qcol">top 5 party by outstanding</td></tr><tr data-out="Answered"><td class="qi">q25</td><td><a class="tidlink" href="#raw-q25">8ac20a39-21d4-443a-ae69-b5c75098354d</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">19s</td><td class="qcol">outstanding pichle hafte se badha ya ghata?</td></tr><tr data-out="Answered"><td class="qi">q26</td><td><a class="tidlink" href="#raw-q26">0d3305e1-e3e7-4e1a-ba46-aa4aa9a9925a</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">13s</td><td class="qcol">kis invoice par credit terms hain?</td></tr><tr data-out="Answered"><td class="qi">q27</td><td><a class="tidlink" href="#raw-q27">57d15b11-d952-4f74-ab8f-f189434cbfe7</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">7s</td><td class="qcol">Laxmi wale ka kya status hai?</td></tr><tr data-out="No answer"><td class="qi">q28</td><td><a class="tidlink" href="#raw-q28">6c8e4094-9b68-4397-b775-ed2a6a309941</a></td><td><span class="chip chip-no-answer">No answer</span></td><td class="s">12s</td><td class="qcol">aur INV-4011?</td></tr><tr data-out="Answered"><td class="qi">q29</td><td><a class="tidlink" href="#raw-q29">21f6f803-bb0c-45af-8077-e720c893202c</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">13s</td><td class="qcol">Ultra Biscuits Regular ka stock kitna bacha?</td></tr><tr data-out="Answered"><td class="qi">q30</td><td><a class="tidlink" href="#raw-q30">e9da0a9e-a0ca-4eeb-9f9a-8aa360b19fbc</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">2s</td><td class="qcol">Lakshmi Agencies ko supply band kar du?</td></tr><tr data-out="Answered"><td class="qi">q31</td><td><a class="tidlink" href="#raw-q31">0ed6f8a2-20a7-41e6-a96d-2cf8295a75f4</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">12s</td><td class="qcol">Diamond Juice Strong ka rate kya hai?</td></tr><tr data-out="Answered"><td class="qi">q32</td><td><a class="tidlink" href="#raw-q32">0fbc653c-757d-48f9-8877-e1dc5585419a</a></td><td><span class="chip chip-answered">Answered</span></td><td class="s">11s</td><td class="qcol">Lakshmi ke payment delay kyun hote hain?</td></tr></tbody>
+  </table></div>
+
+  <h2>Full raw input/output</h2>
+  <p class="note">Audit surface: the exact input string sent, the whole response body with no
+  trimming, the raw <code>tool_calls</code> JSON, the SSE status sequence, and record metadata —
+  every row of <code>query_results_v2.jsonl</code> verbatim.</p>
+  <details class="raw" id="raw-q1">
+<summary><span class="qi">q1</span> <span class="rq">Lakshmi Agencies ka kitna baaki hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">082b39c0-8213-4612-aa29-d876f6bfbfed</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>082b39c0-8213-4612-aa29-d876f6bfbfed</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>16.07</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi Agencies ka kitna baaki hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Customer list mein <strong>Lakshmi Agencies</strong> naam ka match nahi mila, isliye unka baaki verify nahi kar paaya. Ho sakta hai account kisi milte-julte naam, alag spelling, ya mobile number se darj ho. Aap unka registered mobile number ya thoda aur poora naam bhej dein, main account dobara dhoondh kar balance check kar dunga. Chahein to pehle poori customer list bhi dekh sakte hain, ya customer ke delivery area ke hisaab se list chhant sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_customers_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Lakshmi Agencies&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;routes&quot;: null,
+      &quot;customer_segments&quot;: null,
+      &quot;dynamic_segments&quot;: null,
+      &quot;lifecycle_groups&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;is_active&quot;: null,
+      &quot;ids_only&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (55 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q2">
+<summary><span class="qi">q2</span> <span class="rq">Laxmi Agency ka outstanding kya hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">946ec836-d81a-4e5d-b085-7e59cee7763a</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>946ec836-d81a-4e5d-b085-7e59cee7763a</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>search_customers_master</td></tr><tr><th>expected_behavior</th><td>CLARIFY</td></tr><tr><th>response_time_seconds</th><td>15.0</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Laxmi Agency ka outstanding kya hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Customer master mein <strong>Laxmi Agency</strong> ka record nahi mila, isliye abhi unka outstanding confirm nahi kar paaya. Aap sabhi customers ki list khulwa sakte hain ya unka mobile number dekar sahi record dhoondh sakte hain. Agar aapke paas unka customer code ya naam ka doosra spelling hai, woh bhi bhej dein—main us record ka account balance check kar dunga.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_customers_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Laxmi Agency&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;routes&quot;: null,
+      &quot;customer_segments&quot;: null,
+      &quot;dynamic_segments&quot;: null,
+      &quot;lifecycle_groups&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;is_active&quot;: null,
+      &quot;ids_only&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (48 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q3">
+<summary><span class="qi">q3</span> <span class="rq">Lakshmi ne bola tha INV-4007 ka paid kar diya - confirm hua?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">57a8d955-3107-45e3-a2a1-e121aedb5233</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>57a8d955-3107-45e3-a2a1-e121aedb5233</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>ar_payments_reported</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>60.6</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi ne bola tha INV-4007 ka paid kar diya - confirm hua?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Haan—Lakshmi Agencies & Co. ne <strong>INV-4007</strong> ke liye “All settled from our side” kaha tha, jo unki taraf se payment settle hone ki confirmation hai. Yeh customer ka message hai; payment receipt ya accounts entry se independent confirmation is search mein nahi mili. Usi channel mein Lakshmi ka ek aur update maangne wala message bhi hai, isliye final status accounts se verify kar lena behtar hoga.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_messages&quot;,
+    &quot;input&quot;: {
+      &quot;query&quot;: &quot;INV-4007 payment paid confirmation&quot;,
+      &quot;keywords&quot;: [
+        &quot;INV-4007&quot;,
+        &quot;paid&quot;,
+        &quot;payment confirmed&quot;
+      ],
+      &quot;channel_id&quot;: null,
+      &quot;is_group&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;to_date&quot;: null,
+      &quot;hours_ago&quot;: 168,
+      &quot;limit&quot;: 30,
+      &quot;exhaustive&quot;: false,
+      &quot;cursor&quot;: null
+    }
+  },
+  {
+    &quot;tool&quot;: &quot;spawn_filter_agent&quot;,
+    &quot;input&quot;: {
+      &quot;source_tool_name&quot;: &quot;search_messages&quot;,
+      &quot;source_tool_args&quot;: {
+        &quot;query&quot;: &quot;INV-4007 payment paid confirmation&quot;,
+        &quot;keywords&quot;: [
+          &quot;INV-4007&quot;,
+          &quot;paid&quot;,
+          &quot;payment confirmed&quot;
+        ],
+        &quot;channel_id&quot;: null,
+        &quot;is_group&quot;: null,
+        &quot;from_date&quot;: null,
+        &quot;to_date&quot;: null,
+        &quot;hours_ago&quot;: 168,
+        &quot;limit&quot;: 30,
+        &quot;exhaustive&quot;: false,
+        &quot;cursor&quot;: null
+      },
+      &quot;prompt&quot;: &quot;The seller asks in Hinglish: “Lakshmi ne bola tha INV-4007 ka paid kar diya - confirm hua?” Keep only messages from Lakshmi Agencies &amp; Co 84 (Lakshmi) about INV-4007 that explicitly report settlement/payment or bear on whether it was confirmed. Discard unrelated customers, other invoice numbers, dispatch-only mentions, generic reminders, and pending-payment messages. Return matching message records only.&quot;,
+      &quot;source_results_json&quot;: &quot;[{\&quot;threadId\&quot;:\&quot;_msg_B17E4C2D0440A9E6A9BA7B929740319A\&quot;,\&quot;thread_id\&quot;:\&quot;_msg_B17E4C2D0440A9E6A9BA7B929740319A\&quot;,\&quot;conversationThreadId\&quot;:\&quot;_msg_B17E4C2D0440A9E6A9BA7B929740319A\&quot;,\&quot;summary\&quot;:\&quot;@919177017168 Reminder for the pending payment against INV-4007.\&quot;,\&quot;sender\&quot;:{\&quot;phone\&quot;:\&quot;914040505050\&quot;,\&quot;inviteId\&quot;:\&quot;aa7238a6-17b6-4266-9aca-e5f4f35acf21\&quot;,\&quot;name\&quot;:\&quot;-\&quot;,\&quot;userType\&quot;:\&quot;C\&quot;},\&quot;messages\&quot;:[{\&quot;text\&quot;:\&quot;@919177017168 Reminder for the pending payment against INV-4007.\&quot;,\&quot;sender\&quot;:\&quot;-\&quot;,\&quot;messageDirection\&quot;:\&quot;incoming\&quot;,\&quot;timestamp\&quot;:\&quot;\&quot;,\&quot;type\&quot;:\&quot;text\&quot;,\&quot;fileUrl\&quot;:\&quot;\&quot;,\&quot;messageId\&quot;:\&quot;B17E4C2D0440A9E6A9BA7B929740319A\&quot;}],\&quot;isSenderCustomer\&quot;:true,\&quot;queryType\&quot;:\&quot;\&quot;,\&quot;workspaceId\&quot;:\&quot;c331ac11-c3e8-4d42-a8d6-b8b04127354c\&quot;,\&quot;channelName\&quot;:\&quot;Dispatch Group\&quot;,\&quot;channelId\&quot;:\&quot;b4a44290-646a-4ab6-8fee-61b5f2b15b28\&quot;},{\&quot;threadId\&quot;:\&quot;_msg_3284F07A8E66507B311CB453C0C9494C\&quot;,\&quot;thread_id\&quot;:\&quot;_msg_3284F07A8E66507B311CB453C0C9494C\&quot;,\&quot;conversationThreadId\&quot;:\&quot;_msg_3284F07A8E66507B311CB453C0C9494C\&quot;,\&quot;summary\&quot;:\&quot;All settled from our side for INV-4007.\&quot;,\&quot;sender\&quot;:{\&quot;phone\&quot;:\&quot;918077544051\&quot;,\&quot;inviteId\&quot;:\&quot;e8b43576-e4ac-45d6-a31c-908d779aa180\&quot;,\&quot;name\&quot;:\&quot;Lakshmi Agencies &amp; Co 84\&quot;,\&quot;userType\&quot;:\&quot;C\&quot;},\&quot;messages\&quot;:[{\&quot;text\&quot;:\&quot;All settled from our side for INV-4007.\&quot;,\&quot;sender\&quot;:\&quot;Lakshmi Agencies &amp; Co 84\&quot;,\&quot;messageDirection\&quot;:\&quot;incoming\&quot;,\&quot;timestamp\&quot;:\&quot;\&quot;,\&quot;type\&quot;:\&quot;text\&quot;,\&quot;fileUrl\&quot;:\&quot;\&quot;,\&quot;messageId\&quot;:\&quot;3284F07A8E66507B311CB453C0C9494C\&quot;}],\&quot;isSenderCustomer\&quot;:true,\&quot;queryType\&quot;:\&quot;\&quot;,\&quot;workspaceId\&quot;:\&quot;c331ac11-c3e8-4d42-a8d6-b8b04127354c\&quot;,\&quot;channelName\&quot;:\&quot;Laxmi Agency + Hirafoods\&quot;,\&quot;channelId\&quot;:\&quot;49cc94d3-9d51-4f2c-be92-9f8313c8bc89\&quot;},{\&quot;threadId\&quot;:\&quot;_msg_AA8808E228EF56B06D458773B4528050\&quot;,\&quot;thread_id\&quot;:\&quot;_msg_AA8808E228EF56B06D458773B4528050\&quot;,\&quot;conversationThreadId\&quot;:\&quot;_msg_AA8808E228EF56B06D458773B4528050\&quot;,\&quot;summary\&quot;:\&quot;All settled from our side for INV-4007.\&quot;,\&quot;sender\&quot;:{\&quot;phone\&quot;:\&quot;919515886997\&quot;,\&quot;inviteId\&quot;:\&quot;d1869caf-4d98-4f84-8a61-2c413732b9d0\&quot;,\&quot;name\&quot;:\&quot;Om Distributors LLP 988\&quot;,\&quot;userType\&quot;:\&quot;C\&quot;},\&quot;messages\&quot;:[{\&quot;text\&quot;:\&quot;All settled from our side for INV-4007.\&quot;,\&quot;sender\&quot;:\&quot;Om Distributors LLP 988\&quot;,\&quot;messageDirection\&quot;:\&quot;incoming\&quot;,\&quot;timestamp\&quot;:\&quot;\&quot;,\&quot;type\&quot;:\&quot;text\&quot;,\&quot;fileUrl\&quot;:\&quot;\&quot;,\&quot;messageId\&quot;:\&quot;AA8808E228EF56B06D458773B4528050\&quot;},{\&quot;threadId\&quot;:\&quot;_msg_45E347A1F840260EBDCCDFC51ABA5041\&quot;,\&quot;thread_id\&quot;:\&quot;_msg_45E347A1F840260EBDCCDFC51ABA5041\&quot;,\&quot;conversationThreadId\&quot;:\&quot;_msg_45E347A1F840260EBDCCDFC51ABA5041\&quot;,\&quot;summary\&quot;:\&quot;Checking on INV-4007 once more — our customer is asking us.\&quot;,\&quot;sender\&quot;:{\&quot;phone\&quot;:\&quot;918077544051\&quot;,\&quot;inviteId\&quot;:\&quot;e8b43576-e4ac-45d6-a31c-908d779aa180\&quot;,\&quot;name\&quot;:\&quot;Lakshmi Agencies &amp; Co 84\&quot;,\&quot;userType\&quot;:\&quot;C\&quot;},\&quot;messages\&quot;:[{\&quot;text\&quot;:\&quot;Checking on INV-4007 once more — our customer is asking us.\&quot;,\&quot;sender\&quot;:\&quot;Lakshmi Agencies &amp; Co 84\&quot;,\&quot;messageDirection\&quot;:\&quot;incoming\&quot;,\&quot;timestamp\&quot;:\&quot;\&quot;,\&quot;type\&quot;:\&quot;text\&quot;,\&quot;fileUrl\&quot;:\&quot;\&quot;,\&quot;messageId\&quot;:\&quot;45E347A1F840260EBDCCDFC51ABA5041\&quot;}],\&quot;isSenderCustomer\&quot;:true,\&quot;queryType\&quot;:\&quot;\&quot;,\&quot;workspaceId\&quot;:\&quot;c331ac11-c3e8-4d42-a8d6-b8b04127354c\&quot;,\&quot;channelName\&quot;:\&quot;Laxmi Agency + Hirafoods\&quot;,\&quot;channelId\&quot;:\&quot;49cc94d3-9d51-4f2c-be92-9f8313c8bc89\&quot;}]&quot;
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (51 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q4">
+<summary><span class="qi">q4</span> <span class="rq">Lakshmi ne payment ka kya promise kiya tha?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">9f2eb20c-95d6-4713-bcdf-964c4b2fb645</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>9f2eb20c-95d6-4713-bcdf-964c4b2fb645</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>ar_promises</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>30.82</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi ne payment ka kya promise kiya tha?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Lakshmi naam se aapke customer records mein koi match nahi mila, isliye unka payment promise verify nahi kar paaya. Agar aap unka mobile number ya poora business naam share karein, toh main sahi customer dhoondhkar unke promise ki jaankari nikaal sakta hoon. Aap chahein toh main aapki poori customer list dikha sakta hoon, ya sabhi darj payment commitments dekh sakta hoon—isse Lakshmi ko pehchaanne mein madad mil sakti hai.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_customers_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Lakshmi&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;routes&quot;: null,
+      &quot;customer_segments&quot;: null,
+      &quot;dynamic_segments&quot;: null,
+      &quot;lifecycle_groups&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;is_active&quot;: null,
+      &quot;ids_only&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (55 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q5">
+<summary><span class="qi">q5</span> <span class="rq">Lakshmi Agencies ke saath kya stuck hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">61e87900-dd0f-4226-8de5-cd0fab1f8c98</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>61e87900-dd0f-4226-8de5-cd0fab1f8c98</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>14.51</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi Agencies ke saath kya stuck hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>“Lakshmi Agencies” ke naam se customer record nahi mila, isliye unke pending payment, promise ya document request ki jaanch nahi ho saki. Ho sakta hai record kisi alag naam ya spelling se ho. Aap unka mobile number ya customer code bhej dein, main sahi account dhoondh kar bata dunga. Ya main aapki poori customer list dikha sakta hoon, ya aaj kis customer ko follow up karna hai uski priority list de sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_customers_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Lakshmi Agencies&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;routes&quot;: null,
+      &quot;customer_segments&quot;: null,
+      &quot;dynamic_segments&quot;: null,
+      &quot;lifecycle_groups&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;is_active&quot;: null,
+      &quot;ids_only&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (51 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q6">
+<summary><span class="qi">q6</span> <span class="rq">kaunsi party ne outstanding acknowledge kiya?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">66a68d5c-07b8-4947-8dbe-7a3efd477fb4</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>66a68d5c-07b8-4947-8dbe-7a3efd477fb4</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>ar_promises</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>10.15</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">kaunsi party ne outstanding acknowledge kiya?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Outstanding acknowledge karne wali party <strong>Lakshmi Agencies & Co 84</strong> hai. Unhone <strong>INV-4011</strong> ke liye <strong>₹5,48,000</strong> acknowledge kiye; <strong>INV-4008, INV-4009, INV-4010 aur INV-4012</strong> ke liye bhi acknowledgement darj hai, lekin unki rakam specify nahi hai.</p>
+<p>Main in acknowledgements ka invoice-wise breakdown ya is party ki payment commitments bhi dikha sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;ar_promises&quot;,
+    &quot;input&quot;: {
+      &quot;customer_id&quot;: null,
+      &quot;status&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (49 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q7">
+<summary><span class="qi">q7</span> <span class="rq">kis-kis ne bola paid, par system me abhi pending hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">b02946ae-c738-435e-9c89-6647895d612a</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>b02946ae-c738-435e-9c89-6647895d612a</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>ar_payments_reported</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>24.17</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">kis-kis ne bola paid, par system me abhi pending hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p><strong>1 customer</strong> ne payment paid hone ki baat report ki hai, lekin yeh abhi unresolved hai—ise received ya system mein entered confirm nahi maana ja sakta.</p>
+<ul><li>Lakshmi Agencies & Co 84 — invoice <strong>INV-4007</strong>; amount/reference available nahi hai.</li></ul>
+<p>Aap is payment ko verify karke record update kar sakte hain, ya reported payments ki details dekh sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;ar_payments_reported&quot;,
+    &quot;input&quot;: {
+      &quot;status&quot;: &quot;reported&quot;,
+      &quot;customer_id&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (46 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q8">
+<summary><span class="qi">q8</span> <span class="rq">Lakshmi ke group me pichle hafte kya hua?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">9cd9ccc9-fd09-4f60-b656-ecdce0cd32d5</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>9cd9ccc9-fd09-4f60-b656-ecdce0cd32d5</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>search_threads</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>10.22</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi ke group me pichle hafte kya hua?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>“Lakshmi” naam se kai groups mil rahe hain, isliye abhi sahi group identify nahi ho paaya. Jaise <strong>Lakshmi Agencies & Co 27</strong>, <strong>Lakshmi Suppliers & Co 90</strong>, aur <strong>Lakshmi Distributors & Co 70</strong>. Aap group ka poora naam bata dein, main pichhle hafte ki baat-cheet ka summary nikaal dunga.</p>
+<p>Aap exact group name ya uska number share kar sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_channel_data&quot;,
+    &quot;input&quot;: {
+      &quot;channel_name&quot;: &quot;Lakshmi&quot;
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (49 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q9">
+<summary><span class="qi">q9</span> <span class="rq">sabse zyada kis party ka payment baaki hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">e6584c8e-f24c-48d4-9202-ecbf4691c017</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>e6584c8e-f24c-48d4-9202-ecbf4691c017</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>10.25</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">sabse zyada kis party ka payment baaki hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Abhi main sabse zyada baaki payment wali party ka data fetch nahi kar paaya. Isliye kisi party ka naam ya outstanding amount confirm nahi kar sakta. Aap thodi der baad dobara pooch sakte hain; ya kisi specific party ka naam batayein, toh uska account balance check karne ki koshish karunga.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;getCustomerAccountData&quot;,
+    &quot;input&quot;: {
+      &quot;invite_id&quot;: null,
+      &quot;start_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;search_key&quot;: null,
+      &quot;sort_by&quot;: &quot;outstanding&quot;,
+      &quot;filter_value&quot;: null,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;division_id&quot;: null,
+      &quot;seller_workspace_id&quot;: null,
+      &quot;transaction_dates&quot;: null,
+      &quot;invoice_status&quot;: null,
+      &quot;payment_status&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (43 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q10">
+<summary><span class="qi">q10</span> <span class="rq">kis party se last 3 din me koi baat nahi hui?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">c68f586b-92b6-4a80-90b2-8add64924ea9</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>c68f586b-92b6-4a80-90b2-8add64924ea9</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R1 - Customer-anchored</td></tr><tr><th>expected_tool</th><td>search_threads</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>11.54</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">kis party se last 3 din me koi baat nahi hui?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Last 3 din ke conversation search mein <strong>koi result nahi mila</strong>. Lekin kis party se baat nahi hui, yeh confirm karne ke liye parties ki poori list chahiye; conversation data se akela yeh pata nahi chal sakta ki kaun bilkul inactive tha. Aap recent conversations dekh sakte hain, ya payment follow-up wali baatein check kar sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_threads&quot;,
+    &quot;input&quot;: {
+      &quot;query&quot;: &quot;conversation&quot;,
+      &quot;query_types&quot;: null,
+      &quot;channel_id&quot;: null,
+      &quot;keywords&quot;: null,
+      &quot;is_group&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;to_date&quot;: null,
+      &quot;hours_ago&quot;: 72,
+      &quot;limit&quot;: 20,
+      &quot;exhaustive&quot;: true,
+      &quot;cursor&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (45 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q11">
+<summary><span class="qi">q11</span> <span class="rq">INV-4009 ka payment aaya?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">8e450a22-ba0b-4a24-9cd7-d759fcc7a374</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>8e450a22-ba0b-4a24-9cd7-d759fcc7a374</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>6.54</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">INV-4009 ka payment aaya?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>INV-4009 ke liye invoice-specific payment aaya ya nahi, yeh data abhi verify nahi kar sakta—payment records ko is invoice se reliably match karne ki suvidha available nahi hai. Isliye main payment aane ya settle hone ka daava nahi karunga.</p>
+<p>Aap customer ke payment transactions dekh sakte hain ya invoice ki basic details check karwa sakte hain. Customer ka naam batayein to uske payment records dhoondhne mein madad karunga.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><p class="empty">(no tool calls recorded)</p></div>
+  <div class="rawcell wide"><h4>Status sequence (45 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q12">
+<summary><span class="qi">q12</span> <span class="rq">INV-4007 settle hua?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">2067f98d-da94-491c-bc35-de22db76779e</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>2067f98d-da94-491c-bc35-de22db76779e</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>22.54</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">INV-4007 settle hua?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p><strong>INV-4007</strong> ke liye invoice record nahi mila, isliye uska settled status confirm nahi kar pa raha hoon.</p>
+<p>Aap invoice number dobara check karke bhej sakte hain, ya koi doosra invoice number dein—main uska status dekh dunga.</p>
+<p>Chahein toh available recent invoices bhi check kar sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;list_invoices&quot;,
+    &quot;input&quot;: {
+      &quot;customer_id&quot;: null,
+      &quot;start_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;doc_number&quot;: &quot;INV-4007&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;sort_by&quot;: &quot;invoiceDate&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;dispatch_filter&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (44 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q13">
+<summary><span class="qi">q13</span> <span class="rq">invoice 4008 ka kya hua?</span>
+ <span class="chip chip-no-answer">No answer</span> <code class="tid">e4b456d8-5fb0-4603-9788-394135e37da5</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>e4b456d8-5fb0-4603-9788-394135e37da5</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>26.81</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">invoice 4008 ka kya hua?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p class="empty">(EMPTY response — no body, no error field, no interrupt event: the silent-park rows the analyzer cannot see)</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><p class="empty">(no tool calls recorded)</p></div>
+  <div class="rawcell wide"><h4>Status sequence (9 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q14">
+<summary><span class="qi">q14</span> <span class="rq">INV-4013 ka status?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">bc7a3869-5689-4899-99e1-576d066e7f0f</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>bc7a3869-5689-4899-99e1-576d066e7f0f</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>11.52</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">INV-4013 ka status?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Invoice <strong>INV-4013</strong> नहीं मिला, इसलिए इसका status confirm नहीं कर सकता।</p>
+<p>आप invoice number की spelling जाँचकर दोबारा भेज सकते हैं, या संबंधित customer का नाम बताएं ताकि उसके invoices देख सकूँ।</p>
+<p>चाहें तो मैं उपलब्ध invoices की सूची या किसी order का status भी देख सकता हूँ।</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;list_invoices&quot;,
+    &quot;input&quot;: {
+      &quot;customer_id&quot;: null,
+      &quot;start_date&quot;: &quot;2000-01-01&quot;,
+      &quot;end_date&quot;: &quot;2026-10-09&quot;,
+      &quot;doc_number&quot;: &quot;INV-4013&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;sort_by&quot;: &quot;invoiceDate&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;dispatch_filter&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (42 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q15">
+<summary><span class="qi">q15</span> <span class="rq">konsi invoices abhi pending hain?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">a68be831-6632-466e-b028-1519b683a30f</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>a68be831-6632-466e-b028-1519b683a30f</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>13.5</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">konsi invoices abhi pending hain?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Abhi <strong>14,592+ pending invoice records</strong> mile hain; pehli <strong>5 invoices</strong> card mein dikh rahi hain. In listed invoices par abhi koi payment record nahi hai aur har invoice ka outstanding balance baaki hai.</p>
+<p>Card mein invoice number, customer, due date aur outstanding amount dekhein. Main overdue invoices ya kisi customer ki pending invoices bhi alag se dikha sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_receivables&quot;,
+    &quot;input&quot;: {
+      &quot;mode&quot;: &quot;invoices&quot;,
+      &quot;invite_id&quot;: null,
+      &quot;invoice_id&quot;: null,
+      &quot;invoice_number&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;min_outstanding&quot;: null,
+      &quot;ageing_bucket&quot;: null,
+      &quot;sort_by&quot;: &quot;outstanding_amount&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (46 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q16">
+<summary><span class="qi">q16</span> <span class="rq">is hafte dispatch hue invoices?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">90c39b7b-494a-4cb2-99af-766d2909490b</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>90c39b7b-494a-4cb2-99af-766d2909490b</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>getCustomerAccountData</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>10.11</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">is hafte dispatch hue invoices?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Is hafte dispatch hue invoices ki jaankari abhi nahi mil paayi. Kripya thodi der baad phir se poochhein; main dispatch details dobara check karunga. Aap chahein to tab tak is hafte ke invoices ki list ya doosri dispatch dates ki jaankari bhi mang sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;list_dispatch_notes&quot;,
+    &quot;input&quot;: {
+      &quot;customer_id&quot;: null,
+      &quot;status&quot;: &quot;Dispatched&quot;,
+      &quot;start_date&quot;: &quot;2026-10-05&quot;,
+      &quot;end_date&quot;: &quot;2026-10-11&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;sort_by&quot;: &quot;&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (42 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q17">
+<summary><span class="qi">q17</span> <span class="rq">kis invoice ke liye party ne bola paid?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">15ee6624-aee2-4051-ba82-de769d28a63e</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>15ee6624-aee2-4051-ba82-de769d28a63e</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>ar_payments_reported</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>31.56</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">kis invoice ke liye party ne bola paid?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Messages mein party ke payment-receipt claims ke saath <strong>INV-4688</strong>, <strong>INV-4014</strong> aur <strong>INV-4009</strong> ka zikr mila. Kuch “Payment done/Paid via UPI” messages mein invoice number nahi diya gaya. Yeh parties ke messages mein kiye gaye claims hain—payment received hone ki independent confirmation nahi.</p>
+<p>Yeh search pichhle 7 din ke messages par thi; details card mein dekhein.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_messages&quot;,
+    &quot;input&quot;: {
+      &quot;query&quot;: &quot;party said invoice was paid&quot;,
+      &quot;keywords&quot;: [
+        &quot;paid&quot;,
+        &quot;invoice paid&quot;,
+        &quot;payment done&quot;,
+        &quot;bill paid&quot;
+      ],
+      &quot;channel_id&quot;: null,
+      &quot;is_group&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;to_date&quot;: null,
+      &quot;hours_ago&quot;: null,
+      &quot;limit&quot;: 30,
+      &quot;exhaustive&quot;: false,
+      &quot;cursor&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (49 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q18">
+<summary><span class="qi">q18</span> <span class="rq">kis invoice ka payment kab tak aayega?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">0ca07dea-0926-4be4-b706-e8efb99e1a5d</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>0ca07dea-0926-4be4-b706-e8efb99e1a5d</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>ar_promises</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>15.02</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">kis invoice ka payment kab tak aayega?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Outstanding invoices ke records mil gaye hain — details card mein dekhiye. In records mein invoice ki due date dikh rahi hai, lekin due date ko customer ke payment promise ya expected payment date nahi maana ja sakta.</p>
+<p>Kis invoice par payment commitment mila hai, yeh batane ke liye mujhe us commitment wali chat ki jaankari chahiye. Invoice number ya customer ka naam bhej dein, toh main available invoice details ko narrow down kar sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_receivables&quot;,
+    &quot;input&quot;: {
+      &quot;mode&quot;: &quot;invoices&quot;,
+      &quot;invite_id&quot;: null,
+      &quot;invoice_id&quot;: null,
+      &quot;invoice_number&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;min_outstanding&quot;: null,
+      &quot;ageing_bucket&quot;: null,
+      &quot;sort_by&quot;: &quot;outstanding_amount&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (52 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q19">
+<summary><span class="qi">q19</span> <span class="rq">sabse purani unpaid invoice konsi hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">241e728c-b453-4859-ae3b-db8e44ddaf9e</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>241e728c-b453-4859-ae3b-db8e44ddaf9e</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>7.28</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">sabse purani unpaid invoice konsi hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Abhi main unpaid invoices ka paid/unpaid status verify nahi kar sakta, isliye sabse purani unpaid invoice ka naam batana mumkin nahi hai. Main aapko invoice documents ki date ke hisaab se list ya customer account ki invoice entries dikha sakta hoon, lekin unse unpaid status ki pushti nahi hogi. Agar aapke paas customer ya invoice number hai, uske records dekhne mein madad kar sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><p class="empty">(no tool calls recorded)</p></div>
+  <div class="rawcell wide"><h4>Status sequence (44 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q20">
+<summary><span class="qi">q20</span> <span class="rq">INV-4009 tak kitna payment aana hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">3dc507bc-9f50-4fcf-af6b-666a08d71726</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>3dc507bc-9f50-4fcf-af6b-666a08d71726</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>R2 - Invoice-anchored</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>12.63</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">INV-4009 tak kitna payment aana hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Invoice <strong>INV-4009</strong> ke liye account record nahi mila, isliye is invoice par kitna payment baaki hai main confirm nahi kar pa raha hoon.</p>
+<p>Aap invoice number dobara check karke bhej sakte hain, ya customer ka naam bata sakte hain—main uske account records dekhunga.</p>
+<p>Chahein to main aapke invoices ki list bhi check kar sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;getCustomerAccountData&quot;,
+    &quot;input&quot;: {
+      &quot;invite_id&quot;: null,
+      &quot;start_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;search_key&quot;: &quot;INV-4009&quot;,
+      &quot;sort_by&quot;: null,
+      &quot;filter_value&quot;: [
+        &quot;INV&quot;
+      ],
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;division_id&quot;: null,
+      &quot;seller_workspace_id&quot;: null,
+      &quot;transaction_dates&quot;: null,
+      &quot;invoice_status&quot;: null,
+      &quot;payment_status&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (46 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q21">
+<summary><span class="qi">q21</span> <span class="rq">total outstanding kitna hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">d2fbb82d-0ef5-44c0-b61c-b32df2035d41</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>d2fbb82d-0ef5-44c0-b61c-b32df2035d41</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>D - Derivations</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>20.97</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">total outstanding kitna hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Aapka total outstanding <strong>₹57,77,21,622.19</strong> hai — lagbhag <strong>₹57.77 crore</strong>. Yeh poore workspace ka current customer-summary balance hai.</p>
+<p>Aap chahein toh main ageing-wise breakdown, sabse zyada outstanding wale customers, ya kisi specific customer ka balance dikha sakta hoon. Batayein, kis detail se shuru karein?</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_receivables&quot;,
+    &quot;input&quot;: {
+      &quot;mode&quot;: &quot;summary&quot;,
+      &quot;invite_id&quot;: null,
+      &quot;invoice_id&quot;: null,
+      &quot;invoice_number&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;min_outstanding&quot;: null,
+      &quot;ageing_bucket&quot;: null,
+      &quot;sort_by&quot;: &quot;outstanding_amount&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (46 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q22">
+<summary><span class="qi">q22</span> <span class="rq">is mahine kitna payment aaya?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">87ef1509-c9ed-412a-816f-69def6947667</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>87ef1509-c9ed-412a-816f-69def6947667</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>D - Derivations</td></tr><tr><th>expected_tool</th><td>get_collections</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>15.2</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">is mahine kitna payment aaya?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>01st Oct(01/10/2026) se 09th Oct(09/10/2026) tak <strong>₹36,255.75</strong> payment aaya. Is dauran <strong>4 payments</strong> record hue, aur sabhi paid status mein dikh rahe hain. Yeh total isi date range ke payment transactions par based hai; yeh apne aap mein invoice-wise settlement allocation confirm nahi karta. Aap customer-wise breakup ya kisi specific payment ki details bhi dekh sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_collections&quot;,
+    &quot;input&quot;: {
+      &quot;invite_ids&quot;: null,
+      &quot;from_date&quot;: &quot;2026-10-01&quot;,
+      &quot;end_date&quot;: &quot;2026-10-09&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (52 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; todo -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q23">
+<summary><span class="qi">q23</span> <span class="rq">aaj kis-kis ne payment ka promise kiya?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">2ad90df0-6351-4344-89e4-23189f6e64c9</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>2ad90df0-6351-4344-89e4-23189f6e64c9</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>D - Derivations</td></tr><tr><th>expected_tool</th><td>ar_promises</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>18.32</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">aaj kis-kis ne payment ka promise kiya?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Aaj, 9th Oct(09/10/2026), payment ka promise karne wala koi customer record mein nahi mila. Jo current commitments dikh rahe hain, woh Lakshmi Agencies & Co 84 ke hain: ek payment <strong>10th Oct(10/10/2026)</strong> tak aur <strong>₹1,460.88</strong> ka commitment <strong>20th Oct(20/10/2026)</strong> tak hai—yeh aaj ke naye promises nahi hain. Aap chahein toh in commitments ka status dekh sakte hain, ya payment follow-up ke records check kar sakte hain.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;ar_promises&quot;,
+    &quot;input&quot;: {
+      &quot;customer_id&quot;: null,
+      &quot;status&quot;: null
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (51 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q24">
+<summary><span class="qi">q24</span> <span class="rq">top 5 party by outstanding</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">19c1f963-92ed-4844-829a-c1581bc46c57</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>19c1f963-92ed-4844-829a-c1581bc46c57</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>D - Derivations</td></tr><tr><th>expected_tool</th><td>getCustomerAnalytics</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>18.43</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">top 5 party by outstanding</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Found the <strong>top 5 parties by outstanding</strong>; the highest customer-summary balance is <strong>₹20.48L</strong>. The ranked names and individual balances are available in the card. These are current outstanding balances, not limited to a date range.</p>
+<p>You can also review overdue amounts, check ageing details, or see more parties ranked by outstanding.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_receivables&quot;,
+    &quot;input&quot;: {
+      &quot;mode&quot;: &quot;customers&quot;,
+      &quot;invite_id&quot;: null,
+      &quot;invoice_id&quot;: null,
+      &quot;invoice_number&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;min_outstanding&quot;: null,
+      &quot;ageing_bucket&quot;: null,
+      &quot;sort_by&quot;: &quot;outstanding_amount&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 5
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (43 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q25">
+<summary><span class="qi">q25</span> <span class="rq">outstanding pichle hafte se badha ya ghata?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">8ac20a39-21d4-443a-ae69-b5c75098354d</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>8ac20a39-21d4-443a-ae69-b5c75098354d</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>D - Derivations</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>REFUSE</td></tr><tr><th>response_time_seconds</th><td>18.54</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">outstanding pichle hafte se badha ya ghata?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Abhi ka total outstanding <strong>₹57.77 crore</strong> hai. Lekin pichhle hafte ka balance ya us waqt ka snapshot mere paas nahi hai, isliye outstanding <strong>badha ya ghata</strong>—yeh confirm nahi kar sakta.</p>
+<p>Main current outstanding ki ageing ya sabse zyada dues wale customers dikha sakta hoon, taaki aapko aaj ki position samajhne mein madad mile.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;get_receivables&quot;,
+    &quot;input&quot;: {
+      &quot;mode&quot;: &quot;summary&quot;,
+      &quot;invite_id&quot;: null,
+      &quot;invoice_id&quot;: null,
+      &quot;invoice_number&quot;: null,
+      &quot;from_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;min_outstanding&quot;: null,
+      &quot;ageing_bucket&quot;: null,
+      &quot;sort_by&quot;: &quot;outstanding_amount&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (46 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q26">
+<summary><span class="qi">q26</span> <span class="rq">kis invoice par credit terms hain?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">0d3305e1-e3e7-4e1a-ba46-aa4aa9a9925a</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>0d3305e1-e3e7-4e1a-ba46-aa4aa9a9925a</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>D - Derivations</td></tr><tr><th>expected_tool</th><td>get_receivables</td></tr><tr><th>expected_behavior</th><td>ANSWER</td></tr><tr><th>response_time_seconds</th><td>12.56</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">kis invoice par credit terms hain?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Invoice records mein <strong>credit terms</strong> ka field nahi dikh raha, isliye main kisi invoice ko credit terms wala confirm nahi kar sakta. List mein due dates hain, lekin sirf due date se credit terms pakke nahi hote.</p>
+<p>Aap kisi specific invoice number ke terms document mein check kar sakte hain; invoice number bhejenge to main uska record dekh sakta hoon. Zarurat ho to invoices ki list ya kisi invoice ki due date bhi check kar sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;list_invoices&quot;,
+    &quot;input&quot;: {
+      &quot;customer_id&quot;: null,
+      &quot;start_date&quot;: null,
+      &quot;end_date&quot;: null,
+      &quot;doc_number&quot;: null,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;sort_by&quot;: &quot;invoiceDate&quot;,
+      &quot;sort_direction&quot;: &quot;DESC&quot;,
+      &quot;dispatch_filter&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (49 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q27">
+<summary><span class="qi">q27</span> <span class="rq">Laxmi wale ka kya status hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">57d15b11-d952-4f74-ab8f-f189434cbfe7</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>57d15b11-d952-4f74-ab8f-f189434cbfe7</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>Controls</td></tr><tr><th>expected_tool</th><td>search_customers_master</td></tr><tr><th>expected_behavior</th><td>CLARIFY</td></tr><tr><th>response_time_seconds</th><td>6.89</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Laxmi wale ka kya status hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Kaunsi Laxmi ki baat kar rahe hain? Kripya customer ka poora naam ya mobile number batayein, kyunki sirf “Laxmi” se sahi customer pehchanna mushkil hai. Aur “status” se aapka matlab payment/outstanding, order ya kisi message ka update hai? Yeh details milte hi main sahi jaankari check kar dunga.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><p class="empty">(no tool calls recorded)</p></div>
+  <div class="rawcell wide"><h4>Status sequence (41 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q28">
+<summary><span class="qi">q28</span> <span class="rq">aur INV-4011?</span>
+ <span class="chip chip-no-answer">No answer</span> <code class="tid">6c8e4094-9b68-4397-b775-ed2a6a309941</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>6c8e4094-9b68-4397-b775-ed2a6a309941</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>Controls</td></tr><tr><th>expected_tool</th><td>ASK_BACK</td></tr><tr><th>expected_behavior</th><td>CLARIFY</td></tr><tr><th>response_time_seconds</th><td>11.87</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">aur INV-4011?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p class="empty">(EMPTY response — no body, no error field, no interrupt event: the silent-park rows the analyzer cannot see)</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><p class="empty">(no tool calls recorded)</p></div>
+  <div class="rawcell wide"><h4>Status sequence (9 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q29">
+<summary><span class="qi">q29</span> <span class="rq">Ultra Biscuits Regular ka stock kitna bacha?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">21f6f803-bb0c-45af-8077-e720c893202c</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>21f6f803-bb0c-45af-8077-e720c893202c</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>Controls</td></tr><tr><th>expected_tool</th><td>NO_TOOL</td></tr><tr><th>expected_behavior</th><td>REFUSE</td></tr><tr><th>response_time_seconds</th><td>13.1</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Ultra Biscuits Regular ka stock kitna bacha?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Ultra Biscuits Regular ke <strong>2 pack sizes</strong> mile hain. <strong>200g: -484 NOS</strong> (stock deficit dikh raha hai) aur <strong>100g: 423 NOS</strong> available hain. Pack-wise product details card mein bhi dekh sakte hain. Main kisi doosre product ka stock ya in variants ki sales performance bhi check kar sakta hoon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_product_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Ultra Biscuits Regular&quot;,
+      &quot;sku_code&quot;: null,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;sortOrder&quot;: &quot;sortOrder&quot;,
+      &quot;sort_direction&quot;: &quot;ASC&quot;,
+      &quot;group_by_product&quot;: false,
+      &quot;inventory_filter&quot;: null,
+      &quot;stock_filter&quot;: null,
+      &quot;status_filter&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;category_codes&quot;: null,
+      &quot;collection_ids&quot;: null,
+      &quot;include_facets&quot;: false,
+      &quot;include_divisions&quot;: false,
+      &quot;include_cfas&quot;: false,
+      &quot;include_category_codes_list&quot;: false
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (44 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q30">
+<summary><span class="qi">q30</span> <span class="rq">Lakshmi Agencies ko supply band kar du?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">e9da0a9e-a0ca-4eeb-9f9a-8aa360b19fbc</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>e9da0a9e-a0ca-4eeb-9f9a-8aa360b19fbc</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>Controls</td></tr><tr><th>expected_tool</th><td>NO_TOOL</td></tr><tr><th>expected_behavior</th><td>REFUSE</td></tr><tr><th>response_time_seconds</th><td>1.79</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi Agencies ko supply band kar du?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Sorry, main yeh automatically supply band/stop nahi kar sakta. Lekin main aapko yeh check karne mein help kar sakta hoon:</p>
+<ul><li>Lakshmi Agencies ka current outstanding/dues status</li><li>Unke pending/open invoices aur payment history</li><li>Collections/follow-up status (agar chase list par hain ya held hain)</li><li>Unke against koi policy/hold reason set hai ya nahi</li></ul></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><p class="empty">(no tool calls recorded)</p></div>
+  <div class="rawcell wide"><h4>Status sequence (5 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; message -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q31">
+<summary><span class="qi">q31</span> <span class="rq">Diamond Juice Strong ka rate kya hai?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">0ed6f8a2-20a7-41e6-a96d-2cf8295a75f4</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>0ed6f8a2-20a7-41e6-a96d-2cf8295a75f4</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>Controls</td></tr><tr><th>expected_tool</th><td>NO_TOOL</td></tr><tr><th>expected_behavior</th><td>REFUSE</td></tr><tr><th>response_time_seconds</th><td>11.8</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Diamond Juice Strong ka rate kya hai?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Diamond Juice Strong <strong>1L</strong> ka listed rate <strong>₹15,619</strong> hai. Product ki details card mein dekhiye. Agar aap chahen, main iska stock status bhi bata sakta hoon ya kisi doosre product ka rate check kar sakta hoon. Rate ke saath product listing mein stock <strong>-667</strong> dikh raha hai; zarurat ho to main iski availability detail bhi verify karke bata doon.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_product_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Diamond Juice Strong&quot;,
+      &quot;sku_code&quot;: null,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;sortOrder&quot;: &quot;sortOrder&quot;,
+      &quot;sort_direction&quot;: &quot;ASC&quot;,
+      &quot;group_by_product&quot;: false,
+      &quot;inventory_filter&quot;: null,
+      &quot;stock_filter&quot;: null,
+      &quot;status_filter&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;category_codes&quot;: null,
+      &quot;collection_ids&quot;: null,
+      &quot;include_facets&quot;: false,
+      &quot;include_divisions&quot;: false,
+      &quot;include_cfas&quot;: false,
+      &quot;include_category_codes_list&quot;: false
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (47 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; ui -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details><details class="raw" id="raw-q32">
+<summary><span class="qi">q32</span> <span class="rq">Lakshmi ke payment delay kyun hote hain?</span>
+ <span class="chip chip-answered">Answered</span> <code class="tid">0fbc653c-757d-48f9-8877-e1dc5585419a</code></summary>
+<div class="rawgrid">
+  <div class="rawcell"><h4>Thread ID</h4><div class="tidfull"><code>0fbc653c-757d-48f9-8877-e1dc5585419a</code></div>
+    <p class="note">One thread per query — resume/replay this thread against
+    <code>/hub/copilot/threads</code> with the workspace in accounts/hirafoods-ar/config.yaml.</p></div>
+  <div class="rawcell"><h4>Record metadata</h4><table class="numt"><tr><th>category</th><td>Controls</td></tr><tr><th>expected_tool</th><td>NO_TOOL</td></tr><tr><th>expected_behavior</th><td>NEAREST_SHAPE</td></tr><tr><th>response_time_seconds</th><td>11.12</td></tr><tr><th>ui_payload_type</th><td>—</td></tr><tr><th>error</th><td>—</td></tr><tr><th>suggestions</th><td>[]</td></tr></table></div>
+  <div class="rawcell wide"><h4>Input — raw query, exactly as sent</h4><pre class="io">Lakshmi ke payment delay kyun hote hain?</pre></div>
+  <div class="rawcell wide"><h4>Output — full raw response, untrimmed</h4><div class="ans"><p>Lakshmi naam se koi customer record nahi mila, isliye unke payment delay ke kaaran abhi verify nahi kar pa raha hoon. Agar aap unka poora business naam ya registered mobile number bhej dein, toh main sahi account dhoondhkar unke payment se judi baatein—jaise kiya hua payment commitment, reported payment ya follow-up—check kar sakta hoon. Aap chahein toh pehle customer list dekh sakte hain, ya payment follow-up wale accounts ki jaankari nikal sakte hain; in dono se sahi account pehchaanne mein madad milegi.</p></div></div>
+  <div class="rawcell wide"><h4>Tool calls — raw JSON</h4><pre class="io">[
+  {
+    &quot;tool&quot;: &quot;search_customers_master&quot;,
+    &quot;input&quot;: {
+      &quot;search_key&quot;: &quot;Lakshmi&quot;,
+      &quot;page_no&quot;: 1,
+      &quot;page_size&quot;: 20,
+      &quot;routes&quot;: null,
+      &quot;customer_segments&quot;: null,
+      &quot;dynamic_segments&quot;: null,
+      &quot;lifecycle_groups&quot;: null,
+      &quot;division_ids&quot;: null,
+      &quot;cfa_ids&quot;: null,
+      &quot;is_active&quot;: null,
+      &quot;ids_only&quot;: true
+    }
+  }
+]</pre></div>
+  <div class="rawcell wide"><h4>Status sequence (53 events)</h4><pre class="io">connected -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; status -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; token -&gt; suggestions -&gt; done</pre></div>
+</div>
+</details>
 </section>
 
 <p class="fn">Scoring is hand-graded by a human reviewer against this run file (solid 7 · hedged 6 · clarify 3 · refused 3 · wrong or unusable 11 · no answer 2; per-row verdicts in runs/judgments_v1.jsonl). Accounts hirafoods-ar, run v2, file query_results_v2.jsonl (32 records). Scoring is hand-graded by a human reviewer; there is no ground-truth baseline for these answers — treat the numbers as judgment, and the quoted answers on this page as taken verbatim from the run.</p>
