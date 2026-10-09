@@ -31,7 +31,7 @@ python3 scripts/copilot_query_pipeline.py --account surana     # 80 Tally/ERP qu
 python3 scripts/copilot_query_pipeline.py --account unifoods   # 60 WhatsApp-group queries
 python3 scripts/copilot_query_pipeline.py --account hirafoods  # 80 Tally/ERP queries (Surana query set)
 python3 scripts/run_agent_evals.py --account finance   # 30 CFO insight queries (agent template, 2026-09-18)
-python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24, v3 after label remap
+python3 scripts/run_agent_evals.py --account ar-agent  # 56 AR queries (Zainab) — v2 done 2026-09-24; v3 = 35-query re-run (q1–q35) DONE 2026-10-09, see EVAL_READOUT_v2.md
 python3 scripts/probe_ar_hirafoods_gate.py --account hirafoods-ar  # READ-ONLY 6-probe gate (ledger/signal/identity/B2 join) before any AR run
 python3 scripts/run_agent_evals.py --account hirafoods-ar   # 32 AR queries on HiraFoods c331ac11 — v2 DONE 2026-10-09, 32/32, 0 errors (generator: scripts/gen_ar_hirafoods_queries.py)
 python3 scripts/run_agent_evals.py --account ask-groups # Ask Groups first GRADED run (phase 1.4 of strategy) — recon done, not graded
@@ -64,7 +64,7 @@ python3 scripts/build_dashboard.py --account finance
 | Ask Groups Agent | 12 (recon) | 1 | WhatsApp-group message traffic (Zainab, ask_chats lane) | recon v1 (2026-09-23): 12/12, ~14s — RECON, not graded; data inventory only. Trace 4 (2026-09-28): repeat-issue queries fall back to request-list (spec-DSL cap gap); also seen on support workspace 05f67562 |
 | Ask Groups (Koya) | 30 (capped from 40) | 1 | Koya ws 72157c26, ask_chats lane (login 7903329975) | probe v1 (2026-09-28): 8 live, 0 errors, ~12s — tagged window 25-26 Sep only (data-gap diagnosis: `accounts/ask-groups-koya/PROBE_NOTES_v1.md` + /mnt/d/Zochief/chats_agent/KOYA_DATAGAP_ANALYSIS.md); re-probe 2026-10-01: coverage 25 Sep→1 Oct, 30-Sep DPR tagged → set re-anchored to live window (split 21/4/5) + **v1 run 2026-10-01: 30/30, 0 failed, avg 17.8s, 0 fabrications** — 17 ANSWERED / 10 NEAREST_SHAPE / 3 CLEAN_REFUSAL; DPR-status + purchase + dispatch + plan-vs-actual answer from tagged evidence; REFUSE drift (2 rows) + no clarify-ask + production-figures corpus gap flagged; readout `accounts/ask-groups-koya/EVAL_READOUT_v1.md` |
 | Ask Groups (HiraFoods) | 30 (user-approved) | 10 | HiraFoods ws c331ac11, ask_chats lane — deployment CONFIRMED 2026-09-30 (id 71d19eb3) | **v1 run 2026-09-30: 30/30, 0 failed, avg 13.2s, 0 fabrications** — workspace VIABLE (6 groups, 366 reqs/5d, real customers+amounts); readout + EVAL_READOUT_v1.md + dashboard; findings: repeat_issues cap gap (NEAREST_SHAPE), REFUSE classes drifted (photo_content/event_timing no longer refuse), coverage-proportion q answered with group-count shape, no working clarify-ask |
-| AR Agent | 56 (user set) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | v2 run complete 2026-09-24 (56/56, readout + two-tab page pushed); v3 pending label remap |
+| AR Agent | 56 (user set) | 8 | WhatsApp↔ERP reconciliation, commitments, invoices (Zainab) | v2 run 2026-09-24 (56/56, EVAL_READOUT_v1) · **v3 re-run 2026-10-09: q1–q35 only (35 live, 0 errors, avg 26.9s)** — judged 10 solid / 4 partial / 5 honest can’t-do / 5 false-unavailable refusals / 1 wrong / **10 no-answer**; readout EVAL_READOUT_v2.md + page rebuilt (fresh-35 view) · q36–q56 + CLARIFY controls not run |
 
 **Strategy & learning docs (2026-09-28, committed):** `docs/plans/agent-eval-strategy.md` — four-agent
 operating model (AR + Finance + order-to-dispatch + Ask My Groups): pillar contracts, delta-vs-
@@ -107,6 +107,19 @@ from the run file at build time; hand-graded scorecard 9/21/7/2/3/14, footnote'd
 render_ar_dashboard.py, NOT build_dashboard.py, to rebuild the ar-agent page (build_dashboard
 still builds the other accounts).
 PUSHED to origin/main 2026-09-24 (through 804006d + scorecard-tile fix; Pages live).
+AR v3 RE-RUN (2026-10-09, user: "run these queries on zainab but only 35"): q1–q35 run live
+(accounts/ar-agent/runs/query_results_v3.jsonl, log logs/ar_agent_v3_35q.log) via
+`--only 1..35`; rows q36–q56 in that file are carry-over from v2, byte-identical, NOT re-run,
+and the page renders only the 35 fresh rows (render_ar_dashboard `fresh_max: 35`).
+0 errors, avg 26.9s / median 23.6s / max 81.6s. Headline: **10 of 35 no answer** — 7 silent
+parks (2.2–4.6s, no interrupt payload — still unfixed from v1) + 3 dropped renders where tools
+ran and no text arrived (q11, q15, q22); all 10 sit in q11–q23 while q1–q10 answered 10/10.
+Second defect: 5 refusals (q6, q7, q26, q28, q30) claim WhatsApp data is unavailable while the
+same run reads 116 chat claims and quotes messages. Tool surface changed again (get_collections /
+ar_payments_reported / ar_promises / getCustomerAccountData + NEW spawn_filter_agent,
+getCustomerAccountData, getCustomerAnalytics; no query_ar* at all) — strict 13/35 (37%),
+lenient 27/35, 0 format violations. Readout: accounts/ar-agent/EVAL_READOUT_v2.md; dashboard
+rebuilt + qa_dashboards.py updated to the fresh-35 spec (QA VERDICT: PASS).
 Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
 superseded on 2026-09-23 by the user's own set — scripts/gen_ar_user_queries.py, 56 rows,
 54 ANSWER / 2 CLARIFY, 8 sections, enriched on live Zainab anchors).

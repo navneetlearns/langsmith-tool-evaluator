@@ -29,10 +29,14 @@ PAGES = {
         "run": ROOT / "accounts/hirafoods-ar/runs/query_results_v2.jsonl",
     },
     "ar-agent": {
-        "rows": 56,
+        "rows": 35,
         "tiles": 6,
-        "must_contain": ["POPULAR MATTRESS", "₹10,749", "₹9,776", "Interworld"],
-        "run": ROOT / "accounts/ar-agent/runs/query_results_v2.jsonl",
+        # only questions 1-35 were live-run on 2026-10-09; rows 36-56 of the v3 file are
+        # carry-over from v2 and are deliberately not rendered (render_ar_dashboard fresh_max).
+        "fresh_max": 35,
+        "must_contain": ["116 unresolved WhatsApp payment claims", "THE ARTY GARAGE",
+                         "₹880", "10 of 35", "q11–q23", "q31"],
+        "run": ROOT / "accounts/ar-agent/runs/query_results_v3.jsonl",
     },
 }
 
@@ -99,6 +103,10 @@ try:
             page_html = page.content()
             tids = [json.loads(line).get("thread_id")
                     for line in spec["run"].read_text().splitlines() if line.strip()]
+            if spec.get("fresh_max"):
+                tids = [json.loads(line).get("thread_id")
+                        for line in spec["run"].read_text().splitlines() if line.strip()
+                        and json.loads(line).get("query_index", 0) <= spec["fresh_max"]]
             tids = [t for t in tids if t]
             r["thread_ids_in_runfile"] = len(tids)
             r["thread_ids_missing_on_page"] = [t for t in tids if t not in page_html]

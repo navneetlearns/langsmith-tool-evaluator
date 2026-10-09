@@ -17,6 +17,15 @@
       "success": 42,
       "failed": 14,
       "avg_response_time_seconds": 23.37
+    },
+    {
+      "version": 3,
+      "file": "query_results_v3.jsonl",
+      "timestamp": "2026-10-09T12:00:54.446939",
+      "total_queries": 35,
+      "success": 25,
+      "failed": 10,
+      "avg_response_time_seconds": 26.94
     }
   ]
 }

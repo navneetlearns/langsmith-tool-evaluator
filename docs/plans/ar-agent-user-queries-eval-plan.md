@@ -5,6 +5,10 @@
 > PUSHED to origin/main 2026-09-24 (4a1b262 → 804006d + scorecard-tile fix). Details:
 > EVAL_READOUT_v1.md + references/ar-agent-v1-run.md (skill). Remaining: optional v3 with
 > re-mapped expected_tool labels (see readout action item 4), order-to-dispatch plan (shelved).**
+> **RE-RUN 2026-10-09 (user: 35 queries only): q1–q35 live as run v3, 0 errors, avg 26.9s —**
+> 10/35 no answer (7 silent parks + 3 dropped renders), 5 false-"chat data unavailable" refusals,
+> 1 wrong; tool surface changed again (no query_ar*). Readout `accounts/ar-agent/EVAL_READOUT_v2.md`,
+> dashboard rebuilt fresh-35, QA PASS. q36–q56 + both CLARIFY controls still unrun by instruction.
 > Prepared 2026-09-23. Supersedes the AR half of `ar-finance-agent-eval-plan.md` for the
 > query-set source: the user's own queries REPLACE the generated 70-query draft
 > (skill rule: user-provided sets are kept verbatim, in the user's order — never padded with

@@ -37,98 +37,101 @@ ACCOUNT = arg("--account", "ar-agent")
 # ---------------------------------------------------------------- per-account payloads
 ACCOUNTS = {
     "ar-agent": {
-        "run": 2,
-        "title": "Accounts-receivable assistant — 56-question test",
-        "subtitle": "Answers about who owes what, and what customers said on WhatsApp about paying · Zainab Enterprises · 2026-09-24",
-        "verdict": """Strong when the question is specific and the customer is already resolved —
-  but a large share of questions (14 of 56) get no answer at all, and several answers are
-  wrong or reuse the same canned payment list.""",
+        "run": 3,
+        "fresh_max": 35,
+        "title": "Accounts-receivable assistant — 35-question re-run",
+        "subtitle": "Answers about who owes what, and what customers said on WhatsApp about paying · Zainab Enterprises · 2026-10-09 · questions 1–35 of the 56-question set",
+        "verdict": """Answers that come back are still good — real customers, real commitments, real
+  amounts, nothing invented. But <strong>10 of 35 questions got no answer at all</strong>, and every one of
+  them sits in the commitment and invoice sections (q11–q23). Five more declined on the claim that the
+  WhatsApp chat can’t be read — in the same run, other questions read <strong>116 chat payment claims</strong>
+  and quote messages word for word.""",
         "works": [
-            "<strong>Flags unconfirmed claims.</strong> When a customer says “payment done” on WhatsApp, answers repeat that it’s <em>reported, not confirmed settled</em> — never presented as fact.",
-            "<strong>Says plainly when something isn’t found.</strong> “Bill 15293 was claimed on WhatsApp — is it in ERP?” → “I couldn’t find invoice 15293 in your records.” No pretending.",
-            "<strong>Asks for missing details.</strong> A question without a reference number got “Please share the UTR itself…” instead of a made-up answer.",
-            "<strong>No fabricated figures.</strong> No invented customers, invoices or amounts were found in the judged answers.",
+            "<strong>Counts claims as claims.</strong> <strong>116 unresolved WhatsApp payment claims</strong> (₹70 to ₹5,00,000), named and referenced — reported, not entered, and repeatedly marked “should not yet be treated as received payments”.",
+            "<strong>Commitment answers are the run’s best work.</strong> q13 names 4 dated overdue promises (<strong>THE ARTY GARAGE</strong>, SHREE JAIN FOAM &amp; FURNISHINGS-T, MARVEL HOMES) and explains why ONCE &amp; AGAIN can’t be called overdue; q14 finds 25 customers with 42 broken commitments; q17 finds 3 promises with no payment posted.",
+            "<strong>Reads the chat when it goes there.</strong> q34 quotes “Credit note send kijiye payment karta hu”; q32 pins a credit-note request to a named person in a named group.",
+            "<strong>Clean and honest where it answers.</strong> 0 format violations across 25 answers — no tool names, no run IDs, no made-up figures; q25 says plainly that bill 15293 and the ₹880 NEFT claim were not in the data rather than papering over it.",
         ],
         "scorecard": [
-            ("Solid answers", 9, "ok", "✓", "Clear, correct and useful"),
-            ("Partial answers", 21, "partial", "◐", "Some info, but incomplete or thin"),
-            ("Wrong or misleading", 7, "bad", "✗", "Answers that don’t match the data"),
-            ("Honest “can’t do”", 2, "ok", "?", "Said plainly it couldn’t answer"),
-            ("Customer-lookup errors", 3, "bad", "⚠", "Named-customer lookups that failed"),
-            ("No answer", 14, "none", "–", "Empty responses (14 of 56)"),
+            ("Solid answers", 10, "ok", "✓", "Clear, correct and useful"),
+            ("Partial answers", 4, "partial", "◐", "Real data, but the asked comparison was not completed"),
+            ("Honest “can’t do”", 5, "ok", "?", "Declined with real numbers and a next step"),
+            ("Declined on a false “no chat data” claim", 5, "bad", "✗", "Chat data was readable elsewhere in the same run"),
+            ("Wrong answer", 1, "bad", "⚠", "Answered a different question than the one asked"),
+            ("No answer at all", 10, "none", "–", "7 silent parks + 3 dropped renders (10 of 35)"),
         ],
         "goes": [
-            {"title": "Asking about a named customer often gets no answer", "q": 5,
-             "note": "9 customer lookups were attempted; none produced an answer. Batch lookups and single lookups alike stopped with “No matching customer was found”."},
-            {"title": "The same payment list is returned again and again", "q": 2, "table": "Payment updates",
-             "note": "The same reported-payments list — led by KRISHNA COATED FABRICS, TRENDS FURNISHING and TENON with ₹9,776 claims — comes back for many different questions, whatever the question actually asks."},
-            {"title": "Some answers contradict the data", "q": 13,
-             "note": "“No overdue promised payments are currently recorded” — but a related question found ONCE & AGAIN with a commitment marked broken, not open. Overdue = broken commitments are being missed."},
-            {"title": "Amounts disagree between views", "q": 18, "table": "Account balances",
-             "note": "Interworld shows ₹40,19,329 (about ₹40 lakh) in one view and ₹72,36,78,400 (about ₹72 crore) in the follow-up list. DESIGN ELEMENTS appears as ₹3,06,12,600 in one answer and ₹3,06,126 in another — exactly 100× apart. One of these is a scaling error."},
-            {"title": "Empty tables and boilerplate pile up", "q": 12,
-             "note": "“No matching results were found” blocks repeat three times in a single answer, each with the same boilerplate note, and many answers end in the same fixed “How I worked this out (N steps)” line."},
+            {"title": "Ten questions got silence — all in one stretch of the set", "q": 11,
+             "note": "q11, q15 and q22 returned nothing after 28–50 s of tool work (ar_promises, getCustomerAnalytics, ar_worklist) — the tools ran and the answer text never arrived. q12, q16, q18, q19, q20, q21 and q23 bail in 2.2–4.6 s with no tool call and no interrupt payload. Rows q11–q23 are 13 questions and produced <strong>all 10</strong> of the empty answers, while q1–q10 answered 10/10."},
+            {"title": "“The chat data isn’t available” — in a run that reads the chat", "q": 6,
+             "note": "q6, q7, q26, q28 and q30 all decline because WhatsApp amounts, UTRs or claims “aren’t available in this session”, and ask you to paste an export. In the same run q2, q4 and q10 returned 116 chat payment claims with names and references, and q25, q32 and q34 quote message content directly. The data is reachable — the routing is what fails."},
+            {"title": "One answer answers a different question", "q": 31,
+             "note": "“Which payment references are still unresolved?” → “No unresolved payment references were found … 0 payments marked as sent, failed, or cancelled.” That is a status-flag search, not a reference search, and its headline contradicts the 116 unresolved claims q2, q4 and q10 found minutes earlier."},
+            {"title": "The designed mismatch case was never answered", "q": 20,
+             "note": "“Bill 15293 was claimed as paid on WhatsApp (NEFT ₹880) — is it in ERP?” parked empty. Separately, q25 reports that neither 15293 nor the ₹880 NEFT claim exists in the data and that the ₹880 hit is a price quote — matching v2’s finding that invoice 15293 is not in ERP. The anchor itself needs a decision: wrong query-set anchor, or an unreachable document series."},
         ],
         "good": {
-            "q": 1,
-            "prefix": "<p>Matches found: <strong>POPULAR MATTRESS &amp; CLOTH STORE — ₹10,749</strong> on the ledger, ₹9,776 reported on WhatsApp.</p>",
-            "preamble": "Both facts are present (ledger ₹10,749 · reported ₹9,776), but buried: two separate tables, no reconciliation, no plain “about ₹973 still pending”.",
-            "ideal": """<p>“POPULAR MATTRESS &amp; CLOTH STORE owes <strong>₹10,749</strong> on the ledger. They reported paying <strong>₹9,776</strong> on WhatsApp, and that claim isn’t in the books yet — so about <strong>₹973</strong> is still pending.”</p>""",
-            "ideal_note": "One number, one conclusion, both sides of the story — the pattern a chaser can act on.",
+            "q": 13,
+            "prefix": "",
+            "preamble": "What the user got: four dated overdue commitments with names and dates, plus a correct note that ONCE &amp; AGAIN acknowledged but never gave a date — so no overdue amount can be asserted for it. The strongest answer in the run.",
+            "ideal": """<p>“<strong>4 commitments are past their date:</strong> THE ARTY GARAGE (7 Oct, 8 Oct), SHREE JAIN FOAM &amp; FURNISHINGS-T (8 Oct), MARVEL HOMES (8 Oct). ONCE &amp; AGAIN has acknowledged but never dated, so there is nothing to chase on a date. Chase these three today.”</p>""",
+            "ideal_note": "Same facts, one line, and the one thing to do next — every figure in it is supported by this run.",
         },
         "dev_failmap": [
-            ("Customer lookup: 9 calls, 0 answers", [
-                "resolve_ar_customer was called 9× (q5, q19, q38, q41, q45, q47, q50, q52, q56); none produced an answer.",
-                "Batch `queries` calls (q5, q19) returned “No matching customer was found” for exact names.",
-                "Single `name` calls (q41, q45, q47, q50, q52, q56) ended in a picker.",
-                "q38 — a 5-tool chain including resolve_ar_customer — took 233 s.",
+            ("No answer: 10 of 35 rows (q11, q12, q15, q16, q18, q19, q20, q21, q22, q23)", [
+                "7 fast parks: q12, q16, q18, q19, q20, q21, q23 — 2.2–4.6 s, no tool call, status connected→status→done, ui_payload_type None. The interrupt payload (question + options) is still not on the wire, so the runner cannot resume and the user sees silence. Unchanged since 2026-09-24 (v1: 12 parks); same class as finance P1.",
+                "3 dropped renders: q11 (45.4 s), q15 (49.7 s), q22 (28.0 s) — tools ran and a ui event was emitted, but no body text arrived. Not parks: too slow, tools called. A second mechanism behind the same symptom.",
+                "All 10 sit in q11–q23 (payment commitments + invoices); q1–q10 answered 10/10.",
             ]),
-            ("5 queries interrupted with no tool call", [
-                "q3, q6, q26, q35, q55: status interrupt, empty response, no tool call.",
-                "q3 and q6 are paraphrases of q2 and q4, which were answered on the same data.",
+            ("Refusals built on a false availability claim: 5 rows (q6, q7, q26, q28, q30)", [
+                "Each declines because WhatsApp amounts, UTR messages or chat claims “aren’t available in this session / current workspace”, and asks for a pasted export.",
+                "Same run: ar_payments_reported returned 116 chat claims (q2, q4, q10); search_messages + spawn_filter_agent enumerated invoice numbers from messages (q25); search_threads quoted chat lines (q32, q34).",
+                "This is the AR copy of the HiraFoods q9-vs-q24 nondeterminism: one question class, two paths, one silently useless.",
             ]),
-            ("search_threads never called", [
-                "0 calls; 19 queries were labeled with it as the expected tool.",
-                "One evidence object (5017e36f28e4) was re-read in 10 queries.",
+            ("Scope slip: q31", [
+                "Answered “0 payments marked sent, failed, or cancelled” for a question about unresolved <em>references</em> — a different predicate.",
+                "Its headline directly contradicts 116 unresolved claims from three other rows in the same run.",
             ]),
-            ("Same 5-row payments table, no totals", [
-                "18 queries returned the same reported-payments rows (₹9,776 family).",
-                "Every query used limit=5 (46 tool inputs); no totals were ever computed.",
+            ("Tool surface: three runs, three surfaces", [
+                "v2 (2026-09-24) ran query_ar / get_ar_evidence / get_ar_schema / query_ar_financials / resolve_ar_customer; this run ran get_collections, ar_payments_reported, ar_promises, getCustomerAccountData, search_threads — and no query_ar* at all.",
+                "New to every prior inventory: spawn_filter_agent (q25, q34 — the lane spawns a sub-agent), getCustomerAccountData, getCustomerAnalytics.",
+                "resolve_ar_customer never fired, so v1’s exact-match resolver defect is untested here rather than fixed; the one customer-anchored lookup (q5) went through search_customers_master and worked.",
             ]),
         ],
         "dev_bugs": [
-            ("q13", "status=open misses broken commitments — “no overdue promises” while ONCE & AGAIN’s is broken"),
-            ("q17", "inverted is_null filter"),
-            ("q18", "unrelated balances table attached to the answer"),
-            ("q31", "false “none open” for unresolved references"),
-            ("q2, 16, 24, 30, 36", "dangling headlines — headline promises more than the rows show"),
-            ("many", "Entered rows leak into unmatched lists"),
-            ("many", "literal \\* and &amp; appear in rendered answers"),
+            ("q31", "answers a status-flag question instead of “unresolved reference”; contradicts q2/q4/q10"),
+            ("q11, q15, q22", "tools complete + ui event, empty body — dropped render, not a clarify park"),
+            ("q12, q16, q18–q21, q23", "empty in ≤5 s with no interrupt payload — silent park, unresumable"),
+            ("q6, q7, q26, q28, q30", "refuse on “WhatsApp data unavailable” while the same run reads chat claims and quotes messages"),
+            ("q20", "designed WhatsApp-vs-ERP mismatch anchor parked; q25 reports 15293 / ₹880 absent from the data"),
+            ("q5", "the only customer-anchored lookup used search_customers_master and succeeded — different path from v2"),
+            ("q1, q3, q5, q27", "cross-match stopped at a preview/truncation limit instead of paging (5 of 15 receipts shown)"),
         ],
         "dev_numbers": [
-            ("Interworld Furnishings", "Ledger view (q18)", "₹40,19,329 ≈ ₹40 lakh"),
-            ("Interworld Furnishings", "Follow-up worklist (q22, q54)", "₹72,36,78,400 ≈ ₹72.37 crore"),
-            ("Interworld Furnishings", "Query text (q46)", "₹7.24 crore (user-entered anchor)"),
-            ("DESIGN ELEMENTS", "Answer q39", "₹3,06,12,600"),
-            ("DESIGN ELEMENTS", "Answer q43", "₹3,06,126 — exactly 100× smaller"),
+            ("Unresolved WhatsApp claims", "q2, q4, q10", "116 claims · ₹70 – ₹5,00,000"),
+            ("ERP payments", "q6, q7, q26, q28, q30", "3,069 receipts · ₹21.08Cr · 9 Oct 2025 – 9 Oct 2026"),
+            ("ERP bills vs receipts", "q24", "16,616 bills · 3,069 receipts"),
+            ("Broken commitments", "q14", "25 customers · 42 commitments · 15 Sep → 8 Oct"),
+            ("Total receivables", "q35", "₹16,90,46,880.32"),
+            ("Ledger entries sampled", "q33", "first 20 of 3,048"),
         ],
-        "dev_numbers_note": "<span class=\"flag\">Suspected scaling bug:</span> DESIGN ELEMENTS differs by exactly 100× between q39 and q43; Interworld differs 10-180× across views.",
+        "dev_numbers_note": "<span class=\"flag\">Worth a human check:</span> q35’s ₹16,90,46,880.32 “across the customer base” is a different scope from v1’s Zainab position of ₹233.22 Cr outstanding (entities.json, as of 2026-09-21) — two tools, two scopes, ~14× apart. Confirm which is authoritative before quoting either. Unlike v2, this run shows no exact-100× scaling pair.",
         "dev_harness": [
-            "Interrupts are recorded as empty responses — auto-select or log the picker payload (finance P1 same).",
-            "expected_tool labels don’t match real tool names (labels from the 09-23 harvest surface; the run calls the query_ar family).",
-            "tool_calls under-reports steps — q13 shows 4 steps in the UI but only 2 tool calls.",
-            "3 queries cite a “Bill 15293 / ₹880 NEFT” claim that is not found in the data (q20, q25, q49).",
-            "~8 queries embed the answer in the query text itself.",
+            "Scope: questions 1–35 of the 56-row set were live-run on 2026-10-09; rows q36–q56 are carry-over from v2, byte-identical, NOT re-run. Sections 6–8 and both CLARIFY controls (q46, q51) were not exercised.",
+            "Analyzer figures here are fresh-35 scope: strict tool accuracy 13/35 (37%), lenient 27/35 (77%), 0 format violations. The unfiltered --run 3 call also counts the 21 carried rows.",
+            "Scorecard is hand-graded per row; raw classifier buckets for the fresh 35: success 22, marginal 2, no_data 1, clarify-park 7, fail 3.",
+            "Hedge metric: the Hinglish HEDGE_RE scores 4/25 while most refusals hedge in English (“can’t reliably”, “without guessing”) — the same regex-gap class seen earlier, now inverted.",
+            "The set still has no REFUSE rows, so refusal-correctness remains untested on this account (v1 gap, unchanged).",
         ],
         "dev_fix": [
-            "Resolver + harness interrupt handling (the two largest failure classes).",
-            "search_threads wiring (19 labels, 0 calls).",
-            "Scale inconsistencies (the 100× pair; Interworld 40 lakh vs 72 crore).",
-            "Collapse empty blocks and boilerplate out of rendered answers.",
-            "Headlines that name the rows actually shown.",
+            "Ship the interrupt payload (question + options) — 7 fast parks in 35, unchanged since 2026-09-24; same fix as finance P1.",
+            "Fix the 3 dropped renders (q11, q15, q22) — a different mechanism from the parks; do not close the park ticket thinking it covers them.",
+            "Route to the wired chat tools before declining (5 rows) — the availability claim is false on this workspace.",
+            "Answer the asked predicate (q31), and pin the tool surface per run before any strict-% is read as agent skill.",
+            "Decide the q20 anchor: correct the query set or fix the lookup, then say which.",
         ],
-        "latency_note": "Overall mean 23.4 s, median 19.4 s (56 queries; min 3.4 s, max 232.7 s — q38 is the outlier: a 5-tool chain that includes the customer lookup).",
-        "footer_score": "Scoring is hand-graded by a human reviewer (solid 9 · partial 21 · wrong 7 · honest “can’t do” 2 · lookup errors 3 · no answer 14).",
+        "latency_note": "Overall mean 26.9 s, median 23.6 s (35 queries; min 2.2 s, max 81.6 s — q34, message search + spawn_filter_agent). Silent parks bail at 3.8 s average. No SSE errors, no 402 quota trips. Better tail than v2 (mean 23.4 s, max 232.7 s).",
+        "footer_score": "Scoring is hand-graded by a reviewer against this run file (solid 10 · partial 4 · honest “can’t do” 5 · false-unavailable refusal 5 · wrong 1 · no answer 10). Row-level reasoning: accounts/ar-agent/EVAL_READOUT_v2.md.",
     },
 
     "hirafoods-ar": {
@@ -239,6 +242,10 @@ RUNS = ROOT / "accounts" / ACCOUNT / "runs"
 OUT = ROOT / "langsmith-tool-evaluator/docs" / ACCOUNT / "index.html"
 RUN = int(arg("--run", cfg["run"]))
 recs = [json.loads(l) for l in (RUNS / f"query_results_v{RUN}.jsonl").read_text().splitlines()]
+# carry-over rows: --only runs pre-seed untouched rows from the previous version so the file
+# stays diffable. The page shows only what THIS run actually executed.
+if cfg.get("fresh_max"):
+    recs = [r for r in recs if r.get("query_index", 0) <= cfg["fresh_max"]]
 by = {r["query_index"]: r for r in recs}
 N = len(recs)
 
