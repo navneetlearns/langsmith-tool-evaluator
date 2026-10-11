@@ -9,6 +9,15 @@
 > 10/35 no answer (7 silent parks + 3 dropped renders), 5 false-"chat data unavailable" refusals,
 > 1 wrong; tool surface changed again (no query_ar*). Readout `accounts/ar-agent/EVAL_READOUT_v2.md`,
 > dashboard rebuilt fresh-35, QA PASS. q36–q56 + both CLARIFY controls still unrun by instruction.
+> **PUSHED 2026-10-11 (`04a7a48`, + `9d8ecfa` ask-groups prep) — Pages redeployed, served page
+> sha256-verified against local.** **CORRECTION 2026-10-11: the run's 10 empty rows carry NO
+> `interrupt` event — they are not clarify parks.** The `interrupt` event does reach the wire
+> (v2 fired it on 14 rows, both ASK_BACK controls included); the payload is captured by
+> `copilot_query_pipeline.stream_query` (`result["interrupt"]`) but `run_agent_evals.py` never
+> reads it, so it never reaches the JSONL. That is a HARNESS gap (1-line fix), not the backend
+> defect the original readout described. See the Addendum in `accounts/ar-agent/EVAL_READOUT_v2.md`.
+> Open: Phase 3 Step 3 (does the interrupt/shortlist payload actually carry question + options?)
+> remains UNVERIFIED — no run has ever recorded the field, so it cannot be answered from disk.
 > Prepared 2026-09-23. Supersedes the AR half of `ar-finance-agent-eval-plan.md` for the
 > query-set source: the user's own queries REPLACE the generated 70-query draft
 > (skill rule: user-provided sets are kept verbatim, in the user's order — never padded with

@@ -111,15 +111,25 @@ AR v3 RE-RUN (2026-10-09, user: "run these queries on zainab but only 35"): q1�
 (accounts/ar-agent/runs/query_results_v3.jsonl, log logs/ar_agent_v3_35q.log) via
 `--only 1..35`; rows q36–q56 in that file are carry-over from v2, byte-identical, NOT re-run,
 and the page renders only the 35 fresh rows (render_ar_dashboard `fresh_max: 35`).
-0 errors, avg 26.9s / median 23.6s / max 81.6s. Headline: **10 of 35 no answer** — 7 silent
-parks (2.2–4.6s, no interrupt payload — still unfixed from v1) + 3 dropped renders where tools
-ran and no text arrived (q11, q15, q22); all 10 sit in q11–q23 while q1–q10 answered 10/10.
+0 errors, avg 26.9s / median 23.6s / max 81.6s. Headline: **10 of 35 no answer** — 7 fast
+empties (2.2–4.6s, NO interrupt event, so NOT clarify parks — corrected 2026-10-11) + 3
+dropped renders where tools ran and no text arrived (q11, q15, q22); all 10 sit in q11–q23
+while q1–q10 answered 10/10. vs v2 on the same 35 rows: 10 regressions (q11,q12,q15,q16,
+q18–q23 answered→empty) against 4 fixes (q3,q6,q26,q35 empty→answered) = net −6 answered.
 Second defect: 5 refusals (q6, q7, q26, q28, q30) claim WhatsApp data is unavailable while the
 same run reads 116 chat claims and quotes messages. Tool surface changed again (get_collections /
 ar_payments_reported / ar_promises / getCustomerAccountData + NEW spawn_filter_agent,
 getCustomerAccountData, getCustomerAnalytics; no query_ar* at all) — strict 13/35 (37%),
 lenient 27/35, 0 format violations. Readout: accounts/ar-agent/EVAL_READOUT_v2.md; dashboard
 rebuilt + qa_dashboards.py updated to the fresh-35 spec (QA VERDICT: PASS).
+CORRECTION 2026-10-11 (readout Addendum): the `interrupt` SSE event DOES reach the wire (v2
+fired it on 14 rows, incl. both ASK_BACK controls q46/q51); the payload is captured by
+copilot_query_pipeline but DROPPED by run_agent_evals.py, which never reads res["interrupt"]
+— a harness gap, not a backend defect. The v3 empty rows carry no interrupt at all, so the
+earlier "7 silent parks = lost clarify questions" framing was wrong.
+PUSHED to origin/main 2026-10-11 (04a7a48; also carried 9d8ecfa ask-groups v2 prep). Pages
+deploy run 38122829854 success; served AR page sha256-verified byte-identical to local
+(016efd7f…, 182,454 bytes). Dashboard live at /ar-agent/.
 Queries are generator-owned (scripts/gen_finance_queries.py; the AR 70-query draft was
 superseded on 2026-09-23 by the user's own set — scripts/gen_ar_user_queries.py, 56 rows,
 54 ANSWER / 2 CLARIFY, 8 sections, enriched on live Zainab anchors).

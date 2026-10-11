@@ -9,6 +9,36 @@
   **Analyzer:** `scripts/analyze_ar_run.py --run 3` (fresh-35 scope computed by filtering the run file; same classifier/regexes).
 - **Prior:** EVAL_READOUT_v1.md = the 2026-09-24 v2 run (56 queries).
 
+## Addendum (2026-10-11) — Finding 1 / Action 1 are WRONG; re-verified against the run files
+
+Finding 1's premise ("the interrupt payload is still not on the wire") fails in two
+directions. Established by reading `runs/query_results_v2.jsonl` + `query_results_v3.jsonl`
+against `scripts/copilot_query_pipeline.py` (`stream_query`) and `scripts/run_agent_evals.py`:
+
+1. **The `interrupt` SSE event DOES reach the wire.** `status_sequence` carries it: v2 has
+   **14** rows (q3, q6, q26, q35, q41, q42, q45, q46, q47, q50, q51, q52, q55, q56 — 12 of
+   them ANSWER-labeled, only q46/q51 the intended ASK_BACK rows). v3 has **10**, and every
+   one is carry-over from v2 in the q36–q56 block. Typical shape:
+   `connected→status→interrupt→done`, 3.4–6.4s.
+2. **The payload is captured by the parser, then dropped by the harness.** `stream_query`
+   stores it (`result["interrupt"] = parsed`) and returns it, but the runner reads only
+   `response`, `tool_calls`, `status_sequence`, `ui_payload_type`, `suggestions`,
+   `response_time_seconds`, `error` — `res.get("interrupt")` appears nowhere in
+   `run_agent_evals.py`. The clarify question + options never reach the JSONL. **This is a
+   gap on our side, not evidence of a backend defect.** Fix is one line in the record build.
+3. **This run's 10 empty rows are NOT interrupts.** q11, q12, q15, q16, q18, q19, q20, q21,
+   q22, q23 each have a `status_sequence` with **no** `interrupt` entry. They are labelled
+   `clarify` solely by `build_dashboard.classify_quality`'s heuristic (`possible_clarify` =
+   empty + no error + no tools + <5s). q11/q15/q22 also emitted a `ui` event. The agent did
+   not ask anything on any fresh row.
+
+**Trend correction:** the 4 rows that DID interrupt in v2 (q3/q6/q26/q35) all **answer** in
+v3 with no interrupt. So on q1–q35 the interrupt-park behaviour disappeared while a new
+interrupt-free empty-response class appeared — two different mechanisms, and this run only
+exhibits the second. Action 1 below should be split: (a) persist the interrupt payload in the
+runner (our fix, one line, do first), (b) investigate the 10 interrupt-free empties, which the
+original text mis-described.
+
 ## Headline
 
 Answers that come back are still good — real customers, real commitments, real amounts, zero
@@ -50,11 +80,16 @@ Same 35 rows in v2 (2026-09-24): 31 answered / 4 empty / 0 parks. Silent answers
 
 ## Finding 1 — the silent-answer class is now the dominant defect (10/35)
 
+> **CORRECTED 2026-10-11 (see Addendum above): these 10 rows carry NO `interrupt` event —
+> they are not clarify parks. Only the 5s/zero-tool heuristic tagged them. The interrupt
+> payload loss described below is real but applies to the v2 parks, not to this run's empties.**
+
 - **7 fast parks:** q12, q16, q18, q19, q20, q21, q23 — 2.2–4.6s, `status_sequence`
-  `connected→status→status→done`, **no tool call, `ui_payload_type=None`, empty body.** The
-  runner flags `possible_clarify`, but the interrupt payload (question + options) is still not
-  on the wire, so nothing can be resumed and the user sees silence. Same class as v1's 12
-  parks and finance P1 — **not fixed since 2026-09-24.**
+  `connected→status→status→status→done` (**no `interrupt` entry**), **no tool call,
+  `ui_payload_type=None`, empty body.** The
+  runner flags `possible_clarify`, but that flag is a pure heuristic here — **no interrupt
+  event fired, so there was no question and nothing to resume** (see Addendum). Not the v2
+  park class; a separate, currently-unexplained empty-turn mechanism.
 - **3 long empties:** q11 (45.4s, `ar_promises`+`getCustomerAnalytics`), q15 (49.7s, same
   pair), q22 (28.0s, `ar_worklist`+`ar_promises`) — tools ran, a `ui` event was emitted, and
   the answer text still never arrived. These are NOT clarify parks (too slow, tools called) —
@@ -134,10 +169,14 @@ Materially better tail than v2 (max 232.7s).
 
 ## Action list (owners)
 
-1. **Ship the interrupt payload (question + options) on the wire** — still the #1 defect, now
-   7 fast parks in 35 rows and unchanged since 2026-09-24. Same fix as finance P1.
-2. **Fix the 3 dropped renders** (q11, q15, q22): tools complete, `ui` event emitted, no body.
-   Distinct from the park bug — do not close #1 thinking it covers these.
+1. **Persist the interrupt payload in the runner (ours, 1 line, do first).** The parser
+   already stores `result["interrupt"]`; `run_agent_evals.py` never reads it, so clarify
+   questions + options are lost even when the backend sends them. This is a harness gap,
+   not a backend bug — stop filing it against the agent until the field is recorded.
+2. **Investigate the 10 interrupt-free empty turns** (q11, q12, q15, q16, q18–q23): no
+   `interrupt` event, so these are not clarify parks. Split by mechanism — q11/q15/q22 ran
+   tools then dropped the render; the other 7 bailed in 2–5s with no tool call at all.
+   Do not close this by fixing the runner (item 1).
 3. **Kill the false-unavailable refusal class** (q6, q7, q26, q28, q30): when
    `ar_payments_reported` / `search_messages` / `search_threads` are wired on the workspace,
    the agent must route to them instead of asking the user to paste chat exports.

@@ -70,6 +70,13 @@ run (finance v1 covered refusals; AR refusals = "hedge more than refuse" per des
   resume without the options. Mirrors finance P1 gap.
 - Action: surface the interrupt payload (question + options) in the SSE parser; allow the
   two-turn resume for AR parks. Until then, park rate will look like silent failure to users.
+  **CORRECTED 2026-10-11:** the interrupt EVENT does reach the wire — these 14 rows carry it in
+  `status_sequence` (`connected→status→interrupt→done`), which is how we know they are genuine
+  parks. What is missing is only the PAYLOAD, and the reason is on our side: the SSE parser
+  stores `result["interrupt"]` but `run_agent_evals.py` never reads it, so it never reaches the
+  JSONL. Harness gap (1-line fix), not a backend defect. Full note:
+  `references/interrupt-payload-correction.md` (zotok-copilot-eval skill) + Addendum in
+  EVAL_READOUT_v2.md.
 
 ## Entity resolution / invoice lookup — the other real defect
 
@@ -107,8 +114,11 @@ P95 45.0s, max 232.7s (q38, 5-tool chain).
 
 ## Action list (owners)
 
-1. **Surface the clarify/interrupt payload on the wire** (question + options) — without it,
-   AR parks are silent; the runner also cannot resume them (finance P1 same fix).
+1. **Persist the interrupt payload in the runner** (question + options) — the parks below DO
+   emit an `interrupt` event (verified in `status_sequence`), so the backend is asking; the
+   payload is lost because `run_agent_evals.py` never reads `res["interrupt"]`. One-line
+   harness fix, not a wire/backend fix (finance P1 is the same runner gap). Corrected
+   2026-10-11.
 2. **Resolver robustness:** exact-name-only resolve_ar_customer rejects real customers
    ("KRISHNA COATED FABRICS" vs "…PVT LTD"). Needs fuzzy alias matching or a master-name
    canonical lookup; batch resolves must not hard-fail the whole turn.

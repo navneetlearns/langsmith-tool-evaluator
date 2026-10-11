@@ -58,11 +58,11 @@ ACCOUNTS = {
             ("Honest “can’t do”", 5, "ok", "?", "Declined with real numbers and a next step"),
             ("Declined on a false “no chat data” claim", 5, "bad", "✗", "Chat data was readable elsewhere in the same run"),
             ("Wrong answer", 1, "bad", "⚠", "Answered a different question than the one asked"),
-            ("No answer at all", 10, "none", "–", "7 silent parks + 3 dropped renders (10 of 35)"),
+            ("No answer at all", 10, "none", "–", "7 fast empty turns + 3 dropped renders (10 of 35)"),
         ],
         "goes": [
             {"title": "Ten questions got silence — all in one stretch of the set", "q": 11,
-             "note": "q11, q15 and q22 returned nothing after 28–50 s of tool work (ar_promises, getCustomerAnalytics, ar_worklist) — the tools ran and the answer text never arrived. q12, q16, q18, q19, q20, q21 and q23 bail in 2.2–4.6 s with no tool call and no interrupt payload. Rows q11–q23 are 13 questions and produced <strong>all 10</strong> of the empty answers, while q1–q10 answered 10/10."},
+             "note": "q11, q15 and q22 returned nothing after 28–50 s of tool work (ar_promises, getCustomerAnalytics, ar_worklist) — the tools ran and the answer text never arrived. q12, q16, q18, q19, q20, q21 and q23 bail in 2.2–4.6 s with no tool call and no interrupt event at all. Rows q11–q23 are 13 questions and produced <strong>all 10</strong> of the empty answers, while q1–q10 answered 10/10."},
             {"title": "“The chat data isn’t available” — in a run that reads the chat", "q": 6,
              "note": "q6, q7, q26, q28 and q30 all decline because WhatsApp amounts, UTRs or claims “aren’t available in this session”, and ask you to paste an export. In the same run q2, q4 and q10 returned 116 chat payment claims with names and references, and q25, q32 and q34 quote message content directly. The data is reachable — the routing is what fails."},
             {"title": "One answer answers a different question", "q": 31,
@@ -79,7 +79,7 @@ ACCOUNTS = {
         },
         "dev_failmap": [
             ("No answer: 10 of 35 rows (q11, q12, q15, q16, q18, q19, q20, q21, q22, q23)", [
-                "7 fast parks: q12, q16, q18, q19, q20, q21, q23 — 2.2–4.6 s, no tool call, status connected→status→done, ui_payload_type None. The interrupt payload (question + options) is still not on the wire, so the runner cannot resume and the user sees silence. Unchanged since 2026-09-24 (v1: 12 parks); same class as finance P1.",
+                "7 fast empty turns: q12, q16, q18, q19, q20, q21, q23 — 2.2–4.6 s, no tool call, status connected→status→status→status→done, ui_payload_type None. No interrupt event fired, so these are NOT clarify parks — nothing was asked and there is nothing to resume. (The interrupt event does reach the wire elsewhere: v2 fired it on 14 rows. What is never persisted is the payload, because run_agent_evals.py does not read res[\"interrupt\"] — a harness gap, not a backend defect. Corrected 2026-10-11.)",
                 "3 dropped renders: q11 (45.4 s), q15 (49.7 s), q22 (28.0 s) — tools ran and a ui event was emitted, but no body text arrived. Not parks: too slow, tools called. A second mechanism behind the same symptom.",
                 "All 10 sit in q11–q23 (payment commitments + invoices); q1–q10 answered 10/10.",
             ]),
@@ -101,7 +101,7 @@ ACCOUNTS = {
         "dev_bugs": [
             ("q31", "answers a status-flag question instead of “unresolved reference”; contradicts q2/q4/q10"),
             ("q11, q15, q22", "tools complete + ui event, empty body — dropped render, not a clarify park"),
-            ("q12, q16, q18–q21, q23", "empty in ≤5 s with no interrupt payload — silent park, unresumable"),
+            ("q12, q16, q18–q21, q23", "empty in ≤5 s with NO interrupt event — not a clarify park; unexplained empty turn"),
             ("q6, q7, q26, q28, q30", "refuse on “WhatsApp data unavailable” while the same run reads chat claims and quotes messages"),
             ("q20", "designed WhatsApp-vs-ERP mismatch anchor parked; q25 reports 15293 / ₹880 absent from the data"),
             ("q5", "the only customer-anchored lookup used search_customers_master and succeeded — different path from v2"),
@@ -124,8 +124,8 @@ ACCOUNTS = {
             "The set still has no REFUSE rows, so refusal-correctness remains untested on this account (v1 gap, unchanged).",
         ],
         "dev_fix": [
-            "Ship the interrupt payload (question + options) — 7 fast parks in 35, unchanged since 2026-09-24; same fix as finance P1.",
-            "Fix the 3 dropped renders (q11, q15, q22) — a different mechanism from the parks; do not close the park ticket thinking it covers them.",
+            "Persist res[\"interrupt\"] in run_agent_evals.py (1 line) — the payload is captured by the parser and then dropped by the runner, so clarify questions are lost even when sent. Harness-side; do this before filing anything against the backend.",
+            "Investigate the 10 interrupt-free empty turns — 7 bailed in 2–5 s with no tool call, 3 (q11, q15, q22) ran tools then dropped the render. A different mechanism from the v2 parks; fixing the runner does not close these.",
             "Route to the wired chat tools before declining (5 rows) — the availability claim is false on this workspace.",
             "Answer the asked predicate (q31), and pin the tool surface per run before any strict-% is read as agent skill.",
             "Decide the q20 anchor: correct the query set or fix the lookup, then say which.",
@@ -204,7 +204,7 @@ ACCOUNTS = {
         "dev_bugs": [
             ("q1, q2, q4, q5, q32", "name-anchored turns collapse — the WhatsApp display name does not resolve against the customer master"),
             ("q12, q14, q20", "invoice lookup returns “not found” for invoices the message store quotes"),
-            ("q13, q28", "empty response with no interrupt event — silent park, unresumable"),
+            ("q13, q28", "empty response, no interrupt event, no tool call (26.8 s / 11.9 s, 7 status events) — unexplained empty turn, not a clarify park"),
             ("q29, q31", "out-of-scope product stock/rate answered instead of refused"),
             ("q9", "same question class as q24 failed to fetch via getCustomerAccountData"),
             ("q19", "over-refused a supported capability (unpaid status) while q15/q21/q25 read the same data"),
@@ -228,7 +228,7 @@ ACCOUNTS = {
         "dev_fix": [
             "Resolver alias matching (or resolve from the signal side's customer identity) — 5 rows, the single biggest win.",
             "Invoice-number namespace: say which series was searched, and make the chat-quoted series findable — 6 rows.",
-            "Silent parks: emit the question/options event so the user (and the runner) can see them — 2 rows + unresumable today.",
+            "q13/q28 empty turns: no interrupt event fired, so nothing was asked — diagnose why the turn ended empty (and persist res[\"interrupt\"] in the runner so a real clarify is ever visible).",
             "Tool-scope the lane so receivables refusal actually holds for stock/rate/dispatch questions — 2 rows.",
             "Then re-map expected_tool labels to the observed 13-tool surface before v3.",
         ],
@@ -378,7 +378,7 @@ for r in recs:
         out_html = md_to_html(resp)
     else:
         out_html = ('<p class="empty">(EMPTY response — no body, no error field, '
-                    'no interrupt event: the silent-park rows the analyzer cannot see)</p>')
+                    'no interrupt event: an unexplained empty turn, not a clarify park)</p>')
     tools_html = pre(json.dumps(tools, indent=2, ensure_ascii=False)) \
         if tools else '<p class="empty">(no tool calls recorded)</p>'
     seq = r.get("status_sequence") or []
