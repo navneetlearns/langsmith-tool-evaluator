@@ -4,6 +4,45 @@ Status: **PROPOSED 2026-10-09 — awaiting approval. Do not write queries.xlsx o
 Prep done: Step-0 gates GREEN (`runs/gate_probe_v1.jsonl` + `gate_probe_v2.jsonl`, 8/8),
 live-window re-anchor probe + entity-grounding probe GREEN (`runs/entity_probe_v1.jsonl`, 6/6).
 
+## Re-anchor refresh (2026-10-13) — all gates re-run, plant is READY
+
+Every gate re-verified four days later, before anything was generated or run. Generator now
+emits this draft (`scripts/gen_ask_groups_hirafoods_queries.py`), validated via
+`--out /tmp/x.xlsx` so the committed v1 `queries.xlsx` stays untouched (sha256
+`ba21f843…` unchanged). **Still blocked only on your approval of the rows below.**
+
+| Gate | 2026-10-09 | 2026-10-13 | Verdict |
+|---|---|---|---|
+| ask_chats deployed | id `71d19eb3`, `prompt_chars=0` | id `71d19eb3`, `prompt_chars=0` | GREEN — unchanged |
+| W-gate (`gate_probe_v3.jsonl`) | 8/8 | 8/8 | GREEN |
+| Entity probe (`entity_probe_v2.jsonl`) | 6/6 | 6/6 | GREEN |
+| `preflight_agent_probe` | GATE-PASS | GATE-PASS (5.8s, 15,950 chars, quota alive) | GREEN |
+
+**Corpus figures are STALE in this draft and were re-measured.** The live tagged window is
+now **29 Sep → 12 Oct 2026**, **1,447 of 1,741 messages tagged (83.1% coverage)**, last-7d
+band **734 messages over 6–12 Oct (6 active days)**. Row 2's note below ("715, 2–8 Oct") and
+the 10 Aug – 8 Oct / 2,567-message figure in point 1 are superseded. Re-read row-level
+numbers off `gate_probe_v3.jsonl`, not off this prose.
+
+**Two findings out of the gate chain — worth your eyes before the run:**
+
+- **W4 contradicts W1 and W3 in the same run, minutes apart.** The 24-Sep control answered
+  *"No messages after 29 September 2026 are available in this workspace"*, while W1 discloses a
+  29 Sep → 12 Oct window and W3 counts 734 messages in 6–12 Oct. The agent holds two
+  incompatible coverage statements. This is a real agent-side defect, not an artifact — and it
+  lands exactly on row 30, so that row is now the **regression test for this contradiction**,
+  not a zero-control.
+- **Paridhi Apparels is a live customer in the HiraFoods groups.** The 13-Oct today-anchor
+  probe returned them as a named counterpart: 11 posts on 12 Oct, "40 cases Ultra Biscuits
+  Regular reserved in your name, invoice ₹4,869.60", plus INV-4010 dispatch chatter. They are
+  a separate ZoTok workspace with no eval account of their own — cross-link, not a scope change
+  here, but it means HiraFoods is not a clean single-client corpus.
+
+**Defects still reproducing on 2026-10-13** (both have a dedicated row): E6 top-sender renders
+as `-` (302 msgs labelled "Hirafoods staff (`-`)") and the same empty-sender artifact runs
+through the E4 table. photo_content still answers a nearest shape instead of refusing (W7:
+114 dispatch posts), confirming the F3 relabel was right.
+
 ## Why v2 (what changed since v1, 2026-09-30)
 
 1. **Corpus moved.** v1 was anchored to a 24–29 Sep band that turned out to be a tag gap
@@ -106,7 +145,7 @@ answer content + evidence_sids).
 |---|---|---|---|
 | 28 | How much of my group traffic is covered or tagged right now? | ANSWER | **F4 retest:** v1 returned the wrong (group-count) shape; W1 probe now returns the proper tagged/untagged breakdown → defect may be fixed; this row is the regression test. |
 | 29 | Across all my groups including inactive ones, how many requests are unanswered right now? | ANSWER | Untagged-share + inactive-group caveat REQUIRED in headline. |
-| 30 | How many messages were exchanged in my groups on 24 September? | ANSWER (zero-control) | W4 green: honest "**0** messages" = PASS; "no data" or a fabricated count = FAIL. Anchors the tag-gap story. |
+| 30 | How many messages were exchanged in my groups on 24 September? | ANSWER (date-range control, was zero-control) | **Re-labelled 2026-10-13.** W4 now answers *"outside the available workspace date range — no messages after 29 Sep 2026"* rather than "0". Per corpus rules an explicit date-range refusal is CORRECT behaviour = PASS. "no data" or a fabricated count = FAIL. This row is ALSO the regression test for the W1/W3/W4 coverage contradiction above. |
 
 ## Label delta vs v1 (exact, recomputed by query-text diff of generator v1 vs this draft)
 
@@ -133,12 +172,18 @@ rows 7–10) · "customers who sent messages 7d" + "billing team this week" (sup
 ## Run plan (after approval)
 
 ```
-python3 scripts/gen_ask_groups_hirafoods_queries.py       # writes queries.xlsx, verifies 30
-python3 scripts/preflight_agent_probe.py hirafoods-askgroups   # quota/init/parser gate
-python3 scripts/run_agent_evals.py --account hirafoods-askgroups  # background, ~9 min
-# hand-grade → EVAL_READOUT_v2.md → build_dashboard.py --account hirafoods-askgroups
-# → qa_dashboards.py → commit (push only on request)
+# PLANT READY 2026-10-13 — gates already green, so this is one command each, not a setup job.
+python3 scripts/gen_ask_groups_hirafoods_queries.py       # writes queries.xlsx, verifies 30 (24/3/3)
+python3 scripts/preflight_agent_probe.py hirafoods-askgroups   # re-confirm quota/init/parser on the day
+python3 scripts/run_agent_evals.py --account hirafoods-askgroups  # BACKGROUND, ~8-10 min
+# hand-grade -> EVAL_READOUT_v2.md -> build_dashboard.py --account hirafoods-askgroups
+# -> qa_dashboards.py -> commit (push only on request)
 ```
+
+Run-harness note: 30 queries x ~13s is ~7-10 min, which blows past the terminal foreground cap
+and kills the runner mid-file (partial JSONL, no manifest entry). Launch the run as a
+background process, never long-timeout foreground. After any interrupt + resume, check
+`wc -l runs/query_results_v2.jsonl` against the manifest success count before believing it.
 
 Known cross-cutting grading notes: coverage caveats graded on every numeric answer; bare-sids
 output = tag-gap artifact (finding, not fabrication); zero is a real answer; all 8 controls

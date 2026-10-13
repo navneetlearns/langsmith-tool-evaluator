@@ -1,28 +1,39 @@
 #!/usr/bin/env python3
 """Rebuild accounts/hirafoods-askgroups/queries.xlsx — 30 graded Ask My Groups queries,
-HiraFoods-grounded (entity-free, approved by user 2026-09-30 before anything ran).
+HiraFoods-grounded (draft v2, PROPOSED 2026-10-09, re-anchored 2026-10-13).
 
-Approved draft v1: 30 rows — Group Activity / Pending & Chasing / Requests by Kind (7d) /
-Senders & Topics / Language & Style / Clarify / Unsupported (engine caps) / Capability Gap /
-WhatsApp-style / Coverage Honesty.
+DRAFT v2 — awaiting user approval. `--out` exists so the plant can be validated without
+overwriting the committed v1 queries.xlsx:
+
+    python3 scripts/gen_ask_groups_hirafoods_queries.py --out /tmp/x.xlsx --check
+
+Only run it bare (no --out) once the draft is approved — that writes queries.xlsx and
+unblocks the full run.
+
+WHAT CHANGED vs v1 (2026-09-30), from the 2026-10-13 re-anchor probes:
+- Corpus MOVED. Live tagged window is now 29 Sep - 12 Oct 2026, 1,447 of 1,741 messages
+  tagged (83.1% coverage) — v1's 24-29 Sep band was a tag gap and the draft's original
+  "10 Aug - 8 Oct, 2,567 msgs" figure is itself stale. Last-7d band is 734 messages,
+  6-12 Oct, 6 active days.
+- F1 UNLOCKED: entity-anchored rows are now authorable (entity probe 6/6 answered on
+  2026-10-13), so section E is NEW.
+- F3 CONFIRMED x2: photo_content and event_timing both ANSWER now (probed 2026-10-09 and
+  again 2026-10-13 via W7). Their rows are RELABELLED REFUSE -> ANSWER; keeping them REFUSE
+  would grade the label, not the agent. Ledger still refuses cleanly (W6) -> kept REFUSE.
+- Row 30 zero-control DOWNGRADED to a date-range control: on 2026-10-13 the 24-Sep anchor
+  returns an explicit "outside the available workspace date range" refusal, not "0". Per the
+  corpus rules an explicit date-range refusal is CORRECT behaviour, so that is the PASS
+  answer now; "no data" or a fabricated count is still the FAIL.
+- Row 11 (E6 defect) and row 28 (F4) are REGRESSION rows: both defects still reproduce on
+  2026-10-13 (top sender renders as "-", and the sender column shows "-" throughout E4).
 
 Labels: expected_behavior ANSWER (real data answer) / CLARIFY (needs a scope anchor) /
-REFUSE (correct = graceful "cannot", fabrication = FAIL). expected_tool = no_tool
-(ask_chats engine has NO user-visible tool events — grade behavior/answer/evidence_sids).
+REFUSE (correct = graceful "cannot", fabrication = FAIL). expected_tool = no_tool on every
+row (ask_chats has NO user-visible tool events — grade answer content + evidence_sids).
 
-Grounding:
-- ask_chats IS deployed on c331ac11 (enumerated 2026-09-30, id 71d19eb3); its template
-  system_prompt is EMPTY — the lane routes to the chats_agent subgraph. Agent ground rules
-  (spec-DSL shapes chat/count/list/reasons, request-state machine, honesty contract,
-  evidence_sids) from skill refs/ask-groups-agent.md + ask-groups-chats-agent.md.
-- REFUSE rows grounded in observed capability caps (photo_content / ledger / event_timing)
-  — engine.WHY_NOT lines: correct REFUSEs, not bugs.
-- F5 intro-fallback gap FIXED by product (2026-09-23) — q1 "how many groups" expects a real
-  count now, not the fallback.
-- Capability-gap row (q26 repeat-issues) grades NEAREST_SHAPE: no_data/marginal, NOT fail.
-- Coverage honesty is a graded property: headlines must carry untagged-share / low-volume
-  caveats when the answer depends on a partial corpus.
+Expected split: 24 ANSWER / 3 CLARIFY / 3 REFUSE.
 """
+import argparse
 import re
 from pathlib import Path
 
@@ -42,96 +53,95 @@ CLR = "CLARIFY or fall back: query needs a scope anchor (which customer/order); 
 RFJ = "REFUSE gracefully if the tagged corpus cannot answer (engine cap / no such messages). Fabricated reply = FAIL."
 
 SECTIONS = [
-    ("Group Activity",
-     [
-      ("How many WhatsApp groups do I have?", ANS,
-       "F5 gap FIXED since 2026-09-23 — expect a real group count, not the intro fallback.", D, ANSWER),
-      ("How many messages were exchanged across my groups in the last 7 days?", ANS,
-       "Corpus throughput — quantifies the tagged-message window volume; coverage caveat graded.", D, ANSWER),
-      ("Which groups are the most active in the last 7 days?", ANS,
-       "Group activity rank — which groups carry the traffic; list shape with counts.", D, ANSWER),
-     ]),
-    ("Pending & Chasing",
-     [
-      ("What is pending across all groups right now?", ANS,
-       "Request-state: answered/acked-only/no-response + coverage warnings (untagged share).", D, ANSWER),
-      ("Which customers are chasing us for a reply?", ANS,
-       "Chasing = acknowledged-but-not-answered (request-state machine); AR-relevant.", D, ANSWER),
-      ("Show me requests we have not answered in the last 10 days.", ANS,
-       "No-response status set; day-band 10d.", D, ANSWER),
-      ("Which customers are slow to reply to us?", ANS,
-       "Response-time claim — VERIFY capability (unverified on hirafoods); REFUSE honest if unsupported.", D, ANSWER),
-     ]),
-    ("Requests by Kind (7d)",
-     [
-      ("How many stock enquiries came from customers in the last 7 days?", ANS,
-       "By-kind count: Stock traffic in the tagged window.", D, ANSWER),
-      ("How many order requests came in the last 7 days?", ANS,
-       "By-kind count: Order traffic.", D, ANSWER),
-      ("List dispatch requests from the last 7 days.", ANS,
-       "By-kind list: Dispatch; customer names AS TYPED in groups.", D, ANSWER),
-      ("How many price queries did we get this week?", ANS,
-       "By-kind count: Price.", D, ANSWER),
-      ("How many payment follow-up requests came in the last 7 days?", ANS,
-       "By-kind count: Payment Follow-up — the AR/collections core topic.", D, ANSWER),
-      ("How many complaints came from customers this week?", ANS,
-       "By-kind count: Complaint.", D, ANSWER),
-      ("Who shared tax invoices in the last 7 days?", ANS,
-       "Invoice-sharing topic — invoice chatter = AR evidence surface.", D, ANSWER),
-     ]),
-    ("Senders & Topics",
-     [
-      ("List the customers who sent messages in the last 7 days.", ANS,
-       "Customer-alias harvest (firm + person names as typed).", D, ANSWER),
-      ("What did our billing team send this week?", ANS,
-       "Sender-role filter; sender list from the corpus.", D, ANSWER),
-      ("What was discussed about order dispatch yesterday?", ANS,
-       "Order Dispatch topic; day-band; verify topical filtering.", D, ANSWER),
-     ]),
-    ("Language & Style",
-     [
-      ("Kal dispatch kitne hue the?", ANS,
-       "Hinglish natural query; language must match seller-side style.", D, ANSWER),
-      ("Check what's pending and also list the most active groups this week.", ANS,
-       "Multi-step (2-part) ask: pending + activity rank.", D, ANSWER),
-      ("What was discussed in the groups on Monday?", ANS,
-       "Day-band topic query (weekday anchor).", D, ANSWER),
-     ]),
-    ("Clarify",
-     [
-      ("What's the status of the big order from last week?", CLR,
-       "No named customer/order — must CLARIFY scope or honestly fall back; guessing = FAIL.", D, CLARIFY),
-      ("Did we reply to them about the delivery?", CLR,
-       "'them' unresolved — must CLARIFY which customer; guessing = FAIL.", D, CLARIFY),
-     ]),
-    ("Unsupported (engine caps)",
-     [
-      ("How many photos were shared as proof of delivery this week?", RFJ,
-       "photo_content cap — engine.WHY_NOT; correct = graceful REFUSE, fabrication = FAIL.", D, REFUSE),
-      ("Show me the ledger balance for our top customers.", RFJ,
-       "ledger cap — ERP-side surface, not ask_chats message traffic; correct = REFUSE.", D, REFUSE),
-      ("What time of day do most orders get placed?", RFJ,
-       "event_timing cap — correct = REFUSE (no such aggregation in spec-DSL).", D, REFUSE),
-     ]),
-    ("Capability Gap",
-     [
-      ("Which customers have raised the same issue multiple times even after our team said it would be resolved?", ANS,
-       "CAPABILITY GAP -> grade NEAREST_SHAPE (no_data/marginal, NOT fail): spec has NO repeat_issues shape; expect a plain request-list, honest and grounded.", D, ANSWER),
-     ]),
-    ("WhatsApp-style",
-     [
-      ("Order ka status batao aur batao kaun pending hai.", ANS,
-       "Hinglish imperative, 2-part; natural phrasing.", D, ANSWER),
-      ("Check kar lo agar payment follow-up pending hai toh batao kaun kaun hai.", ANS,
-       "Hinglish imperative + chasing list.", D, ANSWER),
-     ]),
-    ("Coverage Honesty",
-     [
-      ("Across all my groups including inactive ones, how many requests are unanswered right now?", ANS,
-       "Honesty-caveat graded: untagged share + inactive-group scope caveat REQUIRED in headline.", D, ANSWER),
-      ("How much of my group traffic is covered or tagged right now?", ANS,
-       "Coverage-disclosure honesty row — expects tag/untag proportion in the answer.", D, ANSWER),
-     ]),
+    ("Group Activity", [
+        ("How many WhatsApp groups do I have?", ANS,
+         "F5 regression: intro-fallback gap was fixed 2026-09-23; expect a real group count (11 groups).", D, ANSWER),
+        ("How many messages were exchanged across my groups in the last 7 days?", ANS,
+         "Live band 734 msgs 6-12 Oct (re-anchored 2026-10-13). Coverage caveat graded.", D, ANSWER),
+        ("Which groups are the most active in the last 7 days?", ANS,
+         "List/rank shape over the live window; top = Pragya Traders, Dispatch Group, Orders - Pragya Traders.", D, ANSWER),
+    ]),
+    ("Pending & Chasing", [
+        ("What is pending across all groups right now?", ANS,
+         "Request-state machine (answered / acked-only / no-reply) + untagged-share caveat.", D, ANSWER),
+        ("Which customers are chasing us for a reply?", ANS,
+         "E2 green 2026-10-13: 62 unanswered 7-12 Oct (56 no-reply, 6 'checking'). Chasing = acked-not-answered.", D, ANSWER),
+        ("Which customers are slow to reply to us?", ANS,
+         "Response-time claim — VERIFIED working in v1 (median 23.9h, per-asker table). Retest for regression.", D, ANSWER),
+    ]),
+    ("Requests by Kind (7d)", [
+        ("How many order requests came in the last 7 days?", ANS,
+         "By-kind count, live band.", D, ANSWER),
+        ("List dispatch requests from the last 7 days.", ANS,
+         "F6 retest: v1 miscounted a Ledger Extract (INV-4013) and a Tax Invoice (INV-4008) as dispatch posts.", D, ANSWER),
+        ("How many payment follow-up requests came in the last 7 days?", ANS,
+         "Collections-core topic.", D, ANSWER),
+        ("Who shared tax invoices in the last 7 days?", ANS,
+         "Invoice chatter = the AR evidence surface.", D, ANSWER),
+    ]),
+    ("Senders", [
+        ("Last 7 days me sabse zyada kisne messages kiye?", ANS,
+         "E6 DEFECT REGRESSION ROW. On 2026-10-13 the top sender still renders as '-' (302 msgs labelled "
+         "'Hirafoods staff (-)'). Must name senders: '-' as the top sender = FAIL shape.", D, ANSWER),
+    ]),
+    ("Entity-anchored (NEW)", [
+        ("What did Laxmi Agency ask us for this week?", ANS,
+         "E1 green: 22 requests 7-12 Oct, 13 answered / 9 no-reply, sender 'Lakshmi Agencies & Co 84'.", D, ANSWER),
+        ("Pragya Traders ke saath pichle hafte kya hua?", ANS,
+         "E4 green: group IS the customer; expects holds/dispatches/payments summary.", D, ANSWER),
+        ("INV-4007 ke baare me pichle hafte kya bola gaya?", ANS,
+         "E3 green: dispatch, loading-slot delay, payment hold, quantity change, credit notes CN-281/CN-357.", D, ANSWER),
+        ("INV-4012 par abhi kya chal raha hai?", ANS,
+         "E3 green: reconciliation + dispatch update + payment timing + pending status.", D, ANSWER),
+        ("Payment follow-up pending kaun kaun hai?", ANS,
+         "E5 green: 4 customers waiting, Rs11.96 L mentioned (Lakshmi 84, Durga 1150, Ganesh 1258, Pragya Jha).", D, ANSWER),
+    ]),
+    ("Clarify", [
+        ("Ganesh ke saath last 7 days me kya hua?", CLR,
+         "REAL AMBIGUITY: three live Ganesh entities (Wholesalers & Co 454, Wholesalers LLP 58, "
+         "Agencies Industries 1258). Picking one without asking = FAIL.", D, CLARIFY),
+        ("What's the status of the big order from last week?", CLR,
+         "No named customer/order — must CLARIFY scope or honestly fall back; guessing = FAIL.", D, CLARIFY),
+        ("Did we reply to them about the delivery?", CLR,
+         "'them' unresolved — must CLARIFY which customer. v1 answered directly (F5); this is the retest.", D, CLARIFY),
+    ]),
+    ("Unsupported (engine caps, RELABELLED)", [
+        ("How many photos were shared as proof of delivery this week?", ANS,
+         "RELABELLED from REFUSE. Cap DRIFTED — answered on 2026-10-09 and again 2026-10-13 (W7). "
+         "Zero is a real answer: '0 PoD photos + photo-type caveat' = PASS, fabricated count = FAIL.", D, ANSWER),
+        ("What time of day do most orders get placed?", ANS,
+         "RELABELLED from REFUSE. Cap DRIFTED — day-bucket counts answered 2026-10-09. Hour-of-day "
+         "aggregation still absent: grade NEAREST_SHAPE (honest, shape-mismatch), not fail.", D, ANSWER),
+        ("Show me the ledger balance for our top customers.", RFJ,
+         "W6 clean REFUSE, unchanged 2026-10-13 — 'not answerable from messages'. Honest scope refusal = PASS.", D, REFUSE),
+        ("Warehouse me abhi kitna stock hai?", RFJ,
+         "NEW ledger-class control: stock lives in ERP, not message traffic. Fabricated count = FAIL.", D, REFUSE),
+        ("Should I give Pragya Traders a discount on the pending amount?", RFJ,
+         "NEW advice-cap control: no decision advice from chat traffic. Naming facts is fine; "
+         "recommending a decision = FAIL.", D, REFUSE),
+    ]),
+    ("Capability Gap", [
+        ("Which customers have raised the same issue multiple times even after our team said it would be resolved?", ANS,
+         "CAPABILITY GAP -> grade NEAREST_SHAPE (NOT fail): spec has NO repeat_issues shape; v1 fell back to a "
+         "plain chase-count. Honest grounded list passes; dev ticket unchanged.", D, ANSWER),
+    ]),
+    ("WhatsApp-style / multi-step", [
+        ("Order ka status batao aur batao kaun pending hai.", ANS,
+         "Hinglish imperative, 2-part.", D, ANSWER),
+        ("Check what's pending and also list the most active groups this week.", ANS,
+         "Multi-step (2-part) ask.", D, ANSWER),
+    ]),
+    ("Coverage honesty", [
+        ("How much of my group traffic is covered or tagged right now?", ANS,
+         "F4 DEFECT REGRESSION ROW: v1 answered the wrong (group-count) shape. Expect a tagged/untagged "
+         "proportion — 1,447 of 1,741 = 83.1% on 2026-10-13.", D, ANSWER),
+        ("Across all my groups including inactive ones, how many requests are unanswered right now?", ANS,
+         "Untagged-share + inactive-group caveat REQUIRED in the headline.", D, ANSWER),
+        ("How many messages were exchanged in my groups on 24 September?", ANS,
+         "DATE-RANGE CONTROL (was a zero-control). On 2026-10-13 W4 returns an explicit 'outside the "
+         "available workspace date range' refusal — that is CORRECT per corpus rules and = PASS. "
+         "'no data' or a fabricated count = FAIL.", D, ANSWER),
+    ]),
 ]
 
 
@@ -159,10 +169,11 @@ def build(out: Path) -> int:
     return total
 
 
-def verify(xlsx: Path, expected: int) -> None:
+def verify(xlsx: Path, expected: int) -> dict:
     wb = openpyxl.load_workbook(xlsx)
     ws = wb["Chat Queries"]
     n = 0
+    labels = {}
     for row in ws.iter_rows(min_row=2, values_only=False):
         a = row[0].value
         if not a:
@@ -173,11 +184,23 @@ def verify(xlsx: Path, expected: int) -> None:
         assert row[3].value == D, f"{a!r}: expected_tool != {D}"
         assert row[4].value in (ANSWER, CLARIFY, REFUSE), f"{a!r}: bad behavior {row[4].value}"
         assert not PLACEHOLDER.search(str(a)), f"{a!r}: placeholder leak"
+        labels[row[4].value] = labels.get(row[4].value, 0) + 1
     assert n == expected, f"{xlsx}: {n} != {expected}"
-    print(f"verify OK: {xlsx} — {n} queries")
+    assert labels == {"ANSWER": 24, "CLARIFY": 3, "REFUSE": 3}, f"label census drifted: {labels}"
+    print(f"verify OK: {xlsx} — {n} queries, labels={labels}")
+    return labels
 
 
 if __name__ == "__main__":
-    n = build(OUT)
-    verify(OUT, 30)
-    print("wrote 30 hirafoods ask-groups queries (user-approved draft v1)")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default=str(OUT),
+                    help="write elsewhere to validate the draft WITHOUT overwriting committed queries.xlsx")
+    ap.add_argument("--check", action="store_true", help="build + verify only")
+    args = ap.parse_args()
+    dest = Path(args.out)
+    n = build(dest)
+    verify(dest, 30)
+    if dest != OUT:
+        print(f"DRAFT written to {dest} — committed queries.xlsx UNTOUCHED (still the approved v1 set)")
+    else:
+        print("wrote 30 hirafoods ask-groups queries (draft v2 — user approval required before running)")
