@@ -18,6 +18,18 @@
 > defect the original readout described. See the Addendum in `accounts/ar-agent/EVAL_READOUT_v2.md`.
 > Open: Phase 3 Step 3 (does the interrupt/shortlist payload actually carry question + options?)
 > remains UNVERIFIED — no run has ever recorded the field, so it cannot be answered from disk.
+> **RE-RUN 2026-10-13 (user: "run the queries that gave no answer in previous run"), run v4 —
+> the 10 empty rows re-run alone via `--only 11,12,15,16,18,19,20,21,22,23`: 10/10 answered,
+> 0 errors, avg 50.8s.** The v3 empties DO NOT REPRODUCE — 0/10 carried an interrupt event in
+> either run, so the q11–q23 concentration was transient, not a section blind spot. Judged 7
+> answered (q11/q16/q20/q22 solid; q12 date-anchor, q15 truncated tail, q18 thin partial) ·
+> 3 scoped honest refusals (q19/q21/q23, NOT the false-unavailable class) · 0 wrong ·
+> 0 no-answer · 0 format violations · strict tool 6/10, lenient 10/10. **Action item 5 resolved
+> in the agent's favour:** q20 says bill 15293 is not in ERP — third independent run saying so,
+> so the anchor is wrong for this workspace and the query set is what needs fixing. Action item 2
+> is now a flakiness question, not a routing one. 46 rows carried over, so `query_results_v4.jsonl`
+> is a full 56-row set. Readout: EVAL_READOUT_v2.md "Addendum 2". Dashboard NOT rebuilt, nothing
+> committed or pushed.
 > Prepared 2026-09-23. Supersedes the AR half of `ar-finance-agent-eval-plan.md` for the
 > query-set source: the user's own queries REPLACE the generated 70-query draft
 > (skill rule: user-provided sets are kept verbatim, in the user's order — never padded with

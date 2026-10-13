@@ -39,6 +39,51 @@ exhibits the second. Action 1 below should be split: (a) persist the interrupt p
 runner (our fix, one line, do first), (b) investigate the 10 interrupt-free empties, which the
 original text mis-described.
 
+## Addendum 2 (2026-10-13) — targeted re-run of the 10 empty rows: ALL 10 ANSWERED
+
+User instruction: re-run only the no-answer rows.
+`run_agent_evals.py --account ar-agent --only 11,12,15,16,18,19,20,21,22,23` → **run v4**,
+10/10 ok, 0 errors, avg 50.8s (`logs/ar_agent_v4_10_noanswer.log`). 46 rows carried over from v3
+into `query_results_v4.jsonl`, so v4 is still a complete 56-row set.
+
+**Finding 1's premise does not reproduce.** All 10 rows that were empty in v3 returned a
+non-empty, tool-grounded answer in v4 — including the 3 "dropped render" rows (q11 103.5s,
+q15 87.8s, q22 24.5s) and all 7 fast-bail rows (q12 16.1s · q16 63.9s · q18 77.3s ·
+q19 51.5s · q20 18.0s · q21 17.2s · q23 48.1s). 0/10 carried an `interrupt` event in **either**
+run. The q11–q23 concentration was therefore **transient, not a systematic blind spot in the
+commitment/invoice sections** — "10 of 35 no-answer" is a property of the 2026-10-09 run, not
+of the agent.
+*Caveat: not a same-day A/B. v4 ran four days later with the workspace data moved on (promises
+dated 12–13 Oct), so elapsed-time / backend-redeploy and data drift are confounded.*
+
+**Judged v4 (fresh 10): 7 answered (q11, q16, q20, q22 solid · q12, q15, q18 partial) ·
+3 honest refusal-with-offer (q19, q21, q23) · 0 wrong · 0 no-answer.**
+- **q12** partial — date anchor: "tomorrow" resolved against a stale WhatsApp capture
+  (13 Oct). The answer discloses this itself ("no commitment is currently recorded for
+  14th Oct, the actual tomorrow date").
+- **q15** partial — the answer tail is truncated mid-sentence ("…and Luxuria Home").
+- **q18** partial — one customer only (MANSION FURNISHING, ₹8,080), closing on a UI pointer
+  ("See the card for details").
+- **q19 / q21 / q23** are *scoped* refusals, NOT the Finding-2 false-unavailable class: each
+  names the exact limit it hit (24h WhatsApp search window; only the first page of 19,407
+  ledger records) and offers a concrete next step.
+
+**Action 5 resolved in the agent's favour.** q20 now answers the flagship anchor directly:
+bill **15293 is not in ERP**, no ₹880 payment match, ERP search covered 13-Oct-2025 →
+13-Oct-2026. Same conclusion as v2 q20 and v3 q25 — three independent runs. The anchor is
+wrong for this workspace; correct the query set rather than chase the lookup.
+
+Deterministic (fresh 10): **0 format violations** · strict tool accuracy **6/10**, lenient
+**10/10** · surface `ar_promises` 5 · `search_threads` 3 · `getCustomerAnalytics` 2 ·
+`list_invoices` 2 · `getCustomerAccountData` 2 · `spawn_filter_agent` 2 · `get_receivables` 1 ·
+`search_messages` 1 · `ar_worklist` 1 (still no `query_ar*` — matches v3) · latency
+avg 50.8s / median 49.8s / max 103.5s against v3's 15.0s avg on the same rows: the empties
+used to bail fast, they now do the work.
+
+Open items 1, 3, 6, 7, 8 stand unchanged. **Item 2 changes shape** — "the 10 interrupt-free
+empty turns" is now a *flakiness / nondeterminism* question, not a routing one, and cannot be
+reproduced on demand. Dashboard NOT rebuilt; nothing committed or pushed for this addendum.
+
 ## Headline
 
 Answers that come back are still good — real customers, real commitments, real amounts, zero
@@ -200,6 +245,8 @@ Materially better tail than v2 (max 232.7s).
 ## Files
 
 - Run: `accounts/ar-agent/runs/query_results_v3.jsonl` (35 fresh + 21 carried) + `manifest.json`
+- Targeted re-run: `accounts/ar-agent/runs/query_results_v4.jsonl` (10 fresh = the v3 no-answer
+  rows + 46 carried) · log `logs/ar_agent_v4_10_noanswer.log` · see Addendum 2
 - Log: `logs/ar_agent_v3_35q.log`
 - Analyzer: `scripts/analyze_ar_run.py --run 3` (use a filtered copy for fresh-35 scope; the
   unfiltered call also counts the 21 carried rows)
