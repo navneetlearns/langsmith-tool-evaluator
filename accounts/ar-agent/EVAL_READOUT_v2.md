@@ -82,7 +82,8 @@ used to bail fast, they now do the work.
 
 Open items 1, 3, 6, 7, 8 stand unchanged. **Item 2 changes shape** — "the 10 interrupt-free
 empty turns" is now a *flakiness / nondeterminism* question, not a routing one, and cannot be
-reproduced on demand. Dashboard NOT rebuilt; nothing committed or pushed for this addendum.
+reproduced on demand. Dashboard NOT rebuilt for v4 — the served page still renders the v3
+fresh-35 view. **PUSHED 2026-10-13** (`bd5dd8d`).
 
 ## Headline
 

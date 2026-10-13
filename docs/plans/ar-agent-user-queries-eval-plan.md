@@ -28,8 +28,8 @@
 > in the agent's favour:** q20 says bill 15293 is not in ERP — third independent run saying so,
 > so the anchor is wrong for this workspace and the query set is what needs fixing. Action item 2
 > is now a flakiness question, not a routing one. 46 rows carried over, so `query_results_v4.jsonl`
-> is a full 56-row set. Readout: EVAL_READOUT_v2.md "Addendum 2". Dashboard NOT rebuilt, nothing
-> committed or pushed.
+> is a full 56-row set. Readout: EVAL_READOUT_v2.md "Addendum 2". Dashboard NOT rebuilt for v4
+> (the served page still shows the v3 fresh-35 view). **PUSHED 2026-10-13 (`bd5dd8d`).**
 > Prepared 2026-09-23. Supersedes the AR half of `ar-finance-agent-eval-plan.md` for the
 > query-set source: the user's own queries REPLACE the generated 70-query draft
 > (skill rule: user-provided sets are kept verbatim, in the user's order — never padded with
